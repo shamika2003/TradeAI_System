@@ -1,0 +1,81 @@
+# ==========================================================
+# TradeAI System
+# ==========================================================
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+bot.log
+bot_log.txt
+logs/
+TradeAI/logs/
+
+# Temporary/runtime files
+*.tmp
+*.temp
+*.pid
+
+# TradeAI live/runtime state
+artifacts/reports/tradeai_engine_status.json
+artifacts/reports/tradeai_control_command.json
+artifacts/reports/runtime_account_status.json
+artifacts/reports/demo_forward_state.json
+artifacts/reports/.tradeai_engine_status*.tmp
+
+# Runtime trading data
+TradeAI/data/*.csv
+
+# Generated datasets
+artifacts/datasets/
+
+# Trained models
+artifacts/models/
+*.pkl
+*.joblib
+
+# Generated report CSV data
+artifacts/reports/*.csv
+
+# Full source export - duplicates repository source
+TRADEAI_SYSTEM_FULL_CODE.md
+
+# Backups
+_stage*_backup_/
+*_backup_/
+
+# Build output
+build/
+dist/
+*.egg-info/
+elvara_nira_tradeai_dashboard_v3.py

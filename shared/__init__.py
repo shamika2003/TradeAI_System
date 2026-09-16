@@ -1,0 +1,1 @@
+"""Shared TradeAI package root."""
