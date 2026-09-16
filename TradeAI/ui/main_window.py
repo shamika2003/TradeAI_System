@@ -546,6 +546,17 @@ class TradeAIMainWindow(QMainWindow):
         self.bottom_state.setText("CORE LINK / DATA BRIDGE ERROR · CHECK RUNTIME CONSOLE")
 
     def closeEvent(self, event: QCloseEvent):
+        # TradeAI is intentionally UI-owned. Closing the dashboard must never
+        # leave demo_bot.py running in the background. Stop and verify the child
+        # process first; if shutdown cannot be confirmed, keep the UI open.
+        if hasattr(self, "control"):
+            ok, message = self.control.stop_if_running()
+            if not ok:
+                if hasattr(self, "bottom_state"):
+                    self.bottom_state.setText(f"CORE LINK / SHUTDOWN FAILED · {message}")
+                event.ignore()
+                return
+
         if hasattr(self, "worker") and self.worker.isRunning():
             self.worker.stop()
             self.worker.wait(2500)

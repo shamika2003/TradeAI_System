@@ -1,5 +1,6 @@
 # filename: demo_bot.py
 
+import atexit
 import csv
 import json
 import math
@@ -33,11 +34,12 @@ from config.settings import (
 
 from analytics.logger import log
 
-from core.feature_engine import FeatureTransformer
+from core.feature_engine import FeatureTransformer, FEATURE_NAMES
 
 from core.core_engine import CoreEngine
 
 from core.command_control import CommandControl
+from core.runtime_control import EngineInstanceLock, ui_launch_context
 
 
 
@@ -169,6 +171,39 @@ def create_h1(df):
 
 
 
+
+
+# =====================================================
+# BACKTEST FEATURE FRAME
+# =====================================================
+
+def prepare_backtest_features(df_m5, symbol):
+    """Use the canonical precomputed features stored in market_dataset.csv.
+
+    The training dataset is already built by the shared point-in-time-safe
+    FeatureTransformer. Re-running the multi-timeframe merge on that dataframe
+    duplicates h1_* columns (for example h1_trend_strength_x/_y) and breaks the
+    production feature contract. Predictor selects FEATURE_NAMES only, so target
+    columns remain harmless and are not exposed to the model.
+    """
+    if df_m5 is None or df_m5.empty:
+        return None
+
+    missing = [name for name in FEATURE_NAMES if name not in df_m5.columns]
+    if missing:
+        log(
+            f"ERROR | Backtest dataset is missing canonical features for {symbol}: "
+            f"{missing[:6]}{'...' if len(missing) > 6 else ''}"
+        )
+        return None
+
+    df = df_m5.copy()
+    df = df.replace([float("inf"), float("-inf")], float("nan"))
+    df = df.dropna(subset=list(FEATURE_NAMES)).reset_index(drop=True)
+    if df.empty:
+        return None
+    df["symbol"] = symbol
+    return df
 
 
 # =====================================================
@@ -379,12 +414,40 @@ def _write_runtime_backtest_summary(executor, replay):
 def main():
 
     global running
+    running = True
 
-    controller = CommandControl(mode=MODE)
+    # Engine processes are UI-owned by design. Running demo_bot.py directly,
+    # from a stale shortcut, or from an orphaned terminal is intentionally blocked.
+    ui_ok, ui_reason, owner_pid, session_id = ui_launch_context()
+    if not ui_ok:
+        log(f"ERROR | {ui_reason}")
+        return
+
+    # Shared artifacts/control files make concurrent TradeAI engines unsafe.
+    # The lock also records which dashboard session owns this exact engine PID.
+    instance_guard = EngineInstanceLock(
+        MODE,
+        owner_pid=owner_pid,
+        session_id=session_id,
+    )
+    try:
+        instance_guard.acquire()
+    except Exception as exc:
+        log(f"ERROR | TradeAI launch blocked: {exc}")
+        return
+    atexit.register(instance_guard.release)
+
+    try:
+        controller = CommandControl(mode=MODE)
+    except Exception as exc:
+        instance_guard.release()
+        log(f"ERROR | TradeAI UI ownership validation failed: {exc}")
+        return
+
     controller.start(initial_state="STARTING", note="Initializing TradeAI")
 
     log(
-        "INFO | Starting Trade AI"
+        f"INFO | Starting Trade AI mode={MODE} pid={instance_guard.pid}"
     )
 
 
@@ -607,7 +670,8 @@ def main():
 
             if controller.paused:
 
-                time.sleep(1)
+                if controller.wait(1):
+                    break
 
                 continue
 
@@ -663,6 +727,9 @@ def main():
 
             for symbol, df_m5 in market.items():
 
+                if not running or controller.should_stop():
+                    break
+
                 try:
 
                     # -----------------------------------------
@@ -702,65 +769,19 @@ def main():
 
 
                     # -----------------------------------------
-                    # H1 FROM HISTORICAL DATA
+                    # CANONICAL BACKTEST FEATURES
                     # -----------------------------------------
+                    # market_dataset.csv already contains the exact causal
+                    # Stage-5 feature columns used to train the model. Do NOT
+                    # rebuild MTF features here or h1_* columns are duplicated.
 
-                    df_h1 = create_h1(
-                        df_m5
-                    )
-
-
-                    if df_h1 is None:
-
-                        continue
-
-
-                    if df_h1.empty:
-
-                        continue
-
-
-                    df_h1["symbol"] = symbol
-
-
-                    # -----------------------------------------
-                    # FEATURE ENGINEERING
-                    # -----------------------------------------
-
-                    df = transformer.build_multi_timeframe_features(
-
+                    df = prepare_backtest_features(
                         df_m5,
-
-                        df_h1
-
+                        symbol
                     )
 
-
-                    if df is None:
-
+                    if df is None or df.empty:
                         continue
-
-
-                    if df.empty:
-
-                        continue
-
-
-                    # -----------------------------------------
-                    # CLEAN
-                    # -----------------------------------------
-
-                    df = df.replace(
-
-                        [float("inf"), float("-inf")],
-
-                        0
-
-                    )
-
-
-                    df["symbol"] = symbol
-
 
                     # -----------------------------------------
                     # CORE
@@ -791,9 +812,8 @@ def main():
             # BACKTEST SPEED
             # =============================================
 
-            time.sleep(
-                BACKTEST_DELAY
-            )
+            if controller.wait(BACKTEST_DELAY):
+                break
 
 
 
@@ -859,7 +879,8 @@ def main():
                     current_candle=last_candle,
                     last_error=last_error,
                 )
-                time.sleep(1)
+                if controller.wait(1):
+                    break
                 continue
 
 
@@ -872,16 +893,16 @@ def main():
 
             for symbol in SYMBOLS:
 
-
+                if not running or controller.should_stop():
+                    break
 
                 try:
 
 
 
                     df_m5, df_h1 = get_mtf_data(
-
-                        symbol
-
+                        symbol,
+                        should_stop=lambda: (not running) or controller.should_stop(),
                     )
 
 
@@ -937,6 +958,9 @@ def main():
                     last_error = f"{symbol}: {e}"
                     log(f"ERROR | {last_error}")
 
+            if not running or controller.should_stop():
+                break
+
             loop_ms = (time.perf_counter() - cycle_started) * 1000.0
             try:
                 account_state = getattr(executor, "account_info", None)
@@ -954,7 +978,8 @@ def main():
             except Exception:
                 pass
 
-            time.sleep(LIVE_INTERVAL)
+            if controller.wait(LIVE_INTERVAL):
+                break
 
 
 
@@ -966,6 +991,15 @@ def main():
 
     if controller.state != "COMPLETED":
         controller.shutdown("STOPPED", "Bot stopped")
+
+    if not USE_OFFLINE:
+        try:
+            import MetaTrader5 as mt5
+            mt5.shutdown()
+        except Exception:
+            pass
+
+    instance_guard.release()
 
     log(
         "INFO | Bot stopped"

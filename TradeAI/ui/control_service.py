@@ -3,14 +3,22 @@ from __future__ import annotations
 import json
 import os
 import re
+import secrets
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from core.runtime_control import RuntimeControlPlane
+from core.runtime_control import (
+    RuntimeControlPlane,
+    UI_OWNER_PID_ENV,
+    UI_SESSION_ID_ENV,
+    pid_alive,
+    terminate_pid,
+)
 
 
 TRADEAI_DIR = Path(__file__).resolve().parents[1]
@@ -34,23 +42,35 @@ class EngineState:
     details: dict[str, Any] = field(default_factory=dict)
     exit_code: int | None = None
     uptime_seconds: float | None = None
+    owner_pid: int | None = None
+    session_id: str = ""
 
 
 class EngineControlService:
-    """Desktop process controller for TradeAI's non-live operating modes.
+    """UI-owned TradeAI engine controller.
 
-    The dashboard never creates manual orders.  LIVE remains intentionally blocked
-    from desktop launch; DEMO_FORWARD, PAPER, and BACKTEST use the same bot entry
-    point with a durable heartbeat/control plane.
+    The engine is intentionally subordinate to this desktop process:
+    - demo_bot.py receives an unguessable dashboard session ID and owner PID;
+    - direct/background demo_bot.py launches are rejected by the engine;
+    - STOP waits for the actual PID to exit and force-terminates only as fallback;
+    - closing the owning UI stops its engine instead of leaving it orphaned.
     """
 
     HEARTBEAT_TIMEOUT = 4.0
+    STOP_GRACE_SECONDS = 3.0
+    TERMINATE_GRACE_SECONDS = 1.25
     UI_STARTABLE_MODES = {"DEMO_FORWARD", "PAPER", "BACKTEST"}
     TERMINAL_STATES = {"STOPPED", "COMPLETED", "ERROR"}
 
     def __init__(self) -> None:
         self._last_process: subprocess.Popen | None = None
         self._last_launch_mode: str | None = None
+        self._owner_pid = os.getpid()
+        self._session_id = secrets.token_urlsafe(24)
+
+    @property
+    def session_id(self) -> str:
+        return self._session_id
 
     @staticmethod
     def _safe_json(path: Path) -> dict[str, Any]:
@@ -97,8 +117,6 @@ class EngineControlService:
         return bool(report.get("acceptance_pass", False))
 
     def demo_account_check(self) -> tuple[bool, str]:
-        if self.mode() != "DEMO_FORWARD":
-            return True, "Not required for this mode"
         try:
             import MetaTrader5 as mt5  # type: ignore
             if mt5.terminal_info() is None and not mt5.initialize():
@@ -127,29 +145,97 @@ class EngineControlService:
             return None
         return self._last_process.poll()
 
+    def _local_process_alive(self) -> bool:
+        return self._last_process is not None and self._last_process.poll() is None
+
+    def _instance_is_owned_by_this_ui(self, active: dict[str, Any]) -> bool:
+        if not active:
+            return False
+        return (
+            str(active.get("session_id", "") or "") == self._session_id
+            and int(active.get("owner_pid", 0) or 0) == self._owner_pid
+        )
+
+    def _cleanup_orphan_instance(self) -> tuple[bool, str]:
+        """Remove an engine whose owning dashboard no longer exists.
+
+        The instance file is project-local, so a PID referenced here belongs to this
+        TradeAI installation's engine lock rather than an arbitrary Python process.
+        """
+        active = RuntimeControlPlane.active_instance(clean_stale=True)
+        if not active:
+            return True, "No active engine"
+
+        active_pid = int(active.get("pid", 0) or 0)
+        owner_pid = int(active.get("owner_pid", 0) or 0)
+        session_id = str(active.get("session_id", "") or "")
+
+        if self._instance_is_owned_by_this_ui(active):
+            return False, f"TradeAI is already running (PID {active_pid})"
+
+        # A live owner means another dashboard window/session owns this engine.
+        if owner_pid > 0 and pid_alive(owner_pid):
+            return False, (
+                f"Another TradeAI dashboard owns engine PID {active_pid} "
+                f"(dashboard PID {owner_pid}). Close/stop it there first."
+            )
+
+        # Legacy engines have no owner/session metadata. They are not allowed in
+        # the UI-owned architecture, so terminate the project-local orphan.
+        if active_pid > 0 and pid_alive(active_pid):
+            if not terminate_pid(active_pid, force=True):
+                return False, f"Unable to terminate orphan TradeAI engine PID {active_pid}"
+
+        RuntimeControlPlane.active_instance(clean_stale=True)
+        RuntimeControlPlane.clear_status()
+        RuntimeControlPlane.clear_command()
+        label = "legacy/unowned" if not session_id else "orphaned"
+        return True, f"Cleaned {label} TradeAI engine state"
+
     def status(self) -> EngineState:
         raw = RuntimeControlPlane.read_status()
+        active_instance = RuntimeControlPlane.active_instance(clean_stale=True)
         configured_mode = self.mode()
         process_code = self._local_process_exit_code()
-        process_running = self._last_process is not None and process_code is None
+        local_running = self._local_process_alive()
 
         if not raw:
-            if process_running:
+            if local_running:
                 return EngineState(
                     state="STARTING",
                     online=True,
-                    pid=self._last_process.pid,
+                    pid=self._last_process.pid if self._last_process else None,
                     mode=self._last_launch_mode or configured_mode,
                     note="Waiting for engine heartbeat",
+                    owner_pid=self._owner_pid,
+                    session_id=self._session_id,
+                )
+            if active_instance:
+                active_pid = int(active_instance.get("pid", 0) or 0) or None
+                return EngineState(
+                    state="STARTING",
+                    online=bool(active_pid and pid_alive(active_pid)),
+                    pid=active_pid,
+                    mode=str(active_instance.get("mode") or configured_mode),
+                    started_at=str(active_instance.get("started_at", "") or ""),
+                    note="Engine process exists; waiting for heartbeat",
+                    owner_pid=int(active_instance.get("owner_pid", 0) or 0) or None,
+                    session_id=str(active_instance.get("session_id", "") or ""),
                 )
             if self._last_process is not None and process_code is not None:
                 return EngineState(
-                    state="ERROR",
+                    state="STOPPED" if process_code == 0 else "ERROR",
                     online=False,
                     pid=self._last_process.pid,
                     mode=self._last_launch_mode or configured_mode,
-                    note=f"Engine process exited before publishing a heartbeat (code {process_code}). Check Runtime Console.",
+                    note=(
+                        "Engine process exited"
+                        if process_code == 0
+                        else f"Engine process exited unexpectedly (code {process_code}). Check Runtime Console."
+                    ),
                     exit_code=process_code,
+                    owner_pid=self._owner_pid,
+                    session_id=self._session_id,
                 )
             return EngineState(mode=configured_mode, exit_code=process_code)
 
@@ -159,19 +245,19 @@ class EngineControlService:
             age = max(0.0, (datetime.now(timezone.utc) - heartbeat).total_seconds())
 
         state = str(raw.get("state", "OFFLINE") or "OFFLINE").upper()
-        raw_pid = raw.get("pid")
         try:
-            pid = int(raw_pid) if raw_pid is not None else None
+            pid = int(raw.get("pid")) if raw.get("pid") is not None else None
         except Exception:
             pid = None
 
         details = raw.get("details", {}) if isinstance(raw.get("details"), dict) else {}
         mode = str(raw.get("mode") or self._last_launch_mode or configured_mode).upper()
         note = str(raw.get("note", "") or "")
+        owner_pid = int(raw.get("owner_pid", 0) or 0) or None
+        session_id = str(raw.get("session_id", "") or "")
         fresh = age is not None and age <= self.HEARTBEAT_TIMEOUT
+        actual_alive = bool(pid and pid_alive(pid))
 
-        # Explicit terminal states stay visible after the process exits.  This is
-        # especially important for BACKTEST COMPLETE and startup ERROR diagnostics.
         if state in self.TERMINAL_STATES:
             return EngineState(
                 state=state,
@@ -186,9 +272,13 @@ class EngineControlService:
                 note=note,
                 details=details,
                 exit_code=process_code,
+                owner_pid=owner_pid,
+                session_id=session_id,
             )
 
-        if fresh:
+        # Never call an engine ONLINE from a JSON heartbeat alone. The PID must
+        # actually still exist; this removes the UI/background-process mismatch.
+        if fresh and actual_alive:
             return EngineState(
                 state=state,
                 online=True,
@@ -202,41 +292,42 @@ class EngineControlService:
                 note=note,
                 details=details,
                 exit_code=process_code,
+                owner_pid=owner_pid,
+                session_id=session_id,
             )
 
-        # We launched a local process and it is still alive, but its heartbeat is
-        # not ready yet.  Surface STARTING instead of incorrectly showing OFFLINE.
-        if process_running:
+        if local_running:
             return EngineState(
-                state="STARTING",
+                state="STARTING" if state != "STOPPING" else "STOPPING",
                 online=True,
                 paused=False,
-                pid=self._last_process.pid,
-                mode=self._last_launch_mode or configured_mode,
-                heartbeat_age=age,
-                started_at=str(raw.get("started_at", "") or ""),
-                uptime_seconds=self._uptime_seconds(str(raw.get("started_at", "") or "")),
-                last_command=str(raw.get("last_command", "") or ""),
-                note="Waiting for a fresh engine heartbeat",
-                details=details,
-            )
-
-        # A process that exited without publishing a clean terminal state should
-        # be diagnosed rather than leaving the UI stuck on STARTING forever.
-        if self._last_process is not None and process_code is not None and state in {"STARTING", "RUNNING", "PAUSED", "STOPPING"}:
-            return EngineState(
-                state="ERROR",
-                online=False,
-                paused=False,
-                pid=pid or self._last_process.pid,
+                pid=self._last_process.pid if self._last_process else pid,
                 mode=self._last_launch_mode or mode,
                 heartbeat_age=age,
                 started_at=str(raw.get("started_at", "") or ""),
                 uptime_seconds=self._uptime_seconds(str(raw.get("started_at", "") or "")),
                 last_command=str(raw.get("last_command", "") or ""),
-                note=f"Engine process exited unexpectedly (code {process_code}). Check Runtime Console.",
+                note="Waiting for engine shutdown" if state == "STOPPING" else "Waiting for a fresh engine heartbeat",
+                details=details,
+                owner_pid=self._owner_pid,
+                session_id=self._session_id,
+            )
+
+        if not actual_alive and state in {"STARTING", "RUNNING", "PAUSED", "STOPPING"}:
+            return EngineState(
+                state="STOPPED" if state == "STOPPING" else "ERROR",
+                online=False,
+                paused=False,
+                pid=pid,
+                mode=mode,
+                heartbeat_age=age,
+                started_at=str(raw.get("started_at", "") or ""),
+                last_command=str(raw.get("last_command", "") or ""),
+                note="Engine process is no longer running" if state == "STOPPING" else "Engine heartbeat exists but process PID is gone",
                 details=details,
                 exit_code=process_code,
+                owner_pid=owner_pid,
+                session_id=session_id,
             )
 
         return EngineState(
@@ -250,10 +341,24 @@ class EngineControlService:
             note=note,
             details=details,
             exit_code=process_code,
+            owner_pid=owner_pid,
+            session_id=session_id,
         )
 
     def preflight(self, mode_override: str | None = None) -> tuple[bool, str]:
         mode = str(mode_override or self.mode()).upper()
+
+        ok, message = self._cleanup_orphan_instance()
+        if not ok:
+            return False, message
+
+        active = RuntimeControlPlane.active_instance(clean_stale=True)
+        if active:
+            return False, (
+                f"Another TradeAI engine is already running "
+                f"(PID {active.get('pid') or 'unknown'}, mode {active.get('mode') or 'UNKNOWN'})."
+            )
+
         if mode not in self.UI_STARTABLE_MODES:
             if mode == "LIVE":
                 return False, "LIVE mode cannot be started from the desktop control panel"
@@ -280,12 +385,17 @@ class EngineControlService:
 
         creationflags = 0
         if os.name == "nt":
-            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+            # CREATE_NO_WINDOW is enough. Do not create a separate process group:
+            # the engine is owned by this UI and must not behave like a detached daemon.
+            creationflags = subprocess.CREATE_NO_WINDOW
 
         try:
             RuntimeControlPlane.clear_status()
+            RuntimeControlPlane.clear_command()
             env = os.environ.copy()
             env["PYTHONUNBUFFERED"] = "1"
+            env[UI_OWNER_PID_ENV] = str(self._owner_pid)
+            env[UI_SESSION_ID_ENV] = self._session_id
             if mode_override:
                 env["TRADEAI_MODE_OVERRIDE"] = mode
             if extra_env:
@@ -325,28 +435,113 @@ class EngineControlService:
             extra["TRADEAI_SYMBOLS_OVERRIDE"] = ",".join(str(s).strip().upper() for s in symbols if str(s).strip())
         return self._launch(mode_override="BACKTEST", extra_env=extra)
 
+    def _wait_for_pid_exit(self, pid: int | None, timeout: float) -> bool:
+        if not pid:
+            return True
+        deadline = time.monotonic() + max(0.0, float(timeout))
+        while time.monotonic() < deadline:
+            if not pid_alive(pid):
+                return True
+            time.sleep(0.08)
+        return not pid_alive(pid)
+
     def stop(self) -> tuple[bool, str]:
         state = self.status()
-        if not state.online:
-            return False, "TradeAI engine is offline"
+        active = RuntimeControlPlane.active_instance(clean_stale=True)
 
-        # During early startup the engine-side control listener may not exist yet.
-        # A process launched by this UI can still be terminated safely here.
-        if state.state == "STARTING" and self._last_process is not None and self._last_process.poll() is None:
+        pid = None
+        if self._local_process_alive() and self._last_process is not None:
+            pid = self._last_process.pid
+        elif state.pid and pid_alive(state.pid):
+            pid = state.pid
+        elif active.get("pid") and pid_alive(active.get("pid")):
+            pid = int(active.get("pid"))
+
+        if not pid:
+            if state.state in self.TERMINAL_STATES or state.state == "OFFLINE":
+                return True, "TradeAI engine is already stopped"
+            return False, "TradeAI engine process could not be resolved"
+
+        # Do not let one live dashboard kill another dashboard's engine.
+        active_owner = int(active.get("owner_pid", 0) or 0) if active else 0
+        active_session = str(active.get("session_id", "") or "") if active else ""
+        if active and active_owner > 0 and pid_alive(active_owner):
+            if active_owner != self._owner_pid or active_session != self._session_id:
+                return False, f"Engine PID {pid} belongs to another live TradeAI dashboard"
+
+        mode = state.mode or self._last_launch_mode or self.mode()
+        details = dict(state.details or {})
+
+        # Phase 1: graceful stop through the control plane.
+        try:
+            RuntimeControlPlane.issue_command(
+                "stop",
+                source="tradeai-desktop-ui",
+                session_id=self._session_id,
+            )
+        except Exception:
+            pass
+
+        if self._wait_for_pid_exit(pid, self.STOP_GRACE_SECONDS):
+            RuntimeControlPlane.active_instance(clean_stale=True)
+            return True, f"TradeAI stopped (PID {pid})"
+
+        # Phase 2: local process terminate, then kill. This is essential for a
+        # blocked MT5 IPC call that cannot observe the JSON stop event promptly.
+        if self._last_process is not None and self._last_process.pid == pid and self._last_process.poll() is None:
             try:
                 self._last_process.terminate()
-                return True, "STARTING process termination requested"
-            except Exception as exc:
-                return False, f"Unable to terminate starting process: {exc}"
+            except Exception:
+                pass
+            if not self._wait_for_pid_exit(pid, self.TERMINATE_GRACE_SECONDS):
+                try:
+                    self._last_process.kill()
+                except Exception:
+                    terminate_pid(pid, force=True)
+        else:
+            terminate_pid(pid, force=True)
 
-        return self.command("stop")
+        dead = self._wait_for_pid_exit(pid, self.TERMINATE_GRACE_SECONDS)
+        if not dead:
+            return False, f"STOP failed: TradeAI PID {pid} is still alive"
+
+        RuntimeControlPlane.active_instance(clean_stale=True)
+        RuntimeControlPlane.publish_terminal_status(
+            mode=mode,
+            pid=pid,
+            state="STOPPED",
+            note="Engine force-stopped by owning dashboard after graceful-stop timeout",
+            owner_pid=self._owner_pid,
+            session_id=self._session_id,
+            details=details,
+        )
+        return True, f"TradeAI stopped and PID {pid} confirmed exited"
+
+    def stop_if_running(self) -> tuple[bool, str]:
+        state = self.status()
+        active = RuntimeControlPlane.active_instance(clean_stale=True)
+        if not state.online and not active and not self._local_process_alive():
+            return True, "No TradeAI engine is running"
+        return self.stop()
 
     def command(self, command: str) -> tuple[bool, str]:
         state = self.status()
         if not state.online:
             return False, "TradeAI engine is offline"
+
+        active = RuntimeControlPlane.active_instance(clean_stale=True)
+        if active:
+            active_session = str(active.get("session_id", "") or "")
+            active_owner = int(active.get("owner_pid", 0) or 0)
+            if active_session != self._session_id or active_owner != self._owner_pid:
+                return False, "This TradeAI engine belongs to another dashboard session"
+
         try:
-            RuntimeControlPlane.issue_command(command, source="tradeai-desktop-ui")
+            RuntimeControlPlane.issue_command(
+                command,
+                source="tradeai-desktop-ui",
+                session_id=self._session_id,
+            )
             return True, f"{command.upper()} command sent"
         except Exception as exc:
             return False, f"Command failed: {exc}"
