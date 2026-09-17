@@ -15,7 +15,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .components import ElvaraNavButton, ElvaraStatusBadge, NiraTopBar
+from .components import (
+    ElvaraActivePositionCloseDialog,
+    ElvaraAlertDialog,
+    ElvaraCloseChoiceDialog,
+    ElvaraNavButton,
+    ElvaraStatusBadge,
+    ElvaraWindowButton,
+    NiraTopBar,
+)
 from .control_service import EngineControlService
 from .config_service import TradeAIConfigService
 from .data_service import RuntimeSnapshot, TradeAIDataService
@@ -57,46 +65,59 @@ class TitleBar(QFrame):
         self.window_ref = window
         self._drag_pos: QPoint | None = None
         self.setObjectName("TitleBar")
-        self.setFixedHeight(48)
+        self.setFixedHeight(42)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(14, 6, 8, 6)
-        layout.setSpacing(8)
+        layout.setContentsMargins(12, 0, 4, 0)
+        layout.setSpacing(7)
 
-        nira = QLabel("N I R A")
-        nira.setObjectName("TitleBarTitle")
-        product = QLabel("TradeAI")
-        product.setObjectName("TitleBarProduct")
+        # Product lock-up: compact and terminal-like rather than a second OS title bar.
+        product = QLabel("TRADEAI")
+        product.setObjectName("TitleBarTitle")
         brand = QLabel("// ELVARA")
         brand.setObjectName("TitleBarBrand")
-        layout.addWidget(nira)
-        sep = QLabel("│")
-        sep.setObjectName("BrandSub")
-        layout.addWidget(sep)
+        descriptor = QLabel("NIRA INTELLIGENCE TERMINAL")
+        descriptor.setObjectName("TitleBarProduct")
         layout.addWidget(product)
         layout.addWidget(brand)
+
+        divider = QFrame()
+        divider.setObjectName("TitleBarDivider")
+        divider.setFixedSize(1, 16)
+        layout.addWidget(divider)
+        layout.addWidget(descriptor)
         layout.addStretch()
 
         self.theme_button = QPushButton("HALO")
         self.theme_button.setObjectName("ThemeButton")
+        self.theme_button.setCursor(Qt.PointingHandCursor)
         self.theme_button.clicked.connect(self.theme_requested.emit)
         layout.addWidget(self.theme_button)
 
-        for text, obj, cb in (
-            ("—", "WindowButton", window.showMinimized),
-            ("□", "WindowButton", self._toggle),
-            ("×", "WindowCloseButton", window.close),
-        ):
-            button = QPushButton(text)
-            button.setObjectName(obj)
-            button.clicked.connect(cb)
-            layout.addWidget(button)
+        self.min_button = ElvaraWindowButton("minimize")
+        self.max_button = ElvaraWindowButton("restore" if window.manual_maximized else "maximize")
+        self.close_button = ElvaraWindowButton("close")
+        self.min_button.setToolTip("Minimize")
+        self.max_button.setToolTip("Restore" if window.manual_maximized else "Maximize")
+        self.close_button.setToolTip("Close TradeAI")
+        self.min_button.clicked.connect(window.showMinimized)
+        self.max_button.clicked.connect(self._toggle)
+        self.close_button.clicked.connect(window.close)
+        layout.addWidget(self.min_button)
+        layout.addWidget(self.max_button)
+        layout.addWidget(self.close_button)
 
     def set_theme_label(self, current_mode: str) -> None:
         self.theme_button.setText("ECLIPSE" if current_mode == "halo" else "HALO")
 
+    def sync_window_state(self) -> None:
+        maximized = self.window_ref.manual_maximized
+        self.max_button.set_control("restore" if maximized else "maximize")
+        self.max_button.setToolTip("Restore" if maximized else "Maximize")
+
     def _toggle(self):
         self.window_ref.toggle_safe_maximize()
+        self.sync_window_state()
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
@@ -126,10 +147,13 @@ class TradeAIMainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("TradeAI // ELVARA")
         self.setMinimumSize(980, 620)
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        # TradeAI owns its chrome.  Never expose the native Windows title bar.
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self._manual_maximized = False
         self._normal_geometry = None
         self._latest_snapshot: RuntimeSnapshot | None = None
+        self._close_committed = False
 
         self.settings = QSettings("ELVARA", "TradeAI")
         saved_theme = str(self.settings.value("ui/elvara_theme", "eclipse"))
@@ -245,6 +269,8 @@ class TradeAIMainWindow(QMainWindow):
             return
         self.setGeometry(available)
         self._manual_maximized = True
+        if hasattr(self, "title_bar"):
+            self.title_bar.sync_window_state()
 
     def _restore_geometry(self) -> None:
         available = self._available_geometry()
@@ -258,6 +284,8 @@ class TradeAIMainWindow(QMainWindow):
         y = available.y() + max(0, (available.height() - height) // 2)
         self.setGeometry(x, y, width, height)
         self._manual_maximized = False
+        if hasattr(self, "title_bar"):
+            self.title_bar.sync_window_state()
 
     def toggle_safe_maximize(self) -> None:
         available = self._available_geometry()
@@ -268,6 +296,8 @@ class TradeAIMainWindow(QMainWindow):
         else:
             self.setGeometry(available)
             self._manual_maximized = True
+            if hasattr(self, "title_bar"):
+                self.title_bar.sync_window_state()
 
     def _sidebar_width(self) -> int:
         screen = self._available_geometry()
@@ -545,19 +575,78 @@ class TradeAIMainWindow(QMainWindow):
         self.mt5_pill.set_semantic("danger", "● DATA ERROR")
         self.bottom_state.setText("CORE LINK / DATA BRIDGE ERROR · CHECK RUNTIME CONSOLE")
 
-    def closeEvent(self, event: QCloseEvent):
-        # TradeAI is intentionally UI-owned. Closing the dashboard must never
-        # leave demo_bot.py running in the background. Stop and verify the child
-        # process first; if shutdown cannot be confirmed, keep the UI open.
-        if hasattr(self, "control"):
-            ok, message = self.control.stop_if_running()
-            if not ok:
-                if hasattr(self, "bottom_state"):
-                    self.bottom_state.setText(f"CORE LINK / SHUTDOWN FAILED · {message}")
-                event.ignore()
-                return
-
+    def _stop_ui_worker(self) -> None:
         if hasattr(self, "worker") and self.worker.isRunning():
             self.worker.stop()
             self.worker.wait(2500)
-        super().closeEvent(event)
+
+    def closeEvent(self, event: QCloseEvent):
+        # Once a close path has been explicitly approved, never show the modal again.
+        if self._close_committed:
+            self._stop_ui_worker()
+            event.accept()
+            return
+
+        state = self.control.status()
+
+        # No live engine: closing the dashboard is just a normal window close.
+        if not state.online:
+            self._close_committed = True
+            self._stop_ui_worker()
+            event.accept()
+            return
+
+        choice = ElvaraCloseChoiceDialog.choose(
+            self,
+            mode=state.mode,
+            pid=state.pid,
+        )
+
+        if choice == "cancel":
+            event.ignore()
+            return
+
+        if choice == "keep":
+            ok, message = self.control.detach()
+            if not ok:
+                ElvaraAlertDialog.show_alert(self, "TradeAI", message, semantic="danger")
+                event.ignore()
+                return
+            self._close_committed = True
+            self._stop_ui_worker()
+            event.accept()
+            return
+
+        # STOP ENGINE & CLOSE. In broker-connected modes, add a second safety
+        # decision if stopping would leave positions unmanaged.
+        positions = self.control.open_position_count()
+        if positions > 0:
+            position_choice = ElvaraActivePositionCloseDialog.choose(self, positions)
+            if position_choice == "cancel":
+                event.ignore()
+                return
+            if position_choice == "keep":
+                ok, message = self.control.detach()
+                if not ok:
+                    ElvaraAlertDialog.show_alert(self, "TradeAI", message, semantic="danger")
+                    event.ignore()
+                    return
+                self._close_committed = True
+                self._stop_ui_worker()
+                event.accept()
+                return
+
+        ok, message = self.control.stop(timeout_seconds=7.0)
+        if not ok:
+            ElvaraAlertDialog.show_alert(
+                self,
+                "Engine did not stop",
+                message + "\n\nThe dashboard will remain open so the engine cannot be mistaken for stopped.",
+                semantic="danger",
+            )
+            event.ignore()
+            return
+
+        self._close_committed = True
+        self._stop_ui_worker()
+        event.accept()

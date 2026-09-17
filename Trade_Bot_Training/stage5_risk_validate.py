@@ -31,6 +31,7 @@ from shared.tradeai_core.decision_policy import DECISION_POLICY_VERSION
 from shared.tradeai_core.model_contract import (
     attach_decision_policy,
     attach_risk_policy,
+    require_training_window,
     validate_model_artifact,
 )
 from shared.tradeai_core.risk_policy import RISK_POLICY_VERSION
@@ -54,6 +55,40 @@ class SettingsProxy:
 
 def _utc_now():
     return datetime.now(timezone.utc).isoformat()
+
+
+def _with_exact_deployment_models(
+    artifact: dict,
+    deployment_models: dict,
+    deployment_validation: dict,
+) -> dict:
+    """Return an artifact whose runtime models are the exact validated models.
+
+    Stage 5 previously validated freshly trained split models, then attached the
+    calibrated policies to a DIFFERENT all-history model from trainer.py. That
+    made the validation P/L non-authoritative for runtime. This helper makes
+    model identity explicit and fail-closed.
+    """
+    if not isinstance(artifact, dict):
+        raise RuntimeError("Model artifact is not a dictionary")
+
+    contract_symbols = set((artifact.get("contract") or {}).get("symbols") or [])
+    model_symbols = set(deployment_models or {})
+    if not contract_symbols or model_symbols != contract_symbols:
+        raise RuntimeError(
+            "Exact deployment model symbols do not match the artifact contract"
+        )
+
+    promoted = dict(artifact)
+    promoted["models"] = dict(deployment_models)
+
+    training_metadata = dict(promoted.get("training_metadata") or {})
+    validation_meta = dict(deployment_validation or {})
+    validation_meta["exact_runtime_model"] = True
+    training_metadata["deployment_validation"] = validation_meta
+    promoted["training_metadata"] = training_metadata
+
+    return promoted
 
 
 def _risk_calibration_checks(result, *, stress: bool):
@@ -151,16 +186,26 @@ def _calibrate_risk(cal_candidates, cal_by_symbol, normal, stress, settings):
 
 def run():
     settings = s4._load_prod_settings()
+    execution = s4.ValidationExecutionContext(
+        settings,
+        require_profile=bool(getattr(settings, "USE_BROKER_PROFILE", False)),
+    )
+    execution.assert_symbols_profiled(SYMBOLS)
 
     print("\n" + "═" * 80)
-    print("🛡 TRADEAI STAGE 5 — RISK-CALIBRATED PRODUCTION VALIDATION")
+    print("🛡 TRADEAI STAGE 5 — EXACT-MODEL RISK-CALIBRATED VALIDATION")
     print("═" * 80)
     print(f"🧬 Feature schema : {FEATURE_SCHEMA_VERSION}")
     print(f"🔐 Feature hash   : {FEATURE_HASH}")
     print(f"🎯 Target         : {TARGET_VERSION}")
     print("🔒 Risk selection : calibration slice only; final slice cannot choose risk")
+    print(
+        f"🔒 Recent split   : {CALIBRATION_TRAIN_FRACTION*100:.0f}% train / "
+        f"{(CALIBRATION_END_FRACTION-CALIBRATION_TRAIN_FRACTION)*100:.0f}% calibration / "
+        f"{(1.0-CALIBRATION_END_FRACTION)*100:.0f}% final test"
+    )
+    print("🔒 Promotion      : exact validated model objects only")
 
-    df, features = s4._load_data()
     artifact = joblib.load(MODEL_PATH)
     validate_model_artifact(
         artifact,
@@ -168,8 +213,42 @@ def run():
         expected_timeframe=TIMEFRAME_NAME,
         expected_target_version=TARGET_VERSION,
     )
+    artifact_window = require_training_window(artifact)
+    df, features, loaded_window = s4._load_data(artifact_window.get("cutoff_exclusive"))
+
+    if int(loaded_window["rows"]) != int(artifact_window["rows"]):
+        raise RuntimeError(
+            "Stage 5 training-window row count differs from the trained artifact; "
+            "dataset/model provenance no longer matches"
+        )
+    if str(loaded_window["fit_end"]) != str(artifact_window["fit_end"]):
+        raise RuntimeError(
+            "Stage 5 training-window end differs from the trained artifact; "
+            "dataset/model provenance no longer matches"
+        )
+
+    print(
+        f"🔒 Artifact window : {artifact_window['mode']} | "
+        f"fit_end={artifact_window['fit_end']} | "
+        f"backtest_safe_from={artifact_window['backtest_safe_from']}"
+    )
+
+    normal = s4.CostScenario(
+        "NORMAL",
+        float(settings.DEFAULT_SPREAD_PIPS),
+        float(settings.SIMULATED_SLIPPAGE_PIPS),
+        float(settings.COMMISSION_PER_LOT),
+    )
+    stress = s4.CostScenario(
+        "STRESS",
+        float(settings.STRESS_SPREAD_PIPS),
+        float(settings.STRESS_SLIPPAGE_PIPS),
+        float(settings.STRESS_COMMISSION_PER_LOT),
+    )
 
     policies = {}
+    deployment_models = {}
+    deployment_ranges = {}
     cal_by_symbol = {}
     test_by_symbol = {}
     cal_candidates = []
@@ -202,21 +281,45 @@ def run():
             verbose=False,
         )
 
+        # Keep the exact object that is being calibrated and final-tested.
+        # If Stage 5 passes, THIS object is what runtime receives.
+        deployment_models[symbol] = model
+        deployment_ranges[symbol] = {
+            "train_rows": int(len(train)),
+            "train_start": str(train["time"].min()),
+            "train_end": str(train["time"].max()),
+            "cal_rows": int(len(cal)),
+            "cal_start": str(cal["time"].min()),
+            "cal_end": str(cal["time"].max()),
+            "test_rows": int(len(test)),
+            "test_start": str(test["time"].min()),
+            "test_end": str(test["time"].max()),
+        }
+
         cal_proba = model.predict_proba(cal[features])
-        policy = s4._calibrate_policy(symbol, model, cal, cal_proba)
+        policy = s4._calibrate_policy_money(
+            symbol, model, cal, cal_proba, settings, execution, normal, stress
+        )
         policies[symbol] = policy
+        cal = s4._attach_management_state(cal, model, cal_proba, policy)
 
         if policy["enabled"]:
             c = policy["calibration"]
+            nm = c.get("normal_money", {})
+            sm = c.get("stress_money", {})
             print(
                 f"Policy conf>={policy['min_confidence']:.2f} "
                 f"edge>={policy['signal_threshold']:.2f} | "
-                f"CAL PF_R={c['profit_factor_r']:.3f} AVG_R={c['avg_r']:+.4f}"
+                f"CAL PF_R={c['profit_factor_r']:.3f} AVG_R={c['avg_r']:+.4f} | "
+                f"MONEY PF={nm.get('profit_factor', 0.0):.3f}/{sm.get('profit_factor', 0.0):.3f} "
+                f"PAY={nm.get('payoff_ratio', 0.0):.2f}"
             )
         else:
-            print("Policy DISABLED")
+            reason = policy.get("calibration", {}).get("reason", "no_money_safe_threshold")
+            print(f"Policy DISABLED — {reason}")
 
         test_proba = model.predict_proba(test[features])
+        test = s4._attach_management_state(test, model, test_proba, policy)
         if policy["enabled"]:
             final_r = evaluate_probabilities(
                 model,
@@ -244,19 +347,6 @@ def run():
     if not enabled_symbols:
         raise RuntimeError("Stage 5 calibration disabled every symbol")
 
-    normal = s4.CostScenario(
-        "NORMAL",
-        float(settings.DEFAULT_SPREAD_PIPS),
-        float(settings.SIMULATED_SLIPPAGE_PIPS),
-        float(settings.COMMISSION_PER_LOT),
-    )
-    stress = s4.CostScenario(
-        "STRESS",
-        float(settings.STRESS_SPREAD_PIPS),
-        float(settings.STRESS_SLIPPAGE_PIPS),
-        float(settings.STRESS_COMMISSION_PER_LOT),
-    )
-
     selected, risk_grid_report = _calibrate_risk(
         cal_candidates, cal_by_symbol, normal, stress, settings
     )
@@ -265,10 +355,14 @@ def run():
         print("\n❌ STAGE 5 RISK CALIBRATION FAILED")
         print("No risk level passed the calibration safety-margin gates.")
         report = {
-            "stage": "stage5_risk_calibrated_validation_v1",
+            "stage": "stage7_money_aware_risk_validation_v1",
             "created_utc": _utc_now(),
             "acceptance_pass": False,
             "reason": "no_calibrated_risk_passed_safety_margin",
+            "target_version": TARGET_VERSION,
+            "enabled_symbols": enabled_symbols,
+            "decision_policy": {"version": DECISION_POLICY_VERSION, "symbols": policies},
+            "symbol_validation": symbol_validation,
             "risk_grid": risk_grid_report,
         }
         REPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -295,7 +389,7 @@ def run():
         result = s4._portfolio_backtest(test_candidates, test_by_symbol, balance, normal, proxy)
         money_results["NORMAL"][str(balance)] = s4._public_result(result)
         s4._print_money(result)
-        if float(balance) == 20.0:
+        if float(balance) == float(PRIMARY_ACCEPTANCE_BALANCES[0]):
             primary_trades = result["trades_detail"]
 
     print("\n" + "═" * 80)
@@ -320,31 +414,46 @@ def run():
         }
         all_pass = all_pass and normal_pass and stress_pass
 
+    deployment_validation = {
+        "exact_runtime_model": True,
+        "split_method": (
+            f"{CALIBRATION_TRAIN_FRACTION:.2f}_"
+            f"{CALIBRATION_END_FRACTION - CALIBRATION_TRAIN_FRACTION:.2f}_"
+            f"{1.0 - CALIBRATION_END_FRACTION:.2f}_recent_chronological"
+        ),
+        "label_purge_bars": int(MAX_TARGET_HORIZON_BARS),
+        "symbol_ranges": deployment_ranges,
+        "information_safe_from": artifact_window.get("backtest_safe_from"),
+    }
+
     decision_policy = {
         "version": DECISION_POLICY_VERSION,
         "created_utc": _utc_now(),
-        "method": "70_15_15_chronological_calibration_with_purged_boundaries",
+        "method": "recent_exact_model_broker_money_calibration_with_purged_boundaries",
         "symbols": policies,
     }
     risk_policy = {
         "version": RISK_POLICY_VERSION,
         "created_utc": _utc_now(),
         "risk_percent": risk_percent,
-        "source": "stage5_calibration_slice_normal_and_stress",
+        "source": "stage7_money_aware_calibration_normal_and_stress",
         "calibration_safety": {
             "normal_max_drawdown_percent": STAGE5_CAL_NORMAL_MAX_DRAWDOWN_PERCENT,
             "stress_max_drawdown_percent": STAGE5_CAL_STRESS_MAX_DRAWDOWN_PERCENT,
             "selected_worst_drawdown_percent": selected["worst_drawdown_pct"],
             "selected_worst_return_percent": selected["worst_return_pct"],
+            "portfolio_risk_cap_percent": float(getattr(settings, "MAX_PORTFOLIO_RISK_PERCENT", 0.0)),
         },
     }
 
     validation_report = {
-        "stage": "stage5_risk_calibrated_validation_v1",
+        "stage": "stage7_profit_expectancy_validation_v1",
         "created_utc": _utc_now(),
         "feature_schema_version": FEATURE_SCHEMA_VERSION,
         "feature_hash": FEATURE_HASH,
         "target_version": TARGET_VERSION,
+        "training_window": artifact_window,
+        "deployment_validation": deployment_validation,
         "enabled_symbols": enabled_symbols,
         "decision_policy": decision_policy,
         "risk_policy": risk_policy,
@@ -377,13 +486,24 @@ def run():
         )
 
     if all_pass:
-        promoted = attach_decision_policy(artifact, decision_policy, validation_report)
+        # CRITICAL: promote the exact models that produced the calibration and
+        # final-test results. Never attach those thresholds to trainer.py's
+        # different all-history models.
+        promoted = _with_exact_deployment_models(
+            artifact,
+            deployment_models,
+            deployment_validation,
+        )
+        promoted = attach_decision_policy(promoted, decision_policy, validation_report)
         promoted = attach_risk_policy(promoted, risk_policy, validation_report)
+
         temp_model = MODEL_PATH.with_suffix(".stage5.tmp.pkl")
         joblib.dump(promoted, temp_model)
         os.replace(temp_model, MODEL_PATH)
+
         print("\n✅ STAGE 5 ACCEPTANCE: PASS")
-        print(f"🔐 Decision + risk policies embedded into: {MODEL_PATH}")
+        print("🔐 EXACT validated models + decision + risk policies promoted")
+        print(f"Artifact: {MODEL_PATH}")
         print("The artifact is eligible for the TradeAI demo-forward gate.")
     else:
         print("\n❌ STAGE 5 ACCEPTANCE: FAIL")

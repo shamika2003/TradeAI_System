@@ -169,19 +169,15 @@ class TradeAIDataService:
         )
         snapshot.daily_loss_percent = self._daily_loss_percent(demo)
 
-        # BACKTEST is intentionally offline. The dashboard snapshot worker must
-        # not keep opening/querying MT5 while an offline replay is running.
-        engine = self._safe_json(ENGINE_STATUS_PATH)
-        engine_mode = str(engine.get("mode", "") or "").upper()
-        engine_state = str(engine.get("state", "") or "").upper()
-        if engine_mode:
-            snapshot.mode = engine_mode
+        # BACKTEST is a CSV/replay engine. The dashboard must not keep opening MT5
+        # in parallel just to refresh chrome/chart telemetry. Engine status is the
+        # authoritative runtime mode while a session exists.
+        engine_status = self._safe_json(ENGINE_STATUS_PATH)
+        engine_mode = str(engine_status.get("mode", "") or "").upper()
+        engine_state = str(engine_status.get("state", "") or "").upper()
         if engine_mode == "BACKTEST" and engine_state in {"STARTING", "RUNNING", "PAUSED", "STOPPING"}:
+            snapshot.mode = "BACKTEST"
             snapshot.mt5_connected = False
-            snapshot.terminal_name = "Offline Replay"
-            snapshot.forward_equity_curve = self.load_forward_equity_curve(
-                snapshot.initial_virtual_balance, snapshot.virtual_balance, demo
-            )
             return snapshot
 
         connected = self._initialize_mt5()

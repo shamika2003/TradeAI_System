@@ -5,31 +5,22 @@ import time
 from typing import Any
 
 from analytics.logger import log
-from core.runtime_control import RuntimeControlPlane, pid_alive, ui_launch_context
+from core.runtime_control import RuntimeControlPlane
 
 
 class CommandControl:
-    """Engine-side control listener, heartbeat publisher, and UI ownership watchdog."""
+    """Engine-side control listener and heartbeat publisher."""
 
-    POLL_SECONDS = 0.20
+    POLL_SECONDS = 0.25
     HEARTBEAT_SECONDS = 0.75
 
-    def __init__(self, mode: str = "UNKNOWN") -> None:
+    def __init__(self, mode: str = "UNKNOWN", session_id: str = "") -> None:
         self.running = True
         self.report_requested = False
         self.paused = False
 
-        ok, reason, owner_pid, session_id = ui_launch_context()
-        if not ok:
-            raise RuntimeError(reason)
-
-        self._owner_pid = int(owner_pid or 0)
-        self._session_id = str(session_id or "")
-        self._plane = RuntimeControlPlane(
-            mode,
-            owner_pid=self._owner_pid,
-            session_id=self._session_id,
-        )
+        self.session_id = str(session_id or "").strip()
+        self._plane = RuntimeControlPlane(mode, session_id=self.session_id)
         self._last_command_id = self._plane.current_command_id()
         self._last_command = ""
         self._state = "STARTING"
@@ -50,10 +41,6 @@ class CommandControl:
     def details(self) -> dict[str, Any]:
         with self._lock:
             return dict(self._details)
-
-    @property
-    def session_id(self) -> str:
-        return self._session_id
 
     def should_stop(self) -> bool:
         return self._stop_event.is_set() or not self.running or self._finalized
@@ -113,6 +100,8 @@ class CommandControl:
             note = self._note
             details = dict(self._details)
         try:
+            # Main loop telemetry and heartbeat thread can publish at the same
+            # time. Serialize the actual file replacement on Windows.
             with self._write_lock:
                 self._plane.write_status(
                     state=state,
@@ -124,18 +113,6 @@ class CommandControl:
                 )
         except Exception as exc:
             log(f"WARNING | Control heartbeat write failed: {exc}")
-
-    def _request_stop(self, note: str, log_message: str) -> None:
-        with self._lock:
-            if self._finalized or not self.running:
-                return
-            self.running = False
-            self.paused = False
-            self._state = "STOPPING"
-            self._note = note
-            self._stop_event.set()
-        log(log_message)
-        self._write_status()
 
     def _handle_command(self, command: str, command_id: int) -> None:
         command = str(command or "").lower().strip()
@@ -150,7 +127,7 @@ class CommandControl:
                 self.running = False
                 self.paused = False
                 self._state = "STOPPING"
-                self._note = "Stop requested from dashboard"
+                self._note = "Stop requested from control plane"
                 self._stop_event.set()
                 log("INFO | Stop command received")
 
@@ -181,26 +158,16 @@ class CommandControl:
     def listen(self) -> None:
         last_heartbeat = 0.0
         while self.running and not self._finalized:
-            # The engine is intentionally owned by the desktop UI. If the UI is
-            # closed, crashes, or is force-killed, the engine must not remain in
-            # the background managing/fetching indefinitely.
-            if not pid_alive(self._owner_pid):
-                self._request_stop(
-                    "Dashboard process ended; engine shutdown required",
-                    "INFO | Dashboard owner ended; stopping TradeAI engine",
-                )
-                break
-
             try:
                 raw = self._plane.read_command()
                 command_id = int(raw.get("command_id", 0) or 0)
-                if command_id and command_id != self._last_command_id:
-                    command_session = str(raw.get("session_id", "") or "")
-                    if command_session != self._session_id:
-                        # Consume but reject commands from stale/other dashboard sessions.
-                        self._last_command_id = command_id
-                    else:
-                        self._handle_command(str(raw.get("command", "")), command_id)
+                target_session_id = str(raw.get("target_session_id", "") or "").strip()
+
+                # Ignore stale commands issued to an older engine instance.
+                # Commands without a target are accepted only for legacy compatibility.
+                session_matches = (not target_session_id) or target_session_id == self.session_id
+                if session_matches and command_id and command_id != self._last_command_id:
+                    self._handle_command(str(raw.get("command", "")), command_id)
             except Exception as exc:
                 log(f"WARNING | Control command read failed: {exc}")
 

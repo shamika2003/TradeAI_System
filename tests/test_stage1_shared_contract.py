@@ -65,6 +65,23 @@ def test_model_contract_rejects_legacy_artifact():
         models={"EURUSD": DummyModel()},
         symbols=["EURUSD"],
         timeframe="M5",
+        training_window={
+            "mode": "historical_cutoff",
+            "cutoff_exclusive": "2026-06-01 00:00:00",
+            "backtest_safe_from": "2026-06-01 00:00:00",
+            "label_horizon_bars": 24,
+            "purged_rows_per_symbol": 24,
+            "fit_start": "2025-01-01 00:00:00",
+            "fit_end": "2026-05-29 21:15:00",
+            "rows": 10000,
+            "symbol_ranges": {
+                "EURUSD": {
+                    "fit_rows": 10000,
+                    "start": "2025-01-01 00:00:00",
+                    "end": "2026-05-29 21:15:00",
+                }
+            },
+        },
     )
 
     validate_model_artifact(

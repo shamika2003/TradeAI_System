@@ -4,6 +4,11 @@ from abc import ABC, abstractmethod
 import math
 
 from shared.tradeai_core.production_economics import fallback_pip_value_per_lot
+from shared.tradeai_core.broker_profile import (
+    get_execution_costs,
+    load_broker_profile,
+    symbol_info_from_profile,
+)
 
 
 class BaseExecutor(ABC):
@@ -52,6 +57,10 @@ class BaseExecutor(ABC):
 
         # TradeManager reference.
         self.trade_manager = None
+
+        # Optional MT5 broker snapshot shared with PAPER/BACKTEST.
+        self._broker_profile = None
+        self.reload_broker_profile()
 
 
     # =====================================================
@@ -143,17 +152,269 @@ class BaseExecutor(ABC):
     # SYMBOL INFORMATION
     # =====================================================
 
+    def reload_broker_profile(self):
+
+        try:
+            from config.settings import (
+                BROKER_PROFILE_PATH,
+                USE_BROKER_PROFILE,
+            )
+
+            if not USE_BROKER_PROFILE:
+                self._broker_profile = None
+                return None
+
+            self._broker_profile = load_broker_profile(
+                BROKER_PROFILE_PATH
+            )
+
+        except Exception:
+            self._broker_profile = None
+
+        return self._broker_profile
+
+
     def _get_symbol_info(self, symbol):
 
         """
         LIVE MT5 overrides this.
 
-        PAPER/BACKTEST can override this if symbol
-        specifications are available from the historical
-        dataset.
+        PAPER/BACKTEST consumes the last broker snapshot so
+        digits, tick value and volume rules match the broker.
+        """
+
+        return symbol_info_from_profile(
+            self._broker_profile,
+            symbol,
+        )
+
+
+    def _get_symbol_tick(self, symbol):
+
+        """
+        LIVE MT5 overrides this when a current bid/ask tick
+        is available. PAPER/BACKTEST normally estimates
+        execution from the requested historical price.
         """
 
         return None
+
+
+    # =====================================================
+    # EXECUTION / RISK ESTIMATION
+    # =====================================================
+
+    def estimate_entry_price(
+            self,
+            symbol,
+            direction,
+            requested_price
+    ):
+
+        """
+        Best pre-order estimate of the executable entry price.
+
+        LIVE uses the current broker ask/bid when available.
+        PAPER/BACKTEST overrides this to include the exact
+        simulated spread and slippage used by open_trade().
+        """
+
+        requested = float(requested_price)
+        direction = str(direction).upper()
+
+        if direction not in ("BUY", "SELL"):
+            raise ValueError(
+                f"Invalid direction: {direction}"
+            )
+
+        try:
+            tick = self._get_symbol_tick(
+                symbol
+            )
+
+            if tick is not None:
+                if direction == "BUY":
+                    value = float(
+                        getattr(tick, "ask", 0.0)
+                    )
+                else:
+                    value = float(
+                        getattr(tick, "bid", 0.0)
+                    )
+
+                if math.isfinite(value) and value > 0:
+                    return value
+
+        except Exception:
+            pass
+
+        return requested
+
+
+    def estimate_stop_loss_risk(
+            self,
+            symbol,
+            direction,
+            requested_price,
+            stop_loss,
+            lot
+    ):
+
+        """
+        Estimate NET monetary loss if the stop is hit.
+
+        The estimate intentionally includes:
+            - expected executable entry price
+            - entry-to-stop price loss
+            - configured/broker commission estimate
+
+        This is the quantity RiskManager must size against,
+        rather than the candle-close-to-stop distance.
+        """
+
+        lot = float(lot)
+
+        if not math.isfinite(lot) or lot <= 0:
+            raise ValueError("lot must be positive")
+
+        entry = float(
+            self.estimate_entry_price(
+                symbol,
+                direction,
+                requested_price
+            )
+        )
+
+        stop = self.normalize_price(
+            symbol,
+            stop_loss,
+        )
+
+        pip = float(
+            self.pip_size(symbol)
+        )
+
+        if not math.isfinite(pip) or pip <= 0:
+            raise ValueError("invalid pip size")
+
+        stop_pips = abs(
+            entry - stop
+        ) / pip
+
+        pip_value = float(
+            self.pip_value_per_lot(
+                symbol,
+                price=entry
+            )
+        )
+
+        if (
+            not math.isfinite(pip_value)
+            or
+            pip_value <= 0
+        ):
+            raise ValueError(
+                "invalid pip value"
+            )
+
+        price_risk = (
+            stop_pips
+            * pip_value
+            * lot
+        )
+
+        commission = abs(
+            float(
+                self.commission_for_lot(
+                    symbol,
+                    lot
+                )
+            )
+        )
+
+        net_risk = (
+            price_risk
+            + commission
+        )
+
+        return {
+            "entry_price": entry,
+            "stop_loss": stop,
+            "stop_pips": stop_pips,
+            "pip_value_per_lot": pip_value,
+            "price_risk": price_risk,
+            "commission": commission,
+            "net_risk": net_risk,
+        }
+
+
+    def execution_costs(self, symbol):
+
+        from config.settings import (
+            DEFAULT_SPREAD_PIPS,
+            SIMULATED_SLIPPAGE_PIPS,
+            COMMISSION_PER_LOT,
+        )
+
+        return get_execution_costs(
+            self._broker_profile,
+            symbol,
+            default_spread_pips=DEFAULT_SPREAD_PIPS,
+            default_slippage_pips=SIMULATED_SLIPPAGE_PIPS,
+            default_commission_per_lot=COMMISSION_PER_LOT,
+        )
+
+
+    def spread_pips(self, symbol):
+        return float(
+            self.execution_costs(symbol)["spread_pips"]
+        )
+
+
+    def slippage_pips(self, symbol):
+        return float(
+            self.execution_costs(symbol)["slippage_pips"]
+        )
+
+
+    def minimum_stop_distance(self, symbol):
+
+        info = self._get_symbol_info(symbol)
+        if info is None:
+            return 0.0
+
+        try:
+            point = float(getattr(info, "point", 0.0))
+            stops = int(getattr(info, "trade_stops_level", 0) or 0)
+            freeze = int(getattr(info, "trade_freeze_level", 0) or 0)
+            if point <= 0:
+                return 0.0
+            return max(stops, freeze) * point
+        except Exception:
+            return 0.0
+
+
+    def normalize_price(self, symbol, price):
+
+        value = float(price)
+        info = self._get_symbol_info(symbol)
+        if info is None:
+            return value
+
+        try:
+            digits = int(getattr(info, "digits", 0) or 0)
+            tick_size = float(
+                getattr(info, "trade_tick_size", 0.0)
+                or getattr(info, "point", 0.0)
+            )
+            if tick_size > 0:
+                value = round(value / tick_size) * tick_size
+            if digits > 0:
+                value = round(value, digits)
+        except Exception:
+            pass
+
+        return value
 
 
     # =====================================================
@@ -405,6 +666,22 @@ class BaseExecutor(ABC):
         PAPER/BACKTEST uses configuration fallback.
         """
 
+        info = self._get_symbol_info(symbol)
+
+        if info is not None:
+            try:
+                minimum = float(getattr(info, "volume_min", 0.0))
+                maximum = float(getattr(info, "volume_max", 0.0))
+                step = float(getattr(info, "volume_step", 0.0))
+                if minimum > 0 and maximum > 0 and step > 0:
+                    return {
+                        "min": minimum,
+                        "max": maximum,
+                        "step": step,
+                    }
+            except Exception:
+                pass
+
         from config.settings import (
             MIN_LOT,
             MAX_LOT,
@@ -571,12 +848,12 @@ class BaseExecutor(ABC):
             lot
     ):
 
-        from config.settings import (
-            COMMISSION_PER_LOT
+        rate = float(
+            self.execution_costs(symbol)["commission_per_lot"]
         )
 
         return (
-            float(COMMISSION_PER_LOT) *
+            rate *
             float(lot)
         )
 

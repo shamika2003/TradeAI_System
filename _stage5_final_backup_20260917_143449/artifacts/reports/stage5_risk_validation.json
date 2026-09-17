@@ -1,0 +1,2180 @@
+{
+  "stage": "stage5_risk_calibrated_validation_v1",
+  "created_utc": "2026-09-17T07:59:19.986944+00:00",
+  "feature_schema_version": "tradeai_features_v4_20260907",
+  "feature_hash": "137a5ffae3054e7d1a600729a843fed11cde7a07133faa58f9bc00a0c18bbfbb",
+  "target_version": "tradeai_barrier_target_v3_20260907",
+  "training_window": {
+    "mode": "historical_cutoff",
+    "cutoff_exclusive": "2026-06-01 00:00:00",
+    "backtest_safe_from": "2026-06-01 00:00:00",
+    "label_horizon_bars": 24,
+    "purged_rows_per_symbol": 24,
+    "fit_start": "2020-04-02 11:55:00",
+    "fit_end": "2026-05-29 21:55:00",
+    "rows": 1831530,
+    "symbol_ranges": {
+      "EURUSD": {
+        "source_rows": 479183,
+        "fit_rows": 458909,
+        "start": "2020-04-02 12:55:00",
+        "end": "2026-05-29 21:55:00"
+      },
+      "GBPUSD": {
+        "source_rows": 479212,
+        "fit_rows": 458938,
+        "start": "2020-04-02 11:55:00",
+        "end": "2026-05-29 21:55:00"
+      },
+      "USDCNH": {
+        "source_rows": 475035,
+        "fit_rows": 454771,
+        "start": "2020-04-02 19:55:00",
+        "end": "2026-05-29 21:55:00"
+      },
+      "USDJPY": {
+        "source_rows": 479186,
+        "fit_rows": 458912,
+        "start": "2020-04-02 13:55:00",
+        "end": "2026-05-29 21:55:00"
+      }
+    }
+  },
+  "enabled_symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "decision_policy": {
+    "version": "tradeai_decision_policy_v1_20260907",
+    "created_utc": "2026-09-17T07:59:19.986913+00:00",
+    "method": "70_15_15_chronological_calibration_with_purged_boundaries",
+    "symbols": {
+      "EURUSD": {
+        "enabled": true,
+        "min_confidence": 0.58,
+        "signal_threshold": 0.06,
+        "score": 4.718176751154617,
+        "calibration": {
+          "trades": 557,
+          "coverage": 0.008094518397953845,
+          "win_rate": 0.696588868940754,
+          "avg_r": 0.708932353950839,
+          "profit_factor_r": 3.334526052658878,
+          "positive_blocks": 3,
+          "block_avg_r_std": 0.17682967638225608
+        }
+      },
+      "GBPUSD": {
+        "enabled": true,
+        "min_confidence": 0.58,
+        "signal_threshold": 0.06,
+        "score": 5.267616964631815,
+        "calibration": {
+          "trades": 1056,
+          "coverage": 0.015345045555603993,
+          "win_rate": 0.7035984848484849,
+          "avg_r": 0.7189191508076227,
+          "profit_factor_r": 3.0751350120379133,
+          "positive_blocks": 3,
+          "block_avg_r_std": 0.04176833461079776
+        }
+      },
+      "USDJPY": {
+        "enabled": true,
+        "min_confidence": 0.58,
+        "signal_threshold": 0.06,
+        "score": 3.476673945866207,
+        "calibration": {
+          "trades": 626,
+          "coverage": 0.00909711827706974,
+          "win_rate": 0.5766773162939297,
+          "avg_r": 0.5212278195030675,
+          "profit_factor_r": 2.1576153748264533,
+          "positive_blocks": 2,
+          "block_avg_r_std": 0.3420367189251952
+        }
+      },
+      "USDCNH": {
+        "enabled": true,
+        "min_confidence": 0.62,
+        "signal_threshold": 0.06,
+        "score": 4.777824621602604,
+        "calibration": {
+          "trades": 1617,
+          "coverage": 0.02371245893946504,
+          "win_rate": 0.6765615337043909,
+          "avg_r": 0.6215380834960361,
+          "profit_factor_r": 2.522381781775935,
+          "positive_blocks": 3,
+          "block_avg_r_std": 0.30402932027735413
+        }
+      }
+    }
+  },
+  "risk_policy": {
+    "version": "tradeai_risk_policy_v1_20260907",
+    "created_utc": "2026-09-17T07:59:19.986935+00:00",
+    "risk_percent": 0.45,
+    "source": "stage5_calibration_slice_normal_and_stress",
+    "calibration_safety": {
+      "normal_max_drawdown_percent": 8.0,
+      "stress_max_drawdown_percent": 10.0,
+      "selected_worst_drawdown_percent": 6.619811047272068,
+      "selected_worst_return_percent": 22.913333333333334
+    }
+  },
+  "risk_grid": [
+    {
+      "risk_percent": 0.25,
+      "all_safe": true,
+      "score": 1.5728789050172427,
+      "worst_return_pct": 1.6066666666666642,
+      "mean_return_pct": 7.25333333333333,
+      "worst_drawdown_pct": 4.487151046597685,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 169.35,
+            "net_profit": 19.349999999999994,
+            "return_pct": 12.899999999999997,
+            "trades": 350,
+            "wins": 183,
+            "win_rate": 0.5228571428571429,
+            "profit_factor": 1.532617671345995,
+            "expectancy": 0.05528571428571428,
+            "max_drawdown_money": 7.393927494583664,
+            "max_drawdown_pct": 4.487151046597685,
+            "total_commission": 26.810000000000002,
+            "estimated_entry_friction": 2.538181754995116,
+            "rejected": {
+              "position_busy": 1856,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 1650,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.15,
+              "2024-08": 2.12,
+              "2024-09": -1.26,
+              "2024-10": 3.27,
+              "2024-11": -0.04,
+              "2024-12": 3.19,
+              "2025-01": 3.57,
+              "2025-02": 2.13,
+              "2025-03": -0.57,
+              "2025-04": 1.11,
+              "2025-05": 2.55,
+              "2025-06": 3.13
+            },
+            "best_month": [
+              "2025-01",
+              3.57
+            ],
+            "worst_month": [
+              "2024-09",
+              -1.26
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 22,
+                "net_profit": 2.44,
+                "win_rate": 0.6818181818181818,
+                "profit_factor": 2.3048128342245984
+              },
+              "GBPUSD": {
+                "trades": 30,
+                "net_profit": 2.9499999999999997,
+                "win_rate": 0.6,
+                "profit_factor": 1.7374999999999998
+              },
+              "USDJPY": {
+                "trades": 31,
+                "net_profit": 1.42,
+                "win_rate": 0.5806451612903226,
+                "profit_factor": 1.3100436681222705
+              },
+              "USDCNH": {
+                "trades": 267,
+                "net_profit": 12.539999999999997,
+                "win_rate": 0.4943820224719101,
+                "profit_factor": 1.4845440494590416
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 152.41,
+            "net_profit": 2.4099999999999966,
+            "return_pct": 1.6066666666666642,
+            "trades": 300,
+            "wins": 148,
+            "win_rate": 0.49333333333333335,
+            "profit_factor": 1.0748447204968943,
+            "expectancy": 0.008033333333333332,
+            "max_drawdown_money": 5.623763668056853,
+            "max_drawdown_pct": 3.708383559549524,
+            "total_commission": 27.45,
+            "estimated_entry_friction": 3.6177439564043317,
+            "rejected": {
+              "position_busy": 1650,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 1906,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": -0.02,
+              "2024-08": -0.2,
+              "2024-09": -1.77,
+              "2024-10": 0.36,
+              "2024-11": 0.01,
+              "2024-12": 1.04,
+              "2025-01": 0.31,
+              "2025-02": 1.2,
+              "2025-03": 0.9,
+              "2025-04": 0.17,
+              "2025-05": -0.12,
+              "2025-06": 0.53
+            },
+            "best_month": [
+              "2025-02",
+              1.2
+            ],
+            "worst_month": [
+              "2024-09",
+              -1.77
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 12,
+                "net_profit": 1.11,
+                "win_rate": 0.75,
+                "profit_factor": 2.0776699029126213
+              },
+              "GBPUSD": {
+                "trades": 10,
+                "net_profit": -0.6600000000000001,
+                "win_rate": 0.4,
+                "profit_factor": 0.6071428571428572
+              },
+              "USDJPY": {
+                "trades": 13,
+                "net_profit": 0.14,
+                "win_rate": 0.5384615384615384,
+                "profit_factor": 1.0717948717948718
+              },
+              "USDCNH": {
+                "trades": 265,
+                "net_profit": 1.8199999999999994,
+                "win_rate": 0.4830188679245283,
+                "profit_factor": 1.0660856935366738
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.3,
+      "all_safe": true,
+      "score": 5.32114129004189,
+      "worst_return_pct": 4.433333333333337,
+      "mean_return_pct": 15.146666666666665,
+      "worst_drawdown_pct": 5.5367681731657905,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 188.79,
+            "net_profit": 38.78999999999999,
+            "return_pct": 25.859999999999992,
+            "trades": 461,
+            "wins": 259,
+            "win_rate": 0.561822125813449,
+            "profit_factor": 1.6249395843402608,
+            "expectancy": 0.08414316702819956,
+            "max_drawdown_money": 7.553927494583661,
+            "max_drawdown_pct": 4.24068236377009,
+            "total_commission": 40.32,
+            "estimated_entry_friction": 5.795627797747222,
+            "rejected": {
+              "position_busy": 2271,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 1124,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.04,
+              "2024-08": 6.1,
+              "2024-09": -1.38,
+              "2024-10": 4.52,
+              "2024-11": 2.74,
+              "2024-12": 3.62,
+              "2025-01": 3.88,
+              "2025-02": 5.01,
+              "2025-03": -0.95,
+              "2025-04": 3.19,
+              "2025-05": 3.75,
+              "2025-06": 8.27
+            },
+            "best_month": [
+              "2025-06",
+              8.27
+            ],
+            "worst_month": [
+              "2024-09",
+              -1.38
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 56,
+                "net_profit": 8.850000000000001,
+                "win_rate": 0.7678571428571429,
+                "profit_factor": 3.535816618911175
+              },
+              "GBPUSD": {
+                "trades": 84,
+                "net_profit": 10.780000000000003,
+                "win_rate": 0.5952380952380952,
+                "profit_factor": 1.7087442472057857
+              },
+              "USDJPY": {
+                "trades": 63,
+                "net_profit": 3.1599999999999993,
+                "win_rate": 0.5873015873015873,
+                "profit_factor": 1.2912442396313362
+              },
+              "USDCNH": {
+                "trades": 258,
+                "net_profit": 16.0,
+                "win_rate": 0.5,
+                "profit_factor": 1.4920049200492003
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 156.65,
+            "net_profit": 6.650000000000006,
+            "return_pct": 4.433333333333337,
+            "trades": 369,
+            "wins": 192,
+            "win_rate": 0.5203252032520326,
+            "profit_factor": 1.1397646069777219,
+            "expectancy": 0.018021680216802168,
+            "max_drawdown_money": 8.59749361929184,
+            "max_drawdown_pct": 5.5367681731657905,
+            "total_commission": 37.8,
+            "estimated_entry_friction": 6.9358933153989355,
+            "rejected": {
+              "position_busy": 1941,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 1546,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": -0.17,
+              "2024-08": 2.51,
+              "2024-09": -1.2,
+              "2024-10": 2.15,
+              "2024-11": -1.29,
+              "2024-12": 2.1,
+              "2025-01": -0.84,
+              "2025-02": 1.31,
+              "2025-03": -1.11,
+              "2025-04": -0.45,
+              "2025-05": 1.44,
+              "2025-06": 2.2
+            },
+            "best_month": [
+              "2024-08",
+              2.51
+            ],
+            "worst_month": [
+              "2024-11",
+              -1.29
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 22,
+                "net_profit": 0.9700000000000002,
+                "win_rate": 0.7272727272727273,
+                "profit_factor": 1.431111111111111
+              },
+              "GBPUSD": {
+                "trades": 38,
+                "net_profit": 3.9700000000000006,
+                "win_rate": 0.631578947368421,
+                "profit_factor": 1.7448405253283303
+              },
+              "USDJPY": {
+                "trades": 38,
+                "net_profit": 2.270000000000001,
+                "win_rate": 0.6052631578947368,
+                "profit_factor": 1.377703826955075
+              },
+              "USDCNH": {
+                "trades": 271,
+                "net_profit": -0.5599999999999996,
+                "win_rate": 0.47601476014760147,
+                "profit_factor": 0.9835245660488381
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.35,
+      "all_safe": true,
+      "score": 11.723180641782898,
+      "worst_return_pct": 9.299999999999994,
+      "mean_return_pct": 25.26333333333333,
+      "worst_drawdown_pct": 5.465277432868375,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 211.84,
+            "net_profit": 61.84,
+            "return_pct": 41.22666666666667,
+            "trades": 536,
+            "wins": 313,
+            "win_rate": 0.5839552238805971,
+            "profit_factor": 1.7392707710699342,
+            "expectancy": 0.11537313432835822,
+            "max_drawdown_money": 7.033927494583679,
+            "max_drawdown_pct": 3.9729146692233916,
+            "total_commission": 51.730000000000004,
+            "estimated_entry_friction": 8.632365569907945,
+            "rejected": {
+              "position_busy": 2582,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 738,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.05,
+              "2024-08": 6.39,
+              "2024-09": 1.78,
+              "2024-10": 6.97,
+              "2024-11": 1.94,
+              "2024-12": 6.64,
+              "2025-01": 5.23,
+              "2025-02": 10.25,
+              "2025-03": -0.09,
+              "2025-04": 3.07,
+              "2025-05": 9.07,
+              "2025-06": 10.54
+            },
+            "best_month": [
+              "2025-06",
+              10.54
+            ],
+            "worst_month": [
+              "2025-03",
+              -0.09
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 92,
+                "net_profit": 20.420000000000005,
+                "win_rate": 0.7934782608695652,
+                "profit_factor": 3.7190412782956055
+              },
+              "GBPUSD": {
+                "trades": 120,
+                "net_profit": 13.77,
+                "win_rate": 0.5916666666666667,
+                "profit_factor": 1.5583941605839418
+              },
+              "USDJPY": {
+                "trades": 76,
+                "net_profit": 4.75,
+                "win_rate": 0.618421052631579,
+                "profit_factor": 1.3648233486943164
+              },
+              "USDCNH": {
+                "trades": 248,
+                "net_profit": 22.9,
+                "win_rate": 0.49193548387096775,
+                "profit_factor": 1.595423816952678
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 163.95,
+            "net_profit": 13.949999999999989,
+            "return_pct": 9.299999999999994,
+            "trades": 462,
+            "wins": 249,
+            "win_rate": 0.538961038961039,
+            "profit_factor": 1.1857770675189772,
+            "expectancy": 0.030194805194805198,
+            "max_drawdown_money": 8.799643194661371,
+            "max_drawdown_pct": 5.465277432868375,
+            "total_commission": 52.29,
+            "estimated_entry_friction": 13.285414654971708,
+            "rejected": {
+              "position_busy": 2274,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 1120,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": -0.17,
+              "2024-08": 3.94,
+              "2024-09": -2.99,
+              "2024-10": 3.45,
+              "2024-11": 0.16,
+              "2024-12": 4.33,
+              "2025-01": -2.3,
+              "2025-02": 3.7,
+              "2025-03": -1.72,
+              "2025-04": 0.7,
+              "2025-05": 0.37,
+              "2025-06": 4.48
+            },
+            "best_month": [
+              "2025-06",
+              4.48
+            ],
+            "worst_month": [
+              "2024-09",
+              -2.99
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 53,
+                "net_profit": 4.86,
+                "win_rate": 0.6981132075471698,
+                "profit_factor": 1.8481675392670156
+              },
+              "GBPUSD": {
+                "trades": 81,
+                "net_profit": 5.36,
+                "win_rate": 0.5925925925925926,
+                "profit_factor": 1.3238670694864048
+              },
+              "USDJPY": {
+                "trades": 66,
+                "net_profit": -0.14000000000000035,
+                "win_rate": 0.5606060606060606,
+                "profit_factor": 0.9894973743435858
+              },
+              "USDCNH": {
+                "trades": 262,
+                "net_profit": 3.870000000000001,
+                "win_rate": 0.4847328244274809,
+                "profit_factor": 1.0980243161094223
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.4,
+      "all_safe": true,
+      "score": 16.008067710910264,
+      "worst_return_pct": 12.74666666666667,
+      "mean_return_pct": 32.72,
+      "worst_drawdown_pct": 6.586395823025621,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 229.04,
+            "net_profit": 79.03999999999999,
+            "return_pct": 52.69333333333333,
+            "trades": 576,
+            "wins": 345,
+            "win_rate": 0.5989583333333334,
+            "profit_factor": 1.763671497584541,
+            "expectancy": 0.13722222222222222,
+            "max_drawdown_money": 13.57785498916732,
+            "max_drawdown_pct": 6.586395823025621,
+            "total_commission": 62.790000000000006,
+            "estimated_entry_friction": 10.367565897188538,
+            "rejected": {
+              "position_busy": 2715,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 565,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.95,
+              "2024-08": 7.82,
+              "2024-09": 2.47,
+              "2024-10": 9.99,
+              "2024-11": 2.22,
+              "2024-12": 7.69,
+              "2025-01": 7.66,
+              "2025-02": 10.58,
+              "2025-03": -1.46,
+              "2025-04": 1.86,
+              "2025-05": 14.94,
+              "2025-06": 14.32
+            },
+            "best_month": [
+              "2025-05",
+              14.94
+            ],
+            "worst_month": [
+              "2025-03",
+              -1.46
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 100,
+                "net_profit": 25.400000000000002,
+                "win_rate": 0.81,
+                "profit_factor": 3.7224008574490894
+              },
+              "GBPUSD": {
+                "trades": 142,
+                "net_profit": 26.69,
+                "win_rate": 0.6408450704225352,
+                "profit_factor": 1.9744432274552755
+              },
+              "USDJPY": {
+                "trades": 76,
+                "net_profit": 3.839999999999999,
+                "win_rate": 0.6052631578947368,
+                "profit_factor": 1.2442748091603055
+              },
+              "USDCNH": {
+                "trades": 258,
+                "net_profit": 23.11,
+                "win_rate": 0.49224806201550386,
+                "profit_factor": 1.4526047786917353
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 169.12,
+            "net_profit": 19.120000000000005,
+            "return_pct": 12.74666666666667,
+            "trades": 521,
+            "wins": 287,
+            "win_rate": 0.5508637236084453,
+            "profit_factor": 1.198319676382118,
+            "expectancy": 0.03669865642994242,
+            "max_drawdown_money": 10.80964319466139,
+            "max_drawdown_pct": 6.384904426852564,
+            "total_commission": 63.0,
+            "estimated_entry_friction": 18.20553616810783,
+            "rejected": {
+              "position_busy": 2541,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 794,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": -0.16,
+              "2024-08": 5.5,
+              "2024-09": -2.45,
+              "2024-10": 4.42,
+              "2024-11": -0.36,
+              "2024-12": 5.36,
+              "2025-01": -0.74,
+              "2025-02": 6.51,
+              "2025-03": -0.89,
+              "2025-04": -2.34,
+              "2025-05": -0.92,
+              "2025-06": 5.19
+            },
+            "best_month": [
+              "2025-02",
+              6.51
+            ],
+            "worst_month": [
+              "2024-09",
+              -2.45
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 81,
+                "net_profit": 10.9,
+                "win_rate": 0.7407407407407407,
+                "profit_factor": 2.265969802555168
+              },
+              "GBPUSD": {
+                "trades": 115,
+                "net_profit": 5.99,
+                "win_rate": 0.5739130434782609,
+                "profit_factor": 1.224596925384327
+              },
+              "USDJPY": {
+                "trades": 75,
+                "net_profit": 0.18000000000000038,
+                "win_rate": 0.5866666666666667,
+                "profit_factor": 1.0120401337792644
+              },
+              "USDCNH": {
+                "trades": 250,
+                "net_profit": 2.050000000000001,
+                "win_rate": 0.468,
+                "profit_factor": 1.0443915114768298
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.45,
+      "all_safe": true,
+      "score": 28.545380571515317,
+      "worst_return_pct": 22.913333333333334,
+      "mean_return_pct": 48.58,
+      "worst_drawdown_pct": 6.619811047272068,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 261.37,
+            "net_profit": 111.37,
+            "return_pct": 74.24666666666667,
+            "trades": 614,
+            "wins": 377,
+            "win_rate": 0.6140065146579805,
+            "profit_factor": 1.8291393686718285,
+            "expectancy": 0.1813843648208469,
+            "max_drawdown_money": 14.067854989167301,
+            "max_drawdown_pct": 6.1260472866953934,
+            "total_commission": 80.15,
+            "estimated_entry_friction": 13.312462941119705,
+            "rejected": {
+              "position_busy": 2846,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 396,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 1.8,
+              "2024-08": 12.72,
+              "2024-09": 2.17,
+              "2024-10": 12.22,
+              "2024-11": 2.91,
+              "2024-12": 11.78,
+              "2025-01": 11.92,
+              "2025-02": 15.89,
+              "2025-03": 0.55,
+              "2025-04": 1.46,
+              "2025-05": 18.14,
+              "2025-06": 19.81
+            },
+            "best_month": [
+              "2025-06",
+              19.81
+            ],
+            "worst_month": [
+              "2025-03",
+              0.55
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 114,
+                "net_profit": 31.729999999999997,
+                "win_rate": 0.8157894736842105,
+                "profit_factor": 3.3468934911242605
+              },
+              "GBPUSD": {
+                "trades": 154,
+                "net_profit": 42.41,
+                "win_rate": 0.6623376623376623,
+                "profit_factor": 2.286711165048544
+              },
+              "USDJPY": {
+                "trades": 77,
+                "net_profit": 7.030000000000001,
+                "win_rate": 0.6233766233766234,
+                "profit_factor": 1.350099601593625
+              },
+              "USDCNH": {
+                "trades": 269,
+                "net_profit": 30.200000000000003,
+                "win_rate": 0.49814126394052044,
+                "profit_factor": 1.4456906729634
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 184.37,
+            "net_profit": 34.370000000000005,
+            "return_pct": 22.913333333333334,
+            "trades": 562,
+            "wins": 317,
+            "win_rate": 0.5640569395017794,
+            "profit_factor": 1.3075890459996422,
+            "expectancy": 0.061156583629893235,
+            "max_drawdown_money": 11.729643194661378,
+            "max_drawdown_pct": 6.619811047272068,
+            "total_commission": 75.06,
+            "estimated_entry_friction": 21.695961890985835,
+            "rejected": {
+              "position_busy": 2684,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 610,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.68,
+              "2024-08": 6.15,
+              "2024-09": -0.01,
+              "2024-10": 5.61,
+              "2024-11": -0.69,
+              "2024-12": 5.82,
+              "2025-01": 0.56,
+              "2025-02": 8.23,
+              "2025-03": -2.63,
+              "2025-04": -3.02,
+              "2025-05": 6.09,
+              "2025-06": 7.58
+            },
+            "best_month": [
+              "2025-02",
+              8.23
+            ],
+            "worst_month": [
+              "2025-04",
+              -3.02
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 94,
+                "net_profit": 17.19,
+                "win_rate": 0.7659574468085106,
+                "profit_factor": 2.593141797961075
+              },
+              "GBPUSD": {
+                "trades": 133,
+                "net_profit": 12.459999999999999,
+                "win_rate": 0.6090225563909775,
+                "profit_factor": 1.4341463414634144
+              },
+              "USDJPY": {
+                "trades": 76,
+                "net_profit": 1.4300000000000004,
+                "win_rate": 0.5921052631578947,
+                "profit_factor": 1.0917254650416939
+              },
+              "USDCNH": {
+                "trades": 259,
+                "net_profit": 3.290000000000002,
+                "win_rate": 0.4594594594594595,
+                "profit_factor": 1.0580656547829155
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.5,
+      "all_safe": false,
+      "score": 43.29490754663449,
+      "worst_return_pct": 36.24000000000001,
+      "mean_return_pct": 61.01666666666667,
+      "worst_drawdown_pct": 8.39036981346209,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 278.69,
+            "net_profit": 128.69,
+            "return_pct": 85.79333333333334,
+            "trades": 632,
+            "wins": 393,
+            "win_rate": 0.6218354430379747,
+            "profit_factor": 1.805016889778556,
+            "expectancy": 0.20362341772151898,
+            "max_drawdown_money": 20.61178248375097,
+            "max_drawdown_pct": 8.39036981346209,
+            "total_commission": 92.4,
+            "estimated_entry_friction": 15.513992541839457,
+            "rejected": {
+              "position_busy": 2926,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 298,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 1.45,
+              "2024-08": 11.54,
+              "2024-09": 1.91,
+              "2024-10": 14.52,
+              "2024-11": 3.88,
+              "2024-12": 13.16,
+              "2025-01": 13.33,
+              "2025-02": 23.24,
+              "2025-03": 0.14,
+              "2025-04": 5.2,
+              "2025-05": 16.97,
+              "2025-06": 23.35
+            },
+            "best_month": [
+              "2025-06",
+              23.35
+            ],
+            "worst_month": [
+              "2025-03",
+              0.14
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 118,
+                "net_profit": 38.57,
+                "win_rate": 0.8050847457627118,
+                "profit_factor": 3.436512950094756
+              },
+              "GBPUSD": {
+                "trades": 160,
+                "net_profit": 47.38,
+                "win_rate": 0.66875,
+                "profit_factor": 2.2095991830482515
+              },
+              "USDJPY": {
+                "trades": 80,
+                "net_profit": 6.95,
+                "win_rate": 0.6125,
+                "profit_factor": 1.2609838527975963
+              },
+              "USDCNH": {
+                "trades": 274,
+                "net_profit": 35.79,
+                "win_rate": 0.5182481751824818,
+                "profit_factor": 1.4574971238655245
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 204.36,
+            "net_profit": 54.360000000000014,
+            "return_pct": 36.24000000000001,
+            "trades": 599,
+            "wins": 351,
+            "win_rate": 0.5859766277128547,
+            "profit_factor": 1.4155327931508945,
+            "expectancy": 0.09075125208681135,
+            "max_drawdown_money": 14.049286389322788,
+            "max_drawdown_pct": 7.411133823560051,
+            "total_commission": 88.83,
+            "estimated_entry_friction": 25.79875598061701,
+            "rejected": {
+              "position_busy": 2797,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 460,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.74,
+              "2024-08": 8.99,
+              "2024-09": -1.28,
+              "2024-10": 5.83,
+              "2024-11": -0.08,
+              "2024-12": 9.67,
+              "2025-01": -2.26,
+              "2025-02": 9.92,
+              "2025-03": 1.95,
+              "2025-04": 1.34,
+              "2025-05": 9.82,
+              "2025-06": 9.72
+            },
+            "best_month": [
+              "2025-02",
+              9.92
+            ],
+            "worst_month": [
+              "2025-01",
+              -2.26
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 107,
+                "net_profit": 23.68,
+                "win_rate": 0.7757009345794392,
+                "profit_factor": 2.8719367588932805
+              },
+              "GBPUSD": {
+                "trades": 150,
+                "net_profit": 24.33,
+                "win_rate": 0.6533333333333333,
+                "profit_factor": 1.794578706727629
+              },
+              "USDJPY": {
+                "trades": 77,
+                "net_profit": 3.629999999999999,
+                "win_rate": 0.6233766233766234,
+                "profit_factor": 1.1968546637744033
+              },
+              "USDCNH": {
+                "trades": 265,
+                "net_profit": 2.720000000000002,
+                "win_rate": 0.46037735849056605,
+                "profit_factor": 1.0393575459412527
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": false,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": false,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.6,
+      "all_safe": false,
+      "score": 53.58146512414486,
+      "worst_return_pct": 43.91333333333334,
+      "mean_return_pct": 81.15333333333332,
+      "worst_drawdown_pct": 10.01947283675391,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 327.59,
+            "net_profit": 177.58999999999997,
+            "return_pct": 118.3933333333333,
+            "trades": 649,
+            "wins": 419,
+            "win_rate": 0.6456086286594761,
+            "profit_factor": 1.7924233635268396,
+            "expectancy": 0.2736363636363636,
+            "max_drawdown_money": 27.63570997833463,
+            "max_drawdown_pct": 10.01947283675391,
+            "total_commission": 126.77000000000001,
+            "estimated_entry_friction": 21.953079797897804,
+            "rejected": {
+              "position_busy": 3046,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 161,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 1.35,
+              "2024-08": 17.1,
+              "2024-09": 5.11,
+              "2024-10": 18.55,
+              "2024-11": 1.29,
+              "2024-12": 16.79,
+              "2025-01": 15.64,
+              "2025-02": 30.09,
+              "2025-03": -2.3,
+              "2025-04": 10.66,
+              "2025-05": 31.11,
+              "2025-06": 32.2
+            },
+            "best_month": [
+              "2025-06",
+              32.2
+            ],
+            "worst_month": [
+              "2025-03",
+              -2.3
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 123,
+                "net_profit": 54.449999999999996,
+                "win_rate": 0.7967479674796748,
+                "profit_factor": 3.136131816398587
+              },
+              "GBPUSD": {
+                "trades": 164,
+                "net_profit": 62.290000000000006,
+                "win_rate": 0.6829268292682927,
+                "profit_factor": 2.131928039251317
+              },
+              "USDJPY": {
+                "trades": 86,
+                "net_profit": 13.439999999999998,
+                "win_rate": 0.6162790697674418,
+                "profit_factor": 1.3414634146341462
+              },
+              "USDCNH": {
+                "trades": 276,
+                "net_profit": 47.41,
+                "win_rate": 0.5652173913043478,
+                "profit_factor": 1.454859445457162
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 215.87,
+            "net_profit": 65.87,
+            "return_pct": 43.91333333333334,
+            "trades": 629,
+            "wins": 369,
+            "win_rate": 0.5866454689984102,
+            "profit_factor": 1.362780194966129,
+            "expectancy": 0.10472178060413354,
+            "max_drawdown_money": 16.55928638932278,
+            "max_drawdown_pct": 8.25117663526971,
+            "total_commission": 116.19,
+            "estimated_entry_friction": 33.70869138270454,
+            "rejected": {
+              "position_busy": 2934,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 293,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 0.54,
+              "2024-08": 8.15,
+              "2024-09": -0.86,
+              "2024-10": 9.99,
+              "2024-11": 0.27,
+              "2024-12": 12.58,
+              "2025-01": 0.58,
+              "2025-02": 16.39,
+              "2025-03": -1.04,
+              "2025-04": -2.96,
+              "2025-05": 9.98,
+              "2025-06": 12.25
+            },
+            "best_month": [
+              "2025-02",
+              16.39
+            ],
+            "worst_month": [
+              "2025-04",
+              -2.96
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 115,
+                "net_profit": 26.93,
+                "win_rate": 0.7652173913043478,
+                "profit_factor": 2.4158780231335437
+              },
+              "GBPUSD": {
+                "trades": 157,
+                "net_profit": 29.5,
+                "win_rate": 0.6496815286624203,
+                "profit_factor": 1.70456173871507
+              },
+              "USDJPY": {
+                "trades": 81,
+                "net_profit": 3.449999999999999,
+                "win_rate": 0.6172839506172839,
+                "profit_factor": 1.1218220338983051
+              },
+              "USDCNH": {
+                "trades": 276,
+                "net_profit": 5.989999999999998,
+                "win_rate": 0.4673913043478261,
+                "profit_factor": 1.0648549155478562
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": false,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": false,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.75,
+      "all_safe": false,
+      "score": 72.10255642554817,
+      "worst_return_pct": 57.873333333333335,
+      "mean_return_pct": 115.93666666666667,
+      "worst_drawdown_pct": 12.645107631140679,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 411.0,
+            "net_profit": 261.0,
+            "return_pct": 174.0,
+            "trades": 659,
+            "wins": 438,
+            "win_rate": 0.6646433990895296,
+            "profit_factor": 1.771481777068369,
+            "expectancy": 0.3960546282245827,
+            "max_drawdown_money": 41.70356496750196,
+            "max_drawdown_pct": 12.645107631140679,
+            "total_commission": 186.41,
+            "estimated_entry_friction": 32.67714538309579,
+            "rejected": {
+              "position_busy": 3103,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 94,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 3.39,
+              "2024-08": 22.92,
+              "2024-09": 3.08,
+              "2024-10": 26.07,
+              "2024-11": 5.61,
+              "2024-12": 23.74,
+              "2025-01": 23.0,
+              "2025-02": 44.85,
+              "2025-03": -3.74,
+              "2025-04": 12.95,
+              "2025-05": 46.42,
+              "2025-06": 52.71
+            },
+            "best_month": [
+              "2025-06",
+              52.71
+            ],
+            "worst_month": [
+              "2025-03",
+              -3.74
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 131,
+                "net_profit": 89.78999999999999,
+                "win_rate": 0.7862595419847328,
+                "profit_factor": 3.196965989723513
+              },
+              "GBPUSD": {
+                "trades": 167,
+                "net_profit": 90.51999999999998,
+                "win_rate": 0.6826347305389222,
+                "profit_factor": 2.051213564045988
+              },
+              "USDJPY": {
+                "trades": 86,
+                "net_profit": 8.280000000000001,
+                "win_rate": 0.5930232558139535,
+                "profit_factor": 1.1321628092577816
+              },
+              "USDCNH": {
+                "trades": 275,
+                "net_profit": 72.41,
+                "win_rate": 0.6181818181818182,
+                "profit_factor": 1.4870191014258813
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 236.81,
+            "net_profit": 86.81,
+            "return_pct": 57.873333333333335,
+            "trades": 642,
+            "wins": 380,
+            "win_rate": 0.5919003115264797,
+            "profit_factor": 1.3425268308080809,
+            "expectancy": 0.13521806853582555,
+            "max_drawdown_money": 23.218929583984163,
+            "max_drawdown_pct": 10.902441463109435,
+            "total_commission": 158.67,
+            "estimated_entry_friction": 47.25771054160415,
+            "rejected": {
+              "position_busy": 3065,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 149,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 1.59,
+              "2024-08": 13.34,
+              "2024-09": -4.78,
+              "2024-10": 13.4,
+              "2024-11": -2.84,
+              "2024-12": 15.49,
+              "2025-01": 0.05,
+              "2025-02": 22.25,
+              "2025-03": -2.63,
+              "2025-04": -1.78,
+              "2025-05": 16.77,
+              "2025-06": 15.95
+            },
+            "best_month": [
+              "2025-02",
+              22.25
+            ],
+            "worst_month": [
+              "2024-09",
+              -4.78
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 121,
+                "net_profit": 38.760000000000005,
+                "win_rate": 0.7520661157024794,
+                "profit_factor": 2.271653543307086
+              },
+              "GBPUSD": {
+                "trades": 162,
+                "net_profit": 35.69,
+                "win_rate": 0.6666666666666666,
+                "profit_factor": 1.5911876759980124
+              },
+              "USDJPY": {
+                "trades": 83,
+                "net_profit": 5.139999999999999,
+                "win_rate": 0.6144578313253012,
+                "profit_factor": 1.129830765344784
+              },
+              "USDCNH": {
+                "trades": 276,
+                "net_profit": 7.220000000000001,
+                "win_rate": 0.47101449275362317,
+                "profit_factor": 1.05869918699187
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": false,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": false,
+            "trade_count": true
+          },
+          "normal_pass": false,
+          "stress_pass": false
+        }
+      }
+    },
+    {
+      "risk_percent": 1.0,
+      "all_safe": false,
+      "score": 124.1717093961699,
+      "worst_return_pct": 98.07333333333335,
+      "mean_return_pct": 204.88666666666666,
+      "worst_drawdown_pct": 18.538495748653816,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 617.55,
+            "net_profit": 467.54999999999995,
+            "return_pct": 311.69999999999993,
+            "trades": 665,
+            "wins": 443,
+            "win_rate": 0.6661654135338346,
+            "profit_factor": 1.7882226006035367,
+            "expectancy": 0.7030827067669174,
+            "max_drawdown_money": 82.91712993500391,
+            "max_drawdown_pct": 18.538495748653816,
+            "total_commission": 318.5,
+            "estimated_entry_friction": 57.28650926807264,
+            "rejected": {
+              "position_busy": 3135,
+              "cooldown": 0,
+              "daily_loss": 13,
+              "drawdown_protection": 0,
+              "lot_or_risk": 43,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 4.48,
+              "2024-08": 32.33,
+              "2024-09": 5.62,
+              "2024-10": 42.15,
+              "2024-11": 2.79,
+              "2024-12": 38.9,
+              "2025-01": 41.46,
+              "2025-02": 74.3,
+              "2025-03": -4.73,
+              "2025-04": 25.23,
+              "2025-05": 94.18,
+              "2025-06": 110.84
+            },
+            "best_month": [
+              "2025-06",
+              110.84
+            ],
+            "worst_month": [
+              "2025-03",
+              -4.73
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 134,
+                "net_profit": 167.29,
+                "win_rate": 0.7910447761194029,
+                "profit_factor": 3.3400475590991747
+              },
+              "GBPUSD": {
+                "trades": 170,
+                "net_profit": 175.1,
+                "win_rate": 0.6823529411764706,
+                "profit_factor": 2.1419068736141904
+              },
+              "USDJPY": {
+                "trades": 88,
+                "net_profit": 10.439999999999998,
+                "win_rate": 0.5909090909090909,
+                "profit_factor": 1.0912746983738415
+              },
+              "USDCNH": {
+                "trades": 273,
+                "net_profit": 114.71999999999998,
+                "win_rate": 0.6190476190476191,
+                "profit_factor": 1.4517246810521343
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 297.11,
+            "net_profit": 147.11,
+            "return_pct": 98.07333333333335,
+            "trades": 655,
+            "wins": 410,
+            "win_rate": 0.6259541984732825,
+            "profit_factor": 1.3637285202126346,
+            "expectancy": 0.22459541984732825,
+            "max_drawdown_money": 43.97785916796835,
+            "max_drawdown_pct": 17.340059604119684,
+            "total_commission": 250.56,
+            "estimated_entry_friction": 76.36580713675595,
+            "rejected": {
+              "position_busy": 3127,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 74,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2024-07": 2.42,
+              "2024-08": 19.75,
+              "2024-09": -2.1,
+              "2024-10": 19.65,
+              "2024-11": -0.93,
+              "2024-12": 22.35,
+              "2025-01": -0.63,
+              "2025-02": 32.07,
+              "2025-03": -4.92,
+              "2025-04": 2.02,
+              "2025-05": 27.55,
+              "2025-06": 29.88
+            },
+            "best_month": [
+              "2025-02",
+              32.07
+            ],
+            "worst_month": [
+              "2025-03",
+              -4.92
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 129,
+                "net_profit": 75.65,
+                "win_rate": 0.7596899224806202,
+                "profit_factor": 2.5604372937293727
+              },
+              "GBPUSD": {
+                "trades": 166,
+                "net_profit": 66.63,
+                "win_rate": 0.6686746987951807,
+                "profit_factor": 1.679204892966361
+              },
+              "USDJPY": {
+                "trades": 86,
+                "net_profit": -4.279999999999999,
+                "win_rate": 0.5813953488372093,
+                "profit_factor": 0.9385851628641125
+              },
+              "USDCNH": {
+                "trades": 274,
+                "net_profit": 9.109999999999998,
+                "win_rate": 0.551094890510949,
+                "profit_factor": 1.0484110957593793
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": false,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": false,
+            "trade_count": true
+          },
+          "normal_pass": false,
+          "stress_pass": false
+        }
+      }
+    }
+  ],
+  "symbol_validation": {
+    "EURUSD": {
+      "final_r": {
+        "balanced_acc": 0.33478759451375334,
+        "macro_f1": 0.1535065933210691,
+        "samples": 68837,
+        "trades": 326,
+        "wins": 186,
+        "coverage": 0.0047358252102793555,
+        "win_rate": 0.5705521472392638,
+        "avg_r": 0.2352935739780275,
+        "total_r": 76.70570511683697,
+        "gross_win_r": 228.08389476917563,
+        "gross_loss_r": 151.37818965233868,
+        "profit_factor_r": 1.5067156985626688
+      }
+    },
+    "GBPUSD": {
+      "final_r": {
+        "balanced_acc": 0.3377648006674098,
+        "macro_f1": 0.16561958073569197,
+        "samples": 68841,
+        "trades": 804,
+        "wins": 554,
+        "coverage": 0.01167908659083976,
+        "win_rate": 0.6890547263681592,
+        "avg_r": 0.5809608032083173,
+        "total_r": 467.09248577948716,
+        "gross_win_r": 748.7892767253227,
+        "gross_loss_r": 281.6967909458355,
+        "profit_factor_r": 2.6581391794033586
+      }
+    },
+    "USDJPY": {
+      "final_r": {
+        "balanced_acc": 0.33799900514647024,
+        "macro_f1": 0.16120714030377364,
+        "samples": 68837,
+        "trades": 905,
+        "wins": 582,
+        "coverage": 0.013146999433444223,
+        "win_rate": 0.6430939226519337,
+        "avg_r": 0.6919492299240855,
+        "total_r": 626.2140530812974,
+        "gross_win_r": 978.2328693213799,
+        "gross_loss_r": 352.0188162400825,
+        "profit_factor_r": 2.778922103567922
+      }
+    },
+    "USDCNH": {
+      "final_r": {
+        "balanced_acc": 0.34532988234167844,
+        "macro_f1": 0.2066977274377223,
+        "samples": 68216,
+        "trades": 1425,
+        "wins": 1095,
+        "coverage": 0.02088952738360502,
+        "win_rate": 0.7684210526315789,
+        "avg_r": 0.8957884550361084,
+        "total_r": 1276.4985484264544,
+        "gross_win_r": 1721.1673694720782,
+        "gross_loss_r": 444.6688210456239,
+        "profit_factor_r": 3.870672482556368
+      }
+    }
+  },
+  "money_results": {
+    "NORMAL": {
+      "50.0": {
+        "scenario": "NORMAL",
+        "start_balance": 50.0,
+        "end_balance": 56.49,
+        "net_profit": 6.490000000000002,
+        "return_pct": 12.980000000000002,
+        "trades": 255,
+        "wins": 136,
+        "win_rate": 0.5333333333333333,
+        "profit_factor": 1.4596317280453257,
+        "expectancy": 0.025450980392156864,
+        "max_drawdown_money": 2.0469233545024323,
+        "max_drawdown_pct": 3.6350974152058826,
+        "total_commission": 17.85,
+        "estimated_entry_friction": 0.8636401874298326,
+        "rejected": {
+          "position_busy": 1479,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 1726,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2025-07": 0.27,
+          "2025-08": 0.21,
+          "2025-09": 0.24,
+          "2025-10": 0.41,
+          "2025-11": 1.24,
+          "2025-12": 1.34,
+          "2026-01": 2.46,
+          "2026-02": -0.24,
+          "2026-03": -0.75,
+          "2026-04": 0.98,
+          "2026-05": 0.33
+        },
+        "best_month": [
+          "2026-01",
+          2.46
+        ],
+        "worst_month": [
+          "2026-03",
+          -0.75
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0
+          },
+          "GBPUSD": {
+            "trades": 2,
+            "net_profit": 0.01999999999999999,
+            "win_rate": 0.5,
+            "profit_factor": 1.0909090909090908
+          },
+          "USDJPY": {
+            "trades": 7,
+            "net_profit": 0.81,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 4.681818181818182
+          },
+          "USDCNH": {
+            "trades": 246,
+            "net_profit": 5.66,
+            "win_rate": 0.524390243902439,
+            "profit_factor": 1.4137426900584797
+          }
+        }
+      },
+      "100.0": {
+        "scenario": "NORMAL",
+        "start_balance": 100.0,
+        "end_balance": 146.07,
+        "net_profit": 46.06999999999999,
+        "return_pct": 46.06999999999999,
+        "trades": 442,
+        "wins": 276,
+        "win_rate": 0.6244343891402715,
+        "profit_factor": 1.8265159669895947,
+        "expectancy": 0.10423076923076925,
+        "max_drawdown_money": 8.447960583508447,
+        "max_drawdown_pct": 6.395609496183244,
+        "total_commission": 51.59,
+        "estimated_entry_friction": 6.062992547144923,
+        "rejected": {
+          "position_busy": 2237,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 781,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2025-06": 0.25,
+          "2025-07": 0.39,
+          "2025-08": 6.23,
+          "2025-09": 3.2,
+          "2025-10": 2.03,
+          "2025-11": 4.31,
+          "2025-12": 5.17,
+          "2026-01": 9.15,
+          "2026-02": -0.05,
+          "2026-03": 1.49,
+          "2026-04": 9.18,
+          "2026-05": 4.72
+        },
+        "best_month": [
+          "2026-04",
+          9.18
+        ],
+        "worst_month": [
+          "2026-02",
+          -0.05
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 30,
+            "net_profit": 5.129999999999999,
+            "win_rate": 0.8,
+            "profit_factor": 2.9141791044776117
+          },
+          "GBPUSD": {
+            "trades": 76,
+            "net_profit": 13.420000000000002,
+            "win_rate": 0.6842105263157895,
+            "profit_factor": 2.343343343343344
+          },
+          "USDJPY": {
+            "trades": 114,
+            "net_profit": 13.5,
+            "win_rate": 0.7105263157894737,
+            "profit_factor": 2.056338028169014
+          },
+          "USDCNH": {
+            "trades": 222,
+            "net_profit": 14.020000000000001,
+            "win_rate": 0.536036036036036,
+            "profit_factor": 1.4628590293826351
+          }
+        }
+      },
+      "150.0": {
+        "scenario": "NORMAL",
+        "start_balance": 150.0,
+        "end_balance": 264.68,
+        "net_profit": 114.68,
+        "return_pct": 76.45333333333333,
+        "trades": 568,
+        "wins": 397,
+        "win_rate": 0.698943661971831,
+        "profit_factor": 1.9735970795483486,
+        "expectancy": 0.2019014084507042,
+        "max_drawdown_money": 13.086940875262655,
+        "max_drawdown_pct": 5.776113728764909,
+        "total_commission": 97.72000000000001,
+        "estimated_entry_friction": 13.793873068787699,
+        "rejected": {
+          "position_busy": 2638,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 254,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2025-06": 0.39,
+          "2025-07": 4.07,
+          "2025-08": 12.18,
+          "2025-09": 9.21,
+          "2025-10": 10.98,
+          "2025-11": 7.73,
+          "2025-12": 10.85,
+          "2026-01": 20.16,
+          "2026-02": -1.53,
+          "2026-03": 3.62,
+          "2026-04": 24.42,
+          "2026-05": 12.6
+        },
+        "best_month": [
+          "2026-04",
+          24.42
+        ],
+        "worst_month": [
+          "2026-02",
+          -1.53
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 70,
+            "net_profit": 9.299999999999999,
+            "win_rate": 0.6714285714285714,
+            "profit_factor": 1.6062581486310303
+          },
+          "GBPUSD": {
+            "trades": 152,
+            "net_profit": 45.03,
+            "win_rate": 0.743421052631579,
+            "profit_factor": 2.8349633251833732
+          },
+          "USDJPY": {
+            "trades": 133,
+            "net_profit": 30.509999999999998,
+            "win_rate": 0.6917293233082706,
+            "profit_factor": 2.123756906077348
+          },
+          "USDCNH": {
+            "trades": 213,
+            "net_profit": 29.840000000000003,
+            "win_rate": 0.6807511737089202,
+            "profit_factor": 1.5878644602048855
+          }
+        }
+      }
+    },
+    "STRESS": {
+      "50.0": {
+        "scenario": "STRESS",
+        "start_balance": 50.0,
+        "end_balance": 43.9,
+        "net_profit": -6.100000000000001,
+        "return_pct": -12.200000000000003,
+        "trades": 182,
+        "wins": 82,
+        "win_rate": 0.45054945054945056,
+        "profit_factor": 0.5557174071376548,
+        "expectancy": -0.033516483516483515,
+        "max_drawdown_money": 6.504378997156309,
+        "max_drawdown_pct": 12.908075009240541,
+        "total_commission": 16.38,
+        "estimated_entry_friction": 1.3569269630342433,
+        "rejected": {
+          "position_busy": 1012,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 67,
+          "lot_or_risk": 2199,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2025-07": 0.22,
+          "2025-08": 0.17,
+          "2025-09": -1.19,
+          "2025-10": -1.1,
+          "2025-11": 0.27,
+          "2025-12": -0.16,
+          "2026-01": -0.21,
+          "2026-02": -1.94,
+          "2026-03": 0.07,
+          "2026-04": -1.38,
+          "2026-05": -0.85
+        },
+        "best_month": [
+          "2025-11",
+          0.27
+        ],
+        "worst_month": [
+          "2026-02",
+          -1.94
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0
+          },
+          "USDJPY": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0
+          },
+          "USDCNH": {
+            "trades": 182,
+            "net_profit": -6.1,
+            "win_rate": 0.45054945054945056,
+            "profit_factor": 0.5557174071376548
+          }
+        }
+      },
+      "100.0": {
+        "scenario": "STRESS",
+        "start_balance": 100.0,
+        "end_balance": 102.14,
+        "net_profit": 2.1400000000000006,
+        "return_pct": 2.1400000000000006,
+        "trades": 376,
+        "wins": 200,
+        "win_rate": 0.5319148936170213,
+        "profit_factor": 1.0450241952451083,
+        "expectancy": 0.00569148936170213,
+        "max_drawdown_money": 7.352400448531355,
+        "max_drawdown_pct": 7.037136723326336,
+        "total_commission": 45.809999999999995,
+        "estimated_entry_friction": 8.072867907985637,
+        "rejected": {
+          "position_busy": 1992,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 1092,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2025-07": -1.46,
+          "2025-08": 3.32,
+          "2025-09": -0.77,
+          "2025-10": -1.76,
+          "2025-11": 0.68,
+          "2025-12": 0.23,
+          "2026-01": 3.53,
+          "2026-02": -3.09,
+          "2026-03": 0.16,
+          "2026-04": 1.77,
+          "2026-05": -0.47
+        },
+        "best_month": [
+          "2026-01",
+          3.53
+        ],
+        "worst_month": [
+          "2026-02",
+          -3.09
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 5,
+            "net_profit": -0.27,
+            "win_rate": 0.6,
+            "profit_factor": 0.6746987951807228
+          },
+          "GBPUSD": {
+            "trades": 29,
+            "net_profit": 0.6600000000000004,
+            "win_rate": 0.5517241379310345,
+            "profit_factor": 1.138655462184874
+          },
+          "USDJPY": {
+            "trades": 105,
+            "net_profit": 5.5200000000000005,
+            "win_rate": 0.6476190476190476,
+            "profit_factor": 1.407982261640798
+          },
+          "USDCNH": {
+            "trades": 237,
+            "net_profit": -3.77,
+            "win_rate": 0.4767932489451477,
+            "profit_factor": 0.8673002463921154
+          }
+        }
+      },
+      "150.0": {
+        "scenario": "STRESS",
+        "start_balance": 150.0,
+        "end_balance": 199.77,
+        "net_profit": 49.77000000000001,
+        "return_pct": 33.18000000000001,
+        "trades": 528,
+        "wins": 325,
+        "win_rate": 0.615530303030303,
+        "profit_factor": 1.4999497739829228,
+        "expectancy": 0.09426136363636363,
+        "max_drawdown_money": 11.19480089706272,
+        "max_drawdown_pct": 5.953731264725161,
+        "total_commission": 92.16,
+        "estimated_entry_friction": 23.284267085845983,
+        "rejected": {
+          "position_busy": 2503,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 429,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2025-06": -1.41,
+          "2025-07": -0.86,
+          "2025-08": 9.9,
+          "2025-09": 3.53,
+          "2025-10": 3.5,
+          "2025-11": 5.57,
+          "2025-12": 9.86,
+          "2026-01": 7.12,
+          "2026-02": -3.27,
+          "2026-03": -1.23,
+          "2026-04": 12.84,
+          "2026-05": 4.22
+        },
+        "best_month": [
+          "2026-04",
+          12.84
+        ],
+        "worst_month": [
+          "2026-02",
+          -3.27
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 59,
+            "net_profit": 6.64,
+            "win_rate": 0.6949152542372882,
+            "profit_factor": 1.6125461254612548
+          },
+          "GBPUSD": {
+            "trades": 125,
+            "net_profit": 24.430000000000003,
+            "win_rate": 0.704,
+            "profit_factor": 2.1616737993342845
+          },
+          "USDJPY": {
+            "trades": 130,
+            "net_profit": 17.72,
+            "win_rate": 0.676923076923077,
+            "profit_factor": 1.8087631218621631
+          },
+          "USDCNH": {
+            "trades": 214,
+            "net_profit": 0.9799999999999995,
+            "win_rate": 0.5046728971962616,
+            "profit_factor": 1.0214114048503387
+          }
+        }
+      }
+    }
+  },
+  "acceptance_gates": {
+    "150.0": {
+      "normal": {
+        "net_profit_positive": true,
+        "profit_factor": true,
+        "max_drawdown": true,
+        "trade_count": true
+      },
+      "normal_pass": true,
+      "stress": {
+        "net_profit_nonnegative": true,
+        "profit_factor": true,
+        "max_drawdown": true,
+        "trade_count": true
+      },
+      "stress_pass": true
+    }
+  },
+  "acceptance_pass": true
+}

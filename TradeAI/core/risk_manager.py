@@ -13,6 +13,7 @@ from config.settings import (
     USE_ATR_STOPS,
     MAX_DRAWDOWN_PERCENT,
     MAX_DAILY_LOSS_PERCENT,
+    MAX_PORTFOLIO_RISK_PERCENT,
 )
 
 
@@ -146,12 +147,93 @@ class RiskManager:
                 pass
 
     def _max_actual_risk_percent(self):
-        # Calibrated risk is 0.30%. Never let broker lot rounding silently
-        # turn it into a 1%+ trade. A 25% tolerance is enough for volume steps.
+        # Never let broker lot rounding silently turn the calibrated budget into
+        # a much larger trade. A 25% tolerance is reserved for volume steps.
         return min(
             float(MAX_ACTUAL_RISK_PERCENT),
             self.risk_percent * 1.25
         )
+
+    @staticmethod
+    def _position_value(position, *names, default=None):
+        if isinstance(position, dict):
+            for name in names:
+                if name in position and position.get(name) is not None:
+                    return position.get(name)
+            return default
+        for name in names:
+            value = getattr(position, name, None)
+            if value is not None:
+                return value
+        return default
+
+    @staticmethod
+    def _position_direction(value):
+        if isinstance(value, bool):
+            return None
+        if isinstance(value, (int, float)):
+            if int(value) == 0:
+                return "BUY"
+            if int(value) == 1:
+                return "SELL"
+        text = str(value).strip().upper()
+        if text in {"BUY", "0", "POSITION_TYPE_BUY", "ORDER_TYPE_BUY"}:
+            return "BUY"
+        if text in {"SELL", "1", "POSITION_TYPE_SELL", "ORDER_TYPE_SELL"}:
+            return "SELL"
+        return None
+
+    def get_open_position_risk_money(self):
+        """Conservative aggregate loss-at-current-SL for open positions.
+
+        Risk is measured from the actual entry to the current stop. Stops that
+        have already moved beyond entry contribute only commission, so profit
+        protection immediately frees portfolio risk capacity.
+        """
+        total = 0.0
+        for position in self.get_all_positions():
+            try:
+                symbol = str(self._position_value(position, "symbol", default="") or "")
+                direction = self._position_direction(
+                    self._position_value(position, "type", "direction")
+                )
+                entry = float(self._position_value(position, "entry_price", "price_open"))
+                stop = float(self._position_value(position, "stop_loss", "sl"))
+                lot = float(self._position_value(position, "volume", "lot"))
+                if not symbol or direction not in {"BUY", "SELL"} or lot <= 0 or stop <= 0:
+                    continue
+
+                if direction == "BUY":
+                    loss_distance = max(0.0, entry - stop)
+                else:
+                    loss_distance = max(0.0, stop - entry)
+
+                pip = float(self.executor.pip_size(symbol))
+                pip_value = float(self.executor.pip_value_per_lot(symbol, price=entry))
+                price_risk = (loss_distance / pip) * pip_value * lot if pip > 0 else 0.0
+
+                commission = 0.0
+                exact_commission = self._position_value(position, "commission")
+                if exact_commission is not None:
+                    commission = abs(float(exact_commission))
+                else:
+                    getter = getattr(self.executor, "commission_for_lot", None)
+                    if callable(getter):
+                        commission = abs(float(getter(symbol, lot)))
+
+                total += max(0.0, price_risk) + max(0.0, commission)
+            except Exception:
+                # Unknown positions fail conservatively at the admission layer
+                # through the global position limit; do not crash live trading.
+                continue
+        return float(total)
+
+    def get_portfolio_risk_headroom_money(self):
+        balance = self._risk_balance()
+        if balance <= 0:
+            return 0.0
+        cap = balance * float(MAX_PORTFOLIO_RISK_PERCENT) / 100.0
+        return max(0.0, cap - self.get_open_position_risk_money())
 
 
     # =====================================================
@@ -159,14 +241,18 @@ class RiskManager:
     # =====================================================
 
     def get_allowed_risk_money(self):
-
         balance = self._risk_balance()
+        if balance <= 0:
+            return 0.0
 
-        return (
-            balance *
-            self.risk_percent /
-            100.0
-        )
+        per_trade = balance * self.risk_percent / 100.0
+        portfolio_headroom = self.get_portfolio_risk_headroom_money()
+        allowed = min(per_trade, portfolio_headroom)
+
+        if allowed <= 0:
+            self._record_rejection("PORTFOLIO_RISK_LIMIT")
+
+        return max(0.0, allowed)
 
 
     # =====================================================
@@ -176,71 +262,142 @@ class RiskManager:
     def calculate_lot(
             self,
             symbol,
-            stop_loss_distance,
-            price=None
+            stop_loss_distance=None,
+            price=None,
+            direction=None,
+            stop_loss=None
     ):
+
+        """
+        Calculate a broker-compatible lot from the NET loss at SL.
+
+        Preferred Stage 2 call:
+            price=requested/candle price
+            direction=BUY/SELL
+            stop_loss=absolute stop price
+
+        In that mode the executor supplies its expected executable
+        entry and commission, so spread/slippage/commission are part
+        of the risk budget. The old distance-only path remains for
+        compatibility with existing tests/tools.
+        """
 
         try:
 
-            stop_loss_distance = float(
-                stop_loss_distance
+            net_risk_mode = (
+                price is not None
+                and direction is not None
+                and stop_loss is not None
             )
 
-            if stop_loss_distance <= 0:
-                return None
+            estimate = None
 
-            pip = float(
-                self.executor.pip_size(
-                    symbol
+            if net_risk_mode:
+
+                estimator = getattr(
+                    self.executor,
+                    "estimate_stop_loss_risk",
+                    None
                 )
-            )
 
-            if pip <= 0:
-                return None
+                if not callable(estimator):
+                    return None
 
-            stop_pips = (
-                stop_loss_distance /
-                pip
-            )
-
-            if stop_pips <= 0:
-                return None
-
-            pip_value_per_lot = float(
-                self.executor.pip_value_per_lot(
+                estimate = estimator(
                     symbol,
-                    price=price
+                    direction,
+                    price,
+                    stop_loss,
+                    1.0
                 )
-            )
 
-            if pip_value_per_lot <= 0:
+                risk_per_lot = float(
+                    estimate["net_risk"]
+                )
+
+                stop_pips = float(
+                    estimate["stop_pips"]
+                )
+
+                pip_value_per_lot = float(
+                    estimate["pip_value_per_lot"]
+                )
+
+                estimated_entry = float(
+                    estimate["entry_price"]
+                )
+
+            else:
+
+                if stop_loss_distance is None:
+                    return None
+
+                stop_loss_distance = float(
+                    stop_loss_distance
+                )
+
+                if stop_loss_distance <= 0:
+                    return None
+
+                pip = float(
+                    self.executor.pip_size(
+                        symbol
+                    )
+                )
+
+                if pip <= 0:
+                    return None
+
+                stop_pips = (
+                    stop_loss_distance
+                    / pip
+                )
+
+                if stop_pips <= 0:
+                    return None
+
+                pip_value_per_lot = float(
+                    self.executor.pip_value_per_lot(
+                        symbol,
+                        price=price
+                    )
+                )
+
+                if pip_value_per_lot <= 0:
+                    return None
+
+                risk_per_lot = (
+                    stop_pips
+                    * pip_value_per_lot
+                )
+
+                estimated_entry = (
+                    float(price)
+                    if price is not None
+                    else 0.0
+                )
+
+            if (
+                not math.isfinite(risk_per_lot)
+                or
+                risk_per_lot <= 0
+            ):
                 return None
 
             allowed_risk = (
                 self.get_allowed_risk_money()
             )
 
+            if allowed_risk <= 0:
+                return None
+
             raw_lot = (
-                allowed_risk /
-                (
-                    stop_pips *
-                    pip_value_per_lot
-                )
+                allowed_risk
+                / risk_per_lot
             )
 
             # -------------------------------------------------
             # BROKER MINIMUM-LOT COMPATIBILITY
-            # -------------------------------------------------
-            #
-            # Do not discard a valid signal only because the exact
-            # calculated lot is slightly below the broker minimum.
-            #
-            # We may TRY the broker minimum lot, but it is approved
-            # only after calculating the real stop-loss risk and
-            # proving it remains inside the calibrated tolerance.
-            #
-            # This preserves safe opportunities without silently
-            # turning a 0.30% strategy into a much larger-risk trade.
             # -------------------------------------------------
 
             lot_request = raw_lot
@@ -281,6 +438,16 @@ class RiskManager:
                 lot_request
             )
 
+            # Some executors/tests expose only normalize_lot() and do not
+            # provide get_lot_limits(). If normalization rounds the request
+            # upward, treat it as a minimum/step fallback for rejection
+            # telemetry instead of mislabelling it as a generic risk breach.
+            if (
+                lot is not None
+                and float(lot) > float(raw_lot) + 1e-12
+            ):
+                used_minimum_fallback = True
+
             if lot is None:
 
                 self._record_rejection(
@@ -290,27 +457,51 @@ class RiskManager:
                 log(
                     f"DEBUG | LOW BALANCE LOT REJECTED "
                     f"{symbol} "
-                    f"risk_balance="
-                    f"${self._risk_balance():.2f} "
-                    f"allowed_risk="
-                    f"${allowed_risk:.2f} "
-                    f"stop="
-                    f"{stop_pips:.1f}p "
-                    f"raw_lot="
-                    f"{raw_lot:.6f}"
+                    f"risk_balance=${self._risk_balance():.2f} "
+                    f"allowed_risk=${allowed_risk:.2f} "
+                    f"stop={stop_pips:.2f}p "
+                    f"raw_lot={raw_lot:.6f}"
                 )
 
                 return None
 
             # -------------------------------------------------
-            # ACTUAL RISK AFTER BROKER NORMALIZATION
+            # ACTUAL NET RISK AFTER BROKER NORMALIZATION
             # -------------------------------------------------
 
-            actual_risk = (
-                stop_pips *
-                pip_value_per_lot *
-                lot
-            )
+            if net_risk_mode:
+
+                actual_estimate = (
+                    self.executor.estimate_stop_loss_risk(
+                        symbol,
+                        direction,
+                        price,
+                        stop_loss,
+                        lot
+                    )
+                )
+
+                actual_risk = float(
+                    actual_estimate["net_risk"]
+                )
+
+                price_risk = float(
+                    actual_estimate["price_risk"]
+                )
+
+                commission = float(
+                    actual_estimate["commission"]
+                )
+
+            else:
+
+                actual_risk = (
+                    risk_per_lot
+                    * lot
+                )
+
+                price_risk = actual_risk
+                commission = 0.0
 
             balance = self._risk_balance()
 
@@ -318,35 +509,28 @@ class RiskManager:
                 return None
 
             actual_risk_percent = (
-                actual_risk /
-                balance
+                actual_risk
+                / balance
             ) * 100.0
 
-            # -------------------------------------------------
-            # SAFETY GATE
-            # -------------------------------------------------
-
             if (
-                actual_risk_percent >
-                self._max_actual_risk_percent()
+                actual_risk_percent
+                > self._max_actual_risk_percent()
             ):
 
                 self._record_rejection(
                     "MIN_LOT_TOO_RISKY"
+                    if used_minimum_fallback
+                    else "RISK_AMOUNT_EXCEEDED"
                 )
 
                 log(
-                    f"WARNING | MIN LOT TOO RISKY "
+                    f"WARNING | LOT RISK REJECTED "
                     f"{symbol} "
-                    f"lot={lot} "
-                    f"actual_risk="
-                    f"${actual_risk:.2f} "
-                    f"actual_risk_pct="
-                    f"{actual_risk_percent:.2f}% "
-                    f"max="
-                    f"{self._max_actual_risk_percent():.3f}% "
-                    f"stop="
-                    f"{stop_pips:.1f}p"
+                    f"lot={lot:.6f} "
+                    f"net_risk=${actual_risk:.2f} "
+                    f"risk_pct={actual_risk_percent:.3f}% "
+                    f"max={self._max_actual_risk_percent():.3f}%"
                 )
 
                 return None
@@ -356,35 +540,25 @@ class RiskManager:
                 log(
                     f"INFO | BROKER MIN LOT SAFE "
                     f"{symbol} "
-                    f"raw_lot="
-                    f"{raw_lot:.6f} "
-                    f"broker_lot="
-                    f"{lot:.6f} "
-                    f"actual_risk="
-                    f"${actual_risk:.2f} "
-                    f"actual_risk_pct="
-                    f"{actual_risk_percent:.3f}% "
-                    f"max="
-                    f"{self._max_actual_risk_percent():.3f}%"
+                    f"raw_lot={raw_lot:.6f} "
+                    f"broker_lot={lot:.6f} "
+                    f"net_risk=${actual_risk:.2f} "
+                    f"risk_pct={actual_risk_percent:.3f}%"
                 )
 
             log(
                 f"DEBUG | LOT APPROVED "
                 f"{symbol} "
-                f"balance="
-                f"${balance:.2f} "
-                f"allowed="
-                f"${allowed_risk:.2f} "
-                f"stop="
-                f"{stop_pips:.1f}p "
-                f"raw="
-                f"{raw_lot:.6f} "
-                f"final="
-                f"{lot:.6f} "
-                f"actual_risk="
-                f"${actual_risk:.2f} "
-                f"actual_risk_pct="
-                f"{actual_risk_percent:.3f}%"
+                f"balance=${balance:.2f} "
+                f"allowed=${allowed_risk:.2f} "
+                f"entry={estimated_entry:.6f} "
+                f"stop={stop_pips:.2f}p "
+                f"raw={raw_lot:.6f} "
+                f"final={lot:.6f} "
+                f"price_risk=${price_risk:.2f} "
+                f"commission=${commission:.2f} "
+                f"net_risk=${actual_risk:.2f} "
+                f"risk_pct={actual_risk_percent:.3f}%"
             )
 
             return lot
@@ -406,77 +580,99 @@ class RiskManager:
             self,
             symbol,
             lot,
-            stop_distance,
-            price=None
+            stop_distance=None,
+            price=None,
+            direction=None,
+            stop_loss=None
     ):
 
         try:
 
-            pip = float(
-                self.executor.pip_size(
-                    symbol
+            net_risk_mode = (
+                price is not None
+                and direction is not None
+                and stop_loss is not None
+            )
+
+            if net_risk_mode:
+
+                estimate = (
+                    self.executor.estimate_stop_loss_risk(
+                        symbol,
+                        direction,
+                        price,
+                        stop_loss,
+                        lot
+                    )
                 )
-            )
 
-            if pip <= 0:
-                return False
-
-
-            stop_pips = (
-                float(stop_distance) /
-                pip
-            )
-
-
-            pip_value = float(
-                self.executor.pip_value_per_lot(
-                    symbol,
-                    price=price
+                risk = float(
+                    estimate["net_risk"]
                 )
-            )
 
+            else:
 
-            risk = (
-                stop_pips *
-                pip_value *
-                float(lot)
-            )
+                if stop_distance is None:
+                    return False
 
+                pip = float(
+                    self.executor.pip_size(
+                        symbol
+                    )
+                )
+
+                if pip <= 0:
+                    return False
+
+                stop_pips = (
+                    float(stop_distance)
+                    / pip
+                )
+
+                pip_value = float(
+                    self.executor.pip_value_per_lot(
+                        symbol,
+                        price=price
+                    )
+                )
+
+                risk = (
+                    stop_pips
+                    * pip_value
+                    * float(lot)
+                )
 
             balance = self._risk_balance()
-
 
             if balance <= 0:
                 return False
 
-
             risk_percent = (
-                risk /
-                balance
+                risk
+                / balance
             ) * 100.0
 
-
             if (
-                risk_percent >
-                self._max_actual_risk_percent()
+                risk_percent
+                > self._max_actual_risk_percent()
             ):
 
-                self._record_rejection("RISK_AMOUNT_EXCEEDED")
+                self._record_rejection(
+                    "RISK_AMOUNT_EXCEEDED"
+                )
 
                 log(
                     f"WARNING | RISK REJECTED "
                     f"{symbol} "
-                    f"lot={lot} "
-                    f"risk=${risk:.2f} "
-                    f"risk_pct={risk_percent:.2f}% "
+                    f"lot={float(lot):.6f} "
+                    f"net_risk=${risk:.2f} "
+                    f"risk_pct={risk_percent:.3f}% "
                     f"max={self._max_actual_risk_percent():.3f}%"
                 )
 
                 return False
 
-
             return True
-
 
         except Exception as e:
 

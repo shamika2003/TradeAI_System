@@ -27,12 +27,15 @@ def compute_weights(y, best_r=None):
         weights[y == cls] = n / (3.0 * counts[cls])
 
     if best_r is not None:
+        # Profit-first weighting: reward samples with genuinely positive
+        # executable edge. The old abs(best_r) also up-weighted strongly
+        # negative/no-trade rows, which diluted the directional objective.
         strength = np.asarray(best_r, dtype=np.float64)
-        strength = np.nan_to_num(strength, nan=0.0, posinf=2.0, neginf=0.0)
-        strength = np.clip(np.abs(strength), 0.0, 2.0)
-        weights *= 1.0 + 0.20 * strength
+        strength = np.nan_to_num(strength, nan=0.0, posinf=3.0, neginf=0.0)
+        strength = np.clip(strength, 0.0, 3.0)
+        weights *= 1.0 + 0.30 * strength
 
-    return np.clip(weights, 0.25, 4.0)
+    return np.clip(weights, 0.25, 5.0)
 
 
 def probability_columns(model, proba):

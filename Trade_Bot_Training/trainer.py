@@ -9,11 +9,20 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 
-from config_model import DATA_PATH, DATASET_METADATA_PATH, MODEL_PARAMS, MODEL_PATH, SYMBOLS, TIMEFRAME_NAME
+from config_model import (
+    DATA_PATH,
+    DATASET_METADATA_PATH,
+    MODEL_PARAMS,
+    MODEL_PATH,
+    SYMBOLS,
+    TIMEFRAME_NAME,
+    TRAINING_CUTOFF_DATE,
+)
 from feature_engine import FEATURE_HASH, FEATURE_SCHEMA_VERSION, FeatureTransformer
 from training_utils import aggregate_fold_metrics, compute_weights, create_model, evaluate_probabilities
 from shared.tradeai_core.model_contract import create_model_artifact
 from shared.tradeai_core.target_definition import MAX_TARGET_HORIZON_BARS, TARGET_VERSION
+from shared.tradeai_core.training_window import apply_supervised_training_cutoff
 
 
 def _load_dataset_metadata() -> dict:
@@ -55,7 +64,17 @@ def load_data():
     df.dropna(subset=required, inplace=True)
     df["target_class"] = df["target_class"].astype(np.int32)
     df = df.sort_values(["time", "symbol"]).reset_index(drop=True)
-    return df, metadata, features
+
+    df, training_window = apply_supervised_training_cutoff(
+        df,
+        cutoff_exclusive=TRAINING_CUTOFF_DATE,
+        label_horizon_bars=MAX_TARGET_HORIZON_BARS,
+    )
+
+    effective_metadata = dict(metadata)
+    effective_metadata["training_cutoff_date"] = TRAINING_CUTOFF_DATE
+    effective_metadata["training_window"] = training_window.as_dict()
+    return df, effective_metadata, features, training_window.as_dict()
 
 
 def _print_metrics(prefix: str, m: dict):
@@ -79,8 +98,13 @@ def train():
     print(f"🔐 Feature hash   : {FEATURE_HASH}")
     print(f"🎯 Target version : {TARGET_VERSION}")
 
-    df, dataset_metadata, features = load_data()
+    df, dataset_metadata, features, training_window = load_data()
     print(f"✔ Dataset loaded | Rows: {len(df):,}")
+    print(
+        f"🔒 Training window : {training_window['mode']} | "
+        f"fit_end={training_window['fit_end']} | "
+        f"backtest_safe_from={training_window['backtest_safe_from'] or 'FORWARD ONLY'}"
+    )
 
     models = {}
     report = {}
@@ -153,6 +177,7 @@ def train():
         training_metadata=dataset_metadata,
         metrics=report,
         model_params=MODEL_PARAMS,
+        training_window=training_window,
     )
     MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(artifact, MODEL_PATH)

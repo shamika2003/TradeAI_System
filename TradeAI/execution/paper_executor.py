@@ -16,7 +16,8 @@ from config.settings import (
     TRADE_LOT,
     COMMISSION_PER_LOT,
     DEFAULT_SPREAD_PIPS,
-    SIMULATED_SLIPPAGE_PIPS
+    SIMULATED_SLIPPAGE_PIPS,
+    HISTORICAL_OHLC_SIDE
 )
 
 
@@ -101,7 +102,7 @@ class PaperExecutor(BaseExecutor):
 
         slippage = (
 
-            float(SIMULATED_SLIPPAGE_PIPS) *
+            self.slippage_pips(symbol) *
 
             self.pip_size(symbol)
 
@@ -114,6 +115,84 @@ class PaperExecutor(BaseExecutor):
 
 
         return price - slippage
+
+
+    def estimate_entry_price(
+            self,
+            symbol,
+            direction,
+            requested_price
+    ):
+
+        """
+        Estimate the PAPER/BACKTEST fill from MT5-style historical bars.
+
+        MT5 FX OHLC is treated as BID-side data:
+            BUY  -> ASK = BID + spread, then adverse slippage
+            SELL -> BID, then adverse slippage
+
+        MID mode remains available for non-MT5 datasets.
+        """
+
+        requested = float(requested_price)
+        direction = str(direction).upper()
+        spread = (
+            self.spread_pips(symbol)
+            * self.pip_size(symbol)
+        )
+
+        if direction not in ("BUY", "SELL"):
+            raise ValueError(
+                f"Invalid direction: {direction}"
+            )
+
+        side = str(HISTORICAL_OHLC_SIDE).strip().upper()
+
+        if side == "BID":
+            market_price = (
+                requested + spread
+                if direction == "BUY"
+                else requested
+            )
+        else:
+            market_price = (
+                requested + spread / 2.0
+                if direction == "BUY"
+                else requested - spread / 2.0
+            )
+
+        filled = self.slippage_price(
+            symbol,
+            market_price,
+            direction,
+        )
+
+        return self.normalize_price(
+            symbol,
+            filled,
+        )
+
+
+    def _closeable_price_from_bid(
+            self,
+            symbol,
+            direction,
+            bid_price
+    ):
+
+        bid = float(bid_price)
+        direction = str(direction).upper()
+
+        if str(HISTORICAL_OHLC_SIDE).strip().upper() != "BID":
+            return bid
+
+        if direction == "SELL":
+            return self.normalize_price(
+                symbol,
+                bid + self.spread_pips(symbol) * self.pip_size(symbol),
+            )
+
+        return self.normalize_price(symbol, bid)
 
 
     # =====================================================
@@ -207,49 +286,18 @@ class PaperExecutor(BaseExecutor):
 
 
             # -------------------------------------------------
-            # SPREAD
+            # EXECUTION PRICE
             # -------------------------------------------------
 
-            spread = (
+            try:
 
-                DEFAULT_SPREAD_PIPS *
-
-                self.pip_size(symbol)
-
-            )
-
-
-            # -------------------------------------------------
-            # APPLY HALF SPREAD
-            #
-            # BUY:
-            #     buy at higher price
-            #
-            # SELL:
-            #     sell at lower price
-            # -------------------------------------------------
-
-            if direction == "BUY":
-
-                entry = (
-
-                    requested_price +
-
-                    spread / 2
-
+                entry = self.estimate_entry_price(
+                    symbol,
+                    direction,
+                    requested_price
                 )
 
-            elif direction == "SELL":
-
-                entry = (
-
-                    requested_price -
-
-                    spread / 2
-
-                )
-
-            else:
+            except ValueError:
 
                 log(
                     f"ERROR | Invalid direction "
@@ -260,30 +308,21 @@ class PaperExecutor(BaseExecutor):
 
 
             # -------------------------------------------------
-            # SLIPPAGE
-            # -------------------------------------------------
-
-            entry = self.slippage_price(
-
-                symbol,
-
-                entry,
-
-                direction
-
-            )
-
-
-            # -------------------------------------------------
             # VALIDATE SL / TP DIRECTION
             # -------------------------------------------------
 
-            stop_loss = float(
-                stop_loss
+            stop_loss = self.normalize_price(
+                symbol,
+                stop_loss,
             )
 
-            take_profit = float(
-                take_profit
+            take_profit = self.normalize_price(
+                symbol,
+                take_profit,
+            )
+
+            minimum_stop_distance = self.minimum_stop_distance(
+                symbol
             )
 
 
@@ -340,15 +379,34 @@ class PaperExecutor(BaseExecutor):
 
 
             # -------------------------------------------------
+            # BROKER MINIMUM STOP DISTANCE
+            # -------------------------------------------------
+
+            if minimum_stop_distance > 0:
+
+                if direction == "BUY":
+                    if (entry - stop_loss) < minimum_stop_distance:
+                        log(f"ERROR | BUY SL too close {symbol}")
+                        return False
+                    if (take_profit - entry) < minimum_stop_distance:
+                        log(f"ERROR | BUY TP too close {symbol}")
+                        return False
+                else:
+                    if (stop_loss - entry) < minimum_stop_distance:
+                        log(f"ERROR | SELL SL too close {symbol}")
+                        return False
+                    if (entry - take_profit) < minimum_stop_distance:
+                        log(f"ERROR | SELL TP too close {symbol}")
+                        return False
+
+
+            # -------------------------------------------------
             # COMMISSION
             # -------------------------------------------------
 
-            commission = (
-
-                COMMISSION_PER_LOT *
-
-                lot
-
+            commission = self.commission_for_lot(
+                symbol,
+                lot,
             )
 
 
@@ -499,14 +557,15 @@ class PaperExecutor(BaseExecutor):
         try:
 
 
-            price = float(
-                price
-            )
-
-
             position = self.positions[
                 symbol
             ]
+
+            price = self._closeable_price_from_bid(
+                symbol,
+                position["type"],
+                price,
+            )
 
 
             position[
@@ -658,6 +717,20 @@ class PaperExecutor(BaseExecutor):
                 candle["close"]
             )
 
+            spread_price = (
+                self.spread_pips(symbol)
+                * self.pip_size(symbol)
+            )
+
+            if str(HISTORICAL_OHLC_SIDE).strip().upper() == "BID":
+                sell_high = high + spread_price
+                sell_low = low + spread_price
+                sell_close = close + spread_price
+            else:
+                sell_high = high
+                sell_low = low
+                sell_close = close
+
 
             # -------------------------------------------------
             # BASIC OHLC VALIDATION
@@ -801,7 +874,7 @@ class PaperExecutor(BaseExecutor):
 
                 sl_hit = (
 
-                    high >=
+                    sell_high >=
 
                     position["stop_loss"]
 
@@ -810,7 +883,7 @@ class PaperExecutor(BaseExecutor):
 
                 tp_hit = (
 
-                    low <=
+                    sell_low <=
 
                     position["take_profit"]
 
@@ -897,9 +970,20 @@ class PaperExecutor(BaseExecutor):
             # Mark position at candle close.
             # -------------------------------------------------
 
+            mark_price = (
+                close
+                if position["type"] == "BUY"
+                else sell_close
+            )
+
+            mark_price = self.normalize_price(
+                symbol,
+                mark_price,
+            )
+
             position[
                 "current_price"
-            ] = close
+            ] = mark_price
 
 
             gross_profit = self.calculate_profit(
@@ -908,7 +992,7 @@ class PaperExecutor(BaseExecutor):
 
                 position["entry_price"],
 
-                close,
+                mark_price,
 
                 position["type"],
 
@@ -1462,51 +1546,60 @@ class PaperExecutor(BaseExecutor):
             take_profit=None
     ):
 
-
         if symbol not in self.positions:
-
             return False
 
+        position = self.positions[symbol]
+        direction = str(position["type"]).upper()
+        current = float(position["current_price"])
+        minimum = self.minimum_stop_distance(symbol)
 
-        position = self.positions[
-            symbol
-        ]
-
-
-        # -------------------------------------------------
-        # MODIFY SL
-        # -------------------------------------------------
+        new_sl = position["stop_loss"]
+        new_tp = position["take_profit"]
 
         if stop_loss is not None:
-
-            position[
-                "stop_loss"
-            ] = float(
-                stop_loss
+            new_sl = self.normalize_price(
+                symbol,
+                stop_loss,
             )
 
-
-        # -------------------------------------------------
-        # MODIFY TP
-        # -------------------------------------------------
+            if direction == "BUY":
+                if new_sl >= current:
+                    return False
+                if minimum > 0 and (current - new_sl) < minimum:
+                    return False
+            else:
+                if new_sl <= current:
+                    return False
+                if minimum > 0 and (new_sl - current) < minimum:
+                    return False
 
         if take_profit is not None:
-
-            position[
-                "take_profit"
-            ] = float(
-                take_profit
+            new_tp = self.normalize_price(
+                symbol,
+                take_profit,
             )
 
+            if direction == "BUY":
+                if new_tp <= current:
+                    return False
+                if minimum > 0 and (new_tp - current) < minimum:
+                    return False
+            else:
+                if new_tp >= current:
+                    return False
+                if minimum > 0 and (current - new_tp) < minimum:
+                    return False
+
+        position["stop_loss"] = new_sl
+        position["take_profit"] = new_tp
 
         log(
-
             f"INFO | PAPER MODIFY "
             f"{symbol} "
             f"SL={position['stop_loss']} "
             f"TP={position['take_profit']}"
-
         )
 
-
         return True
+

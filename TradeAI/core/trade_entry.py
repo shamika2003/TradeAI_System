@@ -254,9 +254,11 @@ class TradeEntryEngine:
 
                 symbol,
 
-                stop_distance,
+                price=price,
 
-                price=price
+                direction=direction,
+
+                stop_loss=stop_loss
 
             )
 
@@ -287,7 +289,11 @@ class TradeEntryEngine:
 
                     stop_distance,
 
-                    price=price
+                    price=price,
+
+                    direction=direction,
+
+                    stop_loss=stop_loss
 
             ):
 

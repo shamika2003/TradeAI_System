@@ -24,6 +24,10 @@ _PATHS = {
     "activity": '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
     "control": '<circle cx="12" cy="12" r="8"/><path d="M12 3v7M8.5 6.5a7 7 0 1 0 7 0"/>',
     "search": '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+    "window_minimize": '<path d="M6 16h12"/>',
+    "window_maximize": '<rect x="6" y="6" width="12" height="12" rx="1.5"/>',
+    "window_restore": '<path d="M8 8h9v9H8z"/><path d="M6 14V6h8"/>',
+    "window_close": '<path d="M7 7l10 10M17 7 7 17"/>',
 }
 
 

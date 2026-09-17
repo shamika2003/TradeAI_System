@@ -8,6 +8,8 @@ import signal
 import time
 from datetime import datetime, timezone
 
+import joblib
+
 
 from config.settings import (
 
@@ -26,6 +28,8 @@ from config.settings import (
 
     LIVE_INTERVAL,
     REPORT_DIR,
+    MODEL_PATH,
+    TIMEFRAME,
     BACKTEST_START_DATE,
     BACKTEST_END_DATE
 
@@ -39,7 +43,13 @@ from core.feature_engine import FeatureTransformer, FEATURE_NAMES
 from core.core_engine import CoreEngine
 
 from core.command_control import CommandControl
-from core.runtime_control import EngineInstanceLock, ui_launch_context
+from core.runtime_control import EngineInstanceLock
+
+from shared.tradeai_core.model_contract import (
+    assert_backtest_is_out_of_sample,
+    validate_model_artifact,
+)
+from shared.tradeai_core.target_definition import TARGET_VERSION
 
 
 
@@ -72,6 +82,7 @@ else:
 # =====================================================
 
 running = True
+backtest_training_window = None
 
 
 
@@ -350,6 +361,7 @@ def _write_runtime_backtest_summary(executor, replay):
         "mode": "BACKTEST",
         "start_date": BACKTEST_START_DATE,
         "end_date": BACKTEST_END_DATE,
+        "training_window": backtest_training_window,
         "start_balance": start_balance,
         "end_balance": end_balance,
         "net_profit": sum(profits),
@@ -413,23 +425,13 @@ def _write_runtime_backtest_summary(executor, replay):
 
 def main():
 
-    global running
+    global running, backtest_training_window
     running = True
-
-    # Engine processes are UI-owned by design. Running demo_bot.py directly,
-    # from a stale shortcut, or from an orphaned terminal is intentionally blocked.
-    ui_ok, ui_reason, owner_pid, session_id = ui_launch_context()
-    if not ui_ok:
-        log(f"ERROR | {ui_reason}")
-        return
+    backtest_training_window = None
 
     # Shared artifacts/control files make concurrent TradeAI engines unsafe.
-    # The lock also records which dashboard session owns this exact engine PID.
-    instance_guard = EngineInstanceLock(
-        MODE,
-        owner_pid=owner_pid,
-        session_id=session_id,
-    )
+    # This also prevents DEMO_FORWARD + BACKTEST from running at the same time.
+    instance_guard = EngineInstanceLock(MODE)
     try:
         instance_guard.acquire()
     except Exception as exc:
@@ -437,18 +439,45 @@ def main():
         return
     atexit.register(instance_guard.release)
 
-    try:
-        controller = CommandControl(mode=MODE)
-    except Exception as exc:
-        instance_guard.release()
-        log(f"ERROR | TradeAI UI ownership validation failed: {exc}")
-        return
-
+    controller = CommandControl(mode=MODE)
     controller.start(initial_state="STARTING", note="Initializing TradeAI")
 
     log(
         f"INFO | Starting Trade AI mode={MODE} pid={instance_guard.pid}"
     )
+
+    # =================================================
+    # BACKTEST PROVENANCE GUARD
+    # =================================================
+    # A runtime historical backtest is allowed only when the model was trained
+    # with a dedicated cutoff at or before the requested backtest start.
+    # This blocks the previous in-sample mistake where a full-history model was
+    # evaluated on dates it had already learned from.
+    if MODE == "BACKTEST":
+        try:
+            artifact = joblib.load(MODEL_PATH)
+            validate_model_artifact(
+                artifact,
+                expected_symbols=SYMBOLS,
+                expected_timeframe=f"M{TIMEFRAME}",
+                expected_target_version=TARGET_VERSION,
+            )
+            backtest_training_window = assert_backtest_is_out_of_sample(
+                artifact,
+                backtest_start=BACKTEST_START_DATE,
+                backtest_end=BACKTEST_END_DATE,
+            )
+            log(
+                f"INFO | BACKTEST PROVENANCE OK "
+                f"fit_end={backtest_training_window['fit_end']} "
+                f"safe_from={backtest_training_window['backtest_safe_from']} "
+                f"requested={BACKTEST_START_DATE}->{BACKTEST_END_DATE}"
+            )
+        except Exception as exc:
+            message = str(exc)
+            log(f"ERROR | {message}")
+            controller.shutdown("ERROR", message)
+            return
 
 
 

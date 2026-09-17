@@ -30,8 +30,12 @@ from config.settings import (
     DEMO_FORWARD_MAX_DD_PERCENT,
     DEMO_FORWARD_MIN_PROFIT_FACTOR,
     DEMO_FORWARD_MIN_RETURN_PERCENT,
+    BROKER_PROFILE_PATH,
+    COMMISSION_PER_LOT,
+    SIMULATED_SLIPPAGE_PIPS,
 )
 from shared.tradeai_core.demo_forward import DemoForwardLedger
+from shared.tradeai_core.broker_profile import capture_mt5_broker_profile
 
 
 class BrainExecutor(BaseExecutor):
@@ -169,6 +173,30 @@ class BrainExecutor(BaseExecutor):
             self.initial_capital = self.balance
 
 
+        # -------------------------------------------------
+        # SNAPSHOT BROKER EXECUTION RULES FOR BACKTEST PARITY
+        # -------------------------------------------------
+
+        try:
+            profile = capture_mt5_broker_profile(
+                mt5,
+                SYMBOLS,
+                path=BROKER_PROFILE_PATH,
+                commission_per_lot=COMMISSION_PER_LOT,
+                slippage_pips=SIMULATED_SLIPPAGE_PIPS,
+            )
+            self.reload_broker_profile()
+            log(
+                f"INFO | Broker profile captured "
+                f"symbols={len(profile.get('symbols', {}))} "
+                f"path={BROKER_PROFILE_PATH}"
+            )
+        except Exception as e:
+            log(
+                f"WARNING | Broker profile capture failed: {e}"
+            )
+
+
         log(
             f"INFO | MT5 Executor initialized "
             f"broker_balance=${self.balance:.2f} "
@@ -208,6 +236,40 @@ class BrainExecutor(BaseExecutor):
 
             log(
                 f"ERROR | _get_symbol_info "
+                f"{symbol}: {e}"
+            )
+
+            return None
+
+
+    def _get_symbol_tick(
+            self,
+            symbol
+    ):
+
+        try:
+
+            tick = mt5.symbol_info_tick(
+                symbol
+            )
+
+            if tick is None:
+
+                log(
+                    f"ERROR | Unable to read symbol tick "
+                    f"{symbol}"
+                )
+
+                return None
+
+
+            return tick
+
+
+        except Exception as e:
+
+            log(
+                f"ERROR | _get_symbol_tick "
                 f"{symbol}: {e}"
             )
 

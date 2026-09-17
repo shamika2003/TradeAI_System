@@ -156,6 +156,8 @@ class CoreEngine:
         self.synced = False
 
         self.last_prediction_candle = {}
+        self.last_management_prediction_candle = {}
+        self.management_prediction_cache = {}
 
 
         log(
@@ -228,6 +230,50 @@ class CoreEngine:
             )
 
             return None
+
+
+    # =====================================================
+    # MANAGEMENT PREDICTION
+    # =====================================================
+
+    def _get_management_prediction(
+            self,
+            symbol,
+            df,
+            candle_time
+    ):
+
+        """
+        Get one causal model decision per candle while a trade is open.
+
+        In backtest mode ``df`` contains only candles completed before the
+        replay execution candle. The result can therefore be used to manage
+        the position before that future candle is processed.
+        """
+
+        if df is None or df.empty:
+            return None
+
+        cached_candle = self.last_management_prediction_candle.get(symbol)
+        if cached_candle == candle_time:
+            return self.management_prediction_cache.get(symbol)
+
+        predictor = self.predictors.get(symbol)
+        if predictor is None:
+            return None
+
+        try:
+            prediction = predictor.predict(df, symbol)
+        except TypeError:
+            prediction = predictor.predict(df, None, symbol)
+        except Exception as e:
+            log(f"WARNING | Management prediction {symbol}: {e}")
+            prediction = None
+
+        self.last_management_prediction_candle[symbol] = candle_time
+        self.management_prediction_cache[symbol] = prediction
+
+        return prediction
 
 
     # =====================================================
@@ -340,7 +386,9 @@ class CoreEngine:
     def _manage_live_trade(
             self,
             symbol,
-            current_atr
+            current_atr,
+            prediction=None,
+            candle_time=None
     ):
 
         """
@@ -395,7 +443,11 @@ class CoreEngine:
 
             symbol,
 
-            current_atr
+            current_atr,
+
+            candle_time=candle_time,
+
+            prediction=prediction
 
         )
 
@@ -469,66 +521,67 @@ class CoreEngine:
             ):
 
                 # -------------------------------------------------
+                # Causal management prediction
+                # -------------------------------------------------
+                #
+                # While a trade is open we still ask the model for its
+                # current directional edge. In replay mode df ends BEFORE
+                # the current execution candle, so this cannot see the
+                # future candle.
+                # -------------------------------------------------
+
+                management_prediction = self._get_management_prediction(
+                    symbol=symbol,
+                    df=df,
+                    candle_time=candle_time
+                )
+
+                # -------------------------------------------------
                 # PAPER / BACKTEST
                 # -------------------------------------------------
                 #
-                # The replay candle is the execution candle.
-                #
-                # The AI does NOT see this candle.
+                # Management happens BEFORE the future execution candle.
+                # This lets a stop moved from the last completed candle
+                # protect the next candle instead of being applied one bar
+                # too late.
                 # -------------------------------------------------
 
                 if self.replay is not None:
 
-                    closed = (
-                        self._manage_paper_trade(
-                            symbol=symbol,
-                            candle_time=candle_time
-                        )
-                    )
-
-
-                    if closed:
-
-                        return
-
-
-                    # -------------------------------------------------
-                    # Position still open.
-                    #
-                    # Update management using the executor's current
-                    # price.
-                    # -------------------------------------------------
-
                     self.trade_manager.update(
-
                         symbol,
-
                         current_atr,
-
-                        candle_time=candle_time
-
+                        candle_time=candle_time,
+                        prediction=management_prediction
                     )
 
-                    # MAX_HOLD may have closed the paper position at this candle close.
+                    # Manager may close because of MAX_HOLD or an AI
+                    # defensive exit before the future candle executes.
                     if not self.executor.has_open_trade(symbol):
                         self.risk.register_trade_close(symbol, candle_time)
                         self.reset_symbol(symbol)
+                        return
+
+                    closed = self._manage_paper_trade(
+                        symbol=symbol,
+                        candle_time=candle_time
+                    )
+
+                    if closed:
+                        return
 
                     return
-
 
                 # -------------------------------------------------
                 # LIVE MT5
                 # -------------------------------------------------
 
                 self._manage_live_trade(
-
                     symbol=symbol,
-
-                    current_atr=current_atr
-
+                    current_atr=current_atr,
+                    prediction=management_prediction,
+                    candle_time=candle_time
                 )
-
 
                 return
 

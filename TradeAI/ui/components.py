@@ -7,7 +7,7 @@ and overlays into one component library.  This module gives the desktop product
 those same primitives instead of styling one-off widgets page by page.
 """
 
-from PySide6.QtCore import QPointF, QRectF, QTimer, Qt
+from PySide6.QtCore import QEvent, QPointF, QRectF, QSize, QTimer, Qt
 from PySide6.QtGui import QAction, QColor, QPainter, QPen, QRadialGradient
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -62,17 +62,28 @@ class ElvaraButton(QPushButton):
         self.refresh_theme()
 
     def refresh_theme(self) -> None:
+        p = theme_palette()
+        self.setCursor(Qt.PointingHandCursor if self.isEnabled() else Qt.ArrowCursor)
         if not self.icon_name:
             return
-        p = theme_palette()
-        if self.variant == "primary":
+        if not self.isEnabled():
+            color = str(p["muted"])
+        elif self.variant == "primary":
             color = "#FFFFFF"
         elif self.variant == "danger":
             color = str(p["danger"])
+        elif self.variant == "ghost":
+            color = str(p["text_soft"])
         else:
-            color = str(p["accent"])
+            color = str(p["accent2"])
         icon_size = 18 if self.size_name != "compact" else 16
         self.setIcon(svg_icon(self.icon_name, color, icon_size))
+        self.setIconSize(QSize(icon_size, icon_size))
+
+    def changeEvent(self, event: QEvent) -> None:
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.EnabledChange:
+            self.refresh_theme()
 
     def set_loading(self, loading: bool, text: str | None = None) -> None:
         self._loading = bool(loading)
@@ -81,6 +92,42 @@ class ElvaraButton(QPushButton):
             self.setText(text or "Loading...")
         else:
             self.setText(text or self._base_text)
+
+
+class ElvaraWindowButton(QPushButton):
+    """Compact vector-based window control for the frameless TradeAI shell."""
+
+    ICONS = {
+        "minimize": "window_minimize",
+        "maximize": "window_maximize",
+        "restore": "window_restore",
+        "close": "window_close",
+    }
+
+    def __init__(self, control: str, parent=None):
+        super().__init__(parent)
+        self.control = control if control in self.ICONS else "minimize"
+        self.setObjectName("WindowCloseControl" if self.control == "close" else "WindowControl")
+        self.setFixedSize(38, 30)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setCursor(Qt.PointingHandCursor)
+        self.refresh_theme()
+
+    def set_control(self, control: str) -> None:
+        if control not in self.ICONS:
+            return
+        self.control = control
+        self.setObjectName("WindowCloseControl" if control == "close" else "WindowControl")
+        self.refresh_theme()
+        self.style().unpolish(self)
+        self.style().polish(self)
+
+    def refresh_theme(self) -> None:
+        p = theme_palette()
+        color = str(p["text_soft"])
+        self.setIcon(svg_icon(self.ICONS[self.control], color, 15))
+        self.setIconSize(QSize(15, 15))
+
 
 
 class ElvaraNavButton(QPushButton):
@@ -310,6 +357,111 @@ class ElvaraConfirmDialog(QDialog):
     ) -> bool:
         dialog = cls(title, message, confirm_text=confirm_text, danger=danger, parent=parent)
         return dialog.exec() == QDialog.Accepted
+
+
+class ElvaraCloseChoiceDialog(QDialog):
+    """Three-way window-close choice for a running detachable engine."""
+
+    def __init__(self, *, mode: str, pid: int | None, parent=None):
+        super().__init__(parent)
+        self.setObjectName("ElvaraDialog")
+        self.setModal(True)
+        self.setWindowTitle("Close TradeAI")
+        self.setMinimumWidth(560)
+        self.setMaximumWidth(700)
+        self.choice = "cancel"
+
+        root = QVBoxLayout(self)
+        root.setContentsMargins(24, 24, 24, 24)
+        root.setSpacing(16)
+
+        heading = QLabel("Close TradeAI")
+        heading.setObjectName("PageTitle")
+        root.addWidget(heading)
+
+        body = QLabel(
+            f"Engine is RUNNING in {str(mode or 'UNKNOWN')} mode"
+            + (f" · PID {pid}" if pid else "")
+            + ".\n\nChoose whether to keep the trading engine running in the background or stop it before closing the dashboard."
+        )
+        body.setObjectName("PageSub")
+        body.setWordWrap(True)
+        root.addWidget(body)
+
+        actions = QHBoxLayout()
+        keep = ElvaraButton("KEEP ENGINE RUNNING", variant="primary", size="standard")
+        stop = ElvaraButton("STOP ENGINE & CLOSE", variant="danger", size="standard")
+        cancel = ElvaraButton("CANCEL", variant="secondary", size="standard")
+        keep.clicked.connect(lambda: self._finish("keep"))
+        stop.clicked.connect(lambda: self._finish("stop"))
+        cancel.clicked.connect(lambda: self._finish("cancel"))
+        actions.addWidget(keep)
+        actions.addWidget(stop)
+        actions.addStretch()
+        actions.addWidget(cancel)
+        root.addLayout(actions)
+
+    def _finish(self, choice: str) -> None:
+        self.choice = choice
+        self.accept() if choice != "cancel" else self.reject()
+
+    @classmethod
+    def choose(cls, parent: QWidget, *, mode: str, pid: int | None) -> str:
+        dialog = cls(mode=mode, pid=pid, parent=parent)
+        dialog.exec()
+        return dialog.choice
+
+
+class ElvaraActivePositionCloseDialog(QDialog):
+    """Second-stage safety choice when stopping would abandon open MT5 positions."""
+
+    def __init__(self, positions: int, parent=None):
+        super().__init__(parent)
+        self.setObjectName("ElvaraDialog")
+        self.setModal(True)
+        self.setWindowTitle("Active position detected")
+        self.setMinimumWidth(580)
+        self.setMaximumWidth(720)
+        self.choice = "cancel"
+
+        root = QVBoxLayout(self)
+        root.setContentsMargins(24, 24, 24, 24)
+        root.setSpacing(16)
+
+        heading = QLabel("Active position detected")
+        heading.setObjectName("PageTitle")
+        root.addWidget(heading)
+
+        notice = ElvaraNotice(
+            "Engine management is active",
+            f"{positions} MT5 position{'s are' if positions != 1 else ' is'} currently open. "
+            "Stopping TradeAI stops strategy management but does NOT close broker positions.",
+            semantic="warning",
+        )
+        root.addWidget(notice)
+
+        actions = QHBoxLayout()
+        keep = ElvaraButton("KEEP ENGINE RUNNING & CLOSE UI", variant="primary", size="standard")
+        stop = ElvaraButton("STOP ENGINE ANYWAY", variant="danger", size="standard")
+        cancel = ElvaraButton("CANCEL", variant="secondary", size="standard")
+        keep.clicked.connect(lambda: self._finish("keep"))
+        stop.clicked.connect(lambda: self._finish("stop"))
+        cancel.clicked.connect(lambda: self._finish("cancel"))
+        actions.addWidget(keep)
+        actions.addWidget(stop)
+        actions.addStretch()
+        actions.addWidget(cancel)
+        root.addLayout(actions)
+
+    def _finish(self, choice: str) -> None:
+        self.choice = choice
+        self.accept() if choice != "cancel" else self.reject()
+
+    @classmethod
+    def choose(cls, parent: QWidget, positions: int) -> str:
+        dialog = cls(positions, parent=parent)
+        dialog.exec()
+        return dialog.choice
 
 
 class NiraMiniOrb(QWidget):

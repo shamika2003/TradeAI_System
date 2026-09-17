@@ -143,8 +143,13 @@ MAX_ACTUAL_RISK_PERCENT = 1.25
 # POSITION LIMITS
 # =====================================================
 
-MAX_OPEN_POSITIONS = 1
-MAX_TOTAL_POSITIONS = 1
+MAX_OPEN_POSITIONS = 2
+MAX_TOTAL_POSITIONS = 2
+
+# Cap aggregate initial loss-at-stop across all open positions. With the
+# calibrated per-trade grid below, two simultaneous trades can coexist without
+# silently multiplying account risk.
+MAX_PORTFOLIO_RISK_PERCENT = 0.90
 
 MAX_OPEN_TRADES = MAX_OPEN_POSITIONS
 MAX_TOTAL_TRADES = MAX_TOTAL_POSITIONS
@@ -174,24 +179,51 @@ TRADE_LOT = DEFAULT_LOT
 # =====================================================
 
 USE_ATR_STOPS = True
-ATR_SL_MULTIPLIER = 1.5
-ATR_TP_MULTIPLIER = 3.0
+ATR_SL_MULTIPLIER = 1.25
+ATR_TP_MULTIPLIER = 3.75
 
 
 # =====================================================
 # TRADE MANAGEMENT
 # =====================================================
 
+# Management is expressed in R (initial stop distance), not fixed pips.
+# This keeps behaviour comparable across EURUSD, GBPUSD, USDJPY and USDCNH.
 USE_BREAK_EVEN = True
-BREAK_EVEN_TRIGGER_PIPS = 10.0
+BREAK_EVEN_TRIGGER_R = 1.10
+BREAK_EVEN_BUFFER_PIPS = 0.15
+# A break-even exit should not round back to $0.00 after commission.
+BREAK_EVEN_MIN_PROFIT_MONEY = 0.02
+
+# Once a trade proves itself, lock a meaningful fraction of the initial risk
+# before the late runner trail starts. This is intentionally later than old
+# Stage-3 management so winners are not clipped around 1R.
+USE_PROFIT_LOCK = True
+PROFIT_LOCK_TRIGGER_R = 1.75
+PROFIT_LOCK_R = 0.75
 
 USE_TRAILING_STOP = True
+TRAILING_TRIGGER_R = 2.25
+TRAILING_ATR_MULTIPLIER = 1.25
+
+# Defensive AI exit: only cut a trade early when it is already meaningfully
+# adverse AND the model produces a calibrated, confident signal in the
+# opposite direction. Stage 5 will recalibrate these thresholds after the
+# execution/backtest rebuild is complete.
+USE_AI_DEFENSIVE_EXIT = True
+AI_DEFENSIVE_EXIT_MIN_BARS = 2
+AI_DEFENSIVE_EXIT_ADVERSE_R = 0.30
+AI_DEFENSIVE_EXIT_SIGNAL_MULTIPLIER = 1.00
+
+# Legacy names retained for compatibility with external/UI code. They are no
+# longer used by TradeManager for production management decisions.
+BREAK_EVEN_TRIGGER_PIPS = 10.0
 TRAILING_TRIGGER_PIPS = 20.0
 
-# Align production trade lifecycle with the Stage 3 barrier target.
+# Align production trade lifecycle with the 36-bar payoff target.
 USE_MAX_HOLD = True
-MAX_HOLD_BARS = 24
-MAX_HOLD_MINUTES = 120
+MAX_HOLD_BARS = 36
+MAX_HOLD_MINUTES = 180
 
 
 # =====================================================
@@ -221,12 +253,22 @@ BACKTEST_END_DATE = os.environ.get("TRADEAI_BACKTEST_END_DATE", BACKTEST_END_DAT
 
 
 # =====================================================
-# EXECUTION MODEL
+# EXECUTION MODEL / BROKER PARITY
 # =====================================================
 
+# MT5 copy_rates* OHLC bars are treated as BID-side prices.
+# PAPER/BACKTEST therefore executes BUY entries on ASK (BID + spread)
+# and SELL entries on BID, matching MT5 FX execution semantics.
+HISTORICAL_OHLC_SIDE = "BID"
+
+# When a DEMO_FORWARD/LIVE MT5 executor starts, it snapshots the broker's
+# symbol rules here. PAPER/BACKTEST consumes the same profile when present.
+BROKER_PROFILE_PATH = REPORT_DIR / "broker_profile.json"
+USE_BROKER_PROFILE = True
+
+# Fallbacks are used only when no captured broker value is available.
 DEFAULT_SPREAD_PIPS = 1.2
 SPREAD_PIPS = DEFAULT_SPREAD_PIPS
-
 SIMULATED_SLIPPAGE_PIPS = 0.2
 COMMISSION_PER_LOT = 7.0
 

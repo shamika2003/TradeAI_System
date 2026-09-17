@@ -180,6 +180,9 @@ def get_app_style(mode: str | None = None) -> str:
     header_rgba = "rgba(7,20,33,166)" if dark else "rgba(246,250,254,184)"
     status_rgba = "rgba(5,13,22,205)" if dark else "rgba(237,244,251,212)"
     row_hover_rgba = "rgba(16,42,66,180)" if dark else "rgba(228,240,250,220)"
+    disabled_bg_rgba = "rgba(5,12,19,188)" if dark else "rgba(226,235,243,210)"
+    disabled_border = "#10283A" if dark else "#CFDCE7"
+    disabled_text = "#50667C" if dark else "#9AABBA"
 
     return f"""
 * {{ outline:none; }}
@@ -199,8 +202,14 @@ QWidget#HoloShell {{ background:transparent; }}
    ========================================================= */
 QFrame#TitleBar {{
     background:{chrome_rgba};
-    border:1px solid {p['border_soft']};
-    border-radius:12px;
+    border:none;
+    border-bottom:1px solid {p['border_soft']};
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+}}
+QFrame#TitleBarDivider {{
+    background:{p['border_soft']};
+    border:none;
 }}
 QFrame#Sidebar {{
     background:{sidebar_rgba};
@@ -226,57 +235,65 @@ QFrame#SidebarDivider {{
 QLabel#TitleBarTitle {{
     color:{p['text_strong']};
     font-family:"Syne","Segoe UI Semibold";
-    font-weight:700;
-    font-size:11.5pt;
-    letter-spacing:2.7px;
+    font-weight:750;
+    font-size:9.2pt;
+    letter-spacing:1.9px;
 }}
 QLabel#TitleBarProduct {{
-    color:{p['text_soft']};
-    font-size:10pt;
-    font-weight:600;
+    color:{p['muted']};
+    font-family:"Bahnschrift","Inter","Segoe UI";
+    font-size:7pt;
+    font-weight:500;
+    letter-spacing:0.8px;
 }}
 QLabel#TitleBarBrand {{
     color:{p['accent2']};
-    font-size:7pt;
-    font-weight:650;
-    letter-spacing:1px;
+    font-size:6.8pt;
+    font-weight:700;
+    letter-spacing:0.8px;
 }}
 QPushButton#ThemeButton {{
-    min-width:74px;
-    max-width:74px;
-    min-height:28px;
-    max-height:28px;
+    min-width:68px;
+    max-width:68px;
+    min-height:26px;
+    max-height:26px;
     padding:0;
-    border-radius:8px;
-    background:{panel_soft_rgba};
-    color:{p['text_strong']};
-    border:1px solid {p['border']};
-    font-size:7.4pt;
+    border-radius:7px;
+    background:transparent;
+    color:{p['text_soft']};
+    border:1px solid {p['border_soft']};
+    font-size:6.8pt;
     font-weight:700;
+    letter-spacing:0.5px;
 }}
 QPushButton#ThemeButton:hover {{
+    color:{p['text_strong']};
     border-color:{p['border_hot']};
     background:{p['accent_soft']};
 }}
-QPushButton#WindowButton, QPushButton#WindowCloseButton {{
-    min-width:30px; max-width:30px;
-    min-height:26px; max-height:26px;
+QPushButton#WindowControl, QPushButton#WindowCloseControl {{
+    min-width:38px; max-width:38px;
+    min-height:30px; max-height:30px;
     padding:0;
     background:transparent;
-    color:{p['text_soft']};
     border:1px solid transparent;
     border-radius:7px;
-    font-size:9pt;
 }}
-QPushButton#WindowButton:hover {{
+QPushButton#WindowControl:hover {{
     background:{p['interactive_hover']};
     border-color:{p['border_soft']};
-    color:{p['text_strong']};
 }}
-QPushButton#WindowCloseButton:hover {{
+QPushButton#WindowControl:pressed {{
+    background:{p['accent_soft']};
+    border-color:{p['border']};
+}}
+QPushButton#WindowCloseControl:hover {{
     background:{p['danger']};
     border-color:{p['danger']};
-    color:#FFFFFF;
+}}
+QPushButton#WindowCloseControl:pressed {{
+    background:#C94B60;
+    border-color:#C94B60;
 }}
 
 /* =========================================================
@@ -294,7 +311,7 @@ QPushButton#NavButton {{
     font-weight:500;
 }}
 QPushButton#NavButton:hover {{
-    background:{panel_soft_rgba};
+    background:{p['interactive_hover']};
     color:{p['text_strong']};
     border-color:{p['border_soft']};
 }}
@@ -399,14 +416,13 @@ QPushButton#ControlResumeButton, QPushButton#ControlStopButton {{
     font-weight:600;
 }}
 QPushButton#PrimaryButton, QPushButton#ControlStartButton, QPushButton#ControlResumeButton {{
-    background:qlineargradient(x1:0,y1:0,x2:1,y2:0,
-        stop:0 {p['accent']}, stop:1 {p['accent_hover']});
+    background:{p['accent']};
     color:#FFFFFF;
-    border:1px solid {p['accent2']};
+    border:1px solid {p['accent']};
 }}
 QPushButton#PrimaryButton:hover, QPushButton#ControlStartButton:hover, QPushButton#ControlResumeButton:hover {{
     background:{p['accent_hover']};
-    border-color:{p['accent2']};
+    border-color:{p['border_hot']};
 }}
 QPushButton#PrimaryButton:pressed, QPushButton#ControlStartButton:pressed, QPushButton#ControlResumeButton:pressed {{
     background:{p['accent_pressed']};
@@ -451,10 +467,21 @@ QPushButton#IconButton:hover {{
     border-color:{p['border']};
     color:{p['text_strong']};
 }}
-QPushButton:disabled {{
-    color:{p['muted']};
-    background:{panel_deep_rgba};
-    border-color:{p['border_soft']};
+QPushButton#PrimaryButton:disabled, QPushButton#SecondaryButton:disabled, QPushButton#GhostButton:disabled,
+QPushButton#DangerButton:disabled, QPushButton#IconButton:disabled,
+QPushButton#ControlStartButton:disabled, QPushButton#ControlPauseButton:disabled,
+QPushButton#ControlResumeButton:disabled, QPushButton#ControlStopButton:disabled {{
+    color:{disabled_text};
+    background:{disabled_bg_rgba};
+    border:1px solid {disabled_border};
+}}
+QPushButton#PrimaryButton:disabled:hover, QPushButton#SecondaryButton:disabled:hover, QPushButton#GhostButton:disabled:hover,
+QPushButton#DangerButton:disabled:hover, QPushButton#IconButton:disabled:hover,
+QPushButton#ControlStartButton:disabled:hover, QPushButton#ControlPauseButton:disabled:hover,
+QPushButton#ControlResumeButton:disabled:hover, QPushButton#ControlStopButton:disabled:hover {{
+    color:{disabled_text};
+    background:{disabled_bg_rgba};
+    border-color:{disabled_border};
 }}
 
 /* =========================================================

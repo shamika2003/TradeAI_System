@@ -1,0 +1,125 @@
+
+
+=====================================
+ AI TRADING BACKTEST REPORT
+=====================================
+
+Generated:
+2026-09-17 09:54:51.768147
+
+INITIAL BALANCE:
+$150.00
+
+FINAL BALANCE:
+$156.37
+
+TOTAL RETURN:
+4.25%
+
+
+-------------------------------------
+TRADE STATISTICS
+-------------------------------------
+
+Total Trades:
+46
+
+Winning Trades:
+32
+
+Losing Trades:
+14
+
+Win Rate:
+69.57%
+
+
+-------------------------------------
+PROFIT ANALYSIS
+-------------------------------------
+
+Net Profit:
+$6.37
+
+Gross Profit:
+$16.07
+
+Gross Loss:
+$9.70
+
+Profit Factor:
+1.66
+
+Average Trade:
+$0.14
+
+Average Win:
+$0.50
+
+Average Loss:
+$0.69
+
+Risk Reward:
+1 : 0.72
+
+Expectancy:
+$0.14
+
+
+-------------------------------------
+RISK METRICS
+-------------------------------------
+
+Maximum Drawdown:
+$2.94
+
+Maximum Drawdown:
+1.86%
+
+Recovery Factor:
+2.17
+
+Sharpe Ratio:
+0.23
+
+
+-------------------------------------
+STREAKS
+-------------------------------------
+
+Best Win Streak:
+12
+
+Worst Loss Streak:
+3
+
+
+-------------------------------------
+TRADE EXTREMES
+-------------------------------------
+
+Best Trade:
+
+Symbol:
+USDJPY
+
+Type:
+BUY
+
+Profit:
+$0.79
+
+
+Worst Trade:
+
+Symbol:
+USDJPY
+
+Type:
+SELL
+
+Profit:
+$-0.95
+
+=====================================
+

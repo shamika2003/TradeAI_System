@@ -1,0 +1,67 @@
+{
+  "version": "tradeai_decision_policy_v1_20260907",
+  "created_utc": "2026-09-17T06:52:46.945072Z",
+  "method": "70_15_15_chronological_calibration_with_purged_boundaries",
+  "symbols": {
+    "EURUSD": {
+      "enabled": true,
+      "min_confidence": 0.58,
+      "signal_threshold": 0.06,
+      "score": 4.718176751154617,
+      "calibration": {
+        "trades": 557,
+        "coverage": 0.008094518397953845,
+        "win_rate": 0.696588868940754,
+        "avg_r": 0.708932353950839,
+        "profit_factor_r": 3.334526052658878,
+        "positive_blocks": 3,
+        "block_avg_r_std": 0.17682967638225608
+      }
+    },
+    "GBPUSD": {
+      "enabled": true,
+      "min_confidence": 0.58,
+      "signal_threshold": 0.06,
+      "score": 5.267616964631815,
+      "calibration": {
+        "trades": 1056,
+        "coverage": 0.015345045555603993,
+        "win_rate": 0.7035984848484849,
+        "avg_r": 0.7189191508076227,
+        "profit_factor_r": 3.0751350120379133,
+        "positive_blocks": 3,
+        "block_avg_r_std": 0.04176833461079776
+      }
+    },
+    "USDJPY": {
+      "enabled": true,
+      "min_confidence": 0.58,
+      "signal_threshold": 0.06,
+      "score": 3.476673945866207,
+      "calibration": {
+        "trades": 626,
+        "coverage": 0.00909711827706974,
+        "win_rate": 0.5766773162939297,
+        "avg_r": 0.5212278195030675,
+        "profit_factor_r": 2.1576153748264533,
+        "positive_blocks": 2,
+        "block_avg_r_std": 0.3420367189251952
+      }
+    },
+    "USDCNH": {
+      "enabled": true,
+      "min_confidence": 0.62,
+      "signal_threshold": 0.06,
+      "score": 4.777824621602604,
+      "calibration": {
+        "trades": 1617,
+        "coverage": 0.02371245893946504,
+        "win_rate": 0.6765615337043909,
+        "avg_r": 0.6215380834960361,
+        "profit_factor_r": 2.522381781775935,
+        "positive_blocks": 3,
+        "block_avg_r_std": 0.30402932027735413
+      }
+    }
+  }
+}
