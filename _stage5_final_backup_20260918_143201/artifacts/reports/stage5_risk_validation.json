@@ -1,0 +1,66 @@
+{
+  "stage": "stage10_quality_opportunity_validation_v1",
+  "created_utc": "2026-09-18T08:22:33.255113+00:00",
+  "acceptance_pass": false,
+  "reason": "no_symbol_passed_opportunity_money_gates",
+  "target_version": "tradeai_quality_target_v7_20260918",
+  "decision_policy": {
+    "version": "tradeai_opportunity_policy_v2_20260918",
+    "symbols": {
+      "EURUSD": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_threshold_passed_label_stability"
+        }
+      },
+      "GBPUSD": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_policy_passed_execution_money_gates"
+        }
+      },
+      "USDJPY": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_threshold_passed_label_stability"
+        }
+      },
+      "USDCNH": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_threshold_passed_label_stability"
+        }
+      }
+    }
+  },
+  "symbol_validation": {
+    "EURUSD": {
+      "final": null
+    },
+    "GBPUSD": {
+      "final": null
+    },
+    "USDJPY": {
+      "final": null
+    },
+    "USDCNH": {
+      "final": null
+    }
+  }
+}

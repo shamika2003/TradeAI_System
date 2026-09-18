@@ -101,8 +101,9 @@ BACKTEST_DELAY = 0
 
 # Stage 3 multiclass probability-edge gates.
 # These are provisional; Stage 4 calibrates them on out-of-sample money P/L.
-SIGNAL_THRESHOLD = 0.10
-MIN_CONFIDENCE = 0.45
+SIGNAL_THRESHOLD = 0.14
+MIN_CONFIDENCE = 0.55
+HOLD_MARGIN = 0.05
 
 # Stage 4: production startup requires a calibrated per-symbol decision policy
 # embedded in the model artifact. The validator writes it only after acceptance.
@@ -149,7 +150,7 @@ MAX_TOTAL_POSITIONS = 2
 # Cap aggregate initial loss-at-stop across all open positions. With the
 # calibrated per-trade grid below, two simultaneous trades can coexist without
 # silently multiplying account risk.
-MAX_PORTFOLIO_RISK_PERCENT = 0.90
+MAX_PORTFOLIO_RISK_PERCENT = 0.80
 
 MAX_OPEN_TRADES = MAX_OPEN_POSITIONS
 MAX_TOTAL_TRADES = MAX_TOTAL_POSITIONS
@@ -179,8 +180,8 @@ TRADE_LOT = DEFAULT_LOT
 # =====================================================
 
 USE_ATR_STOPS = True
-ATR_SL_MULTIPLIER = 1.25
-ATR_TP_MULTIPLIER = 3.75
+ATR_SL_MULTIPLIER = 0.75
+ATR_TP_MULTIPLIER = 1.875
 
 
 # =====================================================
@@ -190,8 +191,8 @@ ATR_TP_MULTIPLIER = 3.75
 # Management is expressed in R (initial stop distance), not fixed pips.
 # This keeps behaviour comparable across EURUSD, GBPUSD, USDJPY and USDCNH.
 USE_BREAK_EVEN = True
-BREAK_EVEN_TRIGGER_R = 1.10
-BREAK_EVEN_BUFFER_PIPS = 0.15
+BREAK_EVEN_TRIGGER_R = 1.20
+BREAK_EVEN_BUFFER_PIPS = 0.20
 # A break-even exit should not round back to $0.00 after commission.
 BREAK_EVEN_MIN_PROFIT_MONEY = 0.02
 
@@ -200,11 +201,11 @@ BREAK_EVEN_MIN_PROFIT_MONEY = 0.02
 # Stage-3 management so winners are not clipped around 1R.
 USE_PROFIT_LOCK = True
 PROFIT_LOCK_TRIGGER_R = 1.75
-PROFIT_LOCK_R = 0.75
+PROFIT_LOCK_R = 0.55
 
-USE_TRAILING_STOP = True
-TRAILING_TRIGGER_R = 2.25
-TRAILING_ATR_MULTIPLIER = 1.25
+USE_TRAILING_STOP = False
+TRAILING_TRIGGER_R = 2.40
+TRAILING_ATR_MULTIPLIER = 0.90
 
 # Defensive AI exit: only cut a trade early when it is already meaningfully
 # adverse AND the model produces a calibrated, confident signal in the
@@ -212,18 +213,33 @@ TRAILING_ATR_MULTIPLIER = 1.25
 # execution/backtest rebuild is complete.
 USE_AI_DEFENSIVE_EXIT = True
 AI_DEFENSIVE_EXIT_MIN_BARS = 2
-AI_DEFENSIVE_EXIT_ADVERSE_R = 0.30
+AI_DEFENSIVE_EXIT_ADVERSE_R = 0.12
 AI_DEFENSIVE_EXIT_SIGNAL_MULTIPLIER = 1.00
+
+# Opportunity-thesis management. These rules require model evidence before an
+# early exit; they do not cut ordinary candle noise.
+USE_OPPORTUNITY_THESIS_EXIT = True
+THESIS_EXIT_MIN_BARS = 3
+THESIS_EXIT_ADVERSE_R = 0.12
+THESIS_STALE_BARS = 18
+THESIS_STALE_MAX_R = 0.20
+THESIS_OWN_PROBABILITY_FRACTION = 0.70
+THESIS_OWN_EV_FLOOR = -0.05
+THESIS_OPPOSITE_EV_MARGIN = 0.15
+THESIS_OPPOSITE_PROBABILITY_MARGIN = 0.05
+# Structural setup must fall materially below its entry gate before it can
+# contribute to an early-exit decision. It never exits a healthy trade alone.
+THESIS_SETUP_FRACTION = 0.70
 
 # Legacy names retained for compatibility with external/UI code. They are no
 # longer used by TradeManager for production management decisions.
 BREAK_EVEN_TRIGGER_PIPS = 10.0
 TRAILING_TRIGGER_PIPS = 20.0
 
-# Align production trade lifecycle with the 36-bar payoff target.
+# Align production trade lifecycle with the 48-bar quality/payoff horizon.
 USE_MAX_HOLD = True
-MAX_HOLD_BARS = 36
-MAX_HOLD_MINUTES = 180
+MAX_HOLD_BARS = 48
+MAX_HOLD_MINUTES = 240
 
 
 # =====================================================

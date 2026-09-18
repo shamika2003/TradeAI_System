@@ -19,14 +19,18 @@ from config import settings
 from shared.tradeai_core import target_definition as target
 
 
-def test_runtime_geometry_matches_three_r_target_contract():
+def test_runtime_geometry_matches_selective_two_and_half_r_target_contract():
     assert settings.ATR_SL_MULTIPLIER == pytest.approx(target.STOP_ATR_MULTIPLIER)
     assert settings.ATR_TP_MULTIPLIER == pytest.approx(target.TAKE_ATR_MULTIPLIER)
     assert settings.MAX_HOLD_BARS == target.MAX_HOLD_BARS
-    assert settings.ATR_TP_MULTIPLIER / settings.ATR_SL_MULTIPLIER == pytest.approx(3.0)
+    assert settings.ATR_TP_MULTIPLIER / settings.ATR_SL_MULTIPLIER == pytest.approx(2.5)
     assert settings.MAX_OPEN_POSITIONS == 2
-    assert settings.MAX_PORTFOLIO_RISK_PERCENT == pytest.approx(0.90)
-    assert settings.TRAILING_TRIGGER_R > settings.PROFIT_LOCK_TRIGGER_R > settings.BREAK_EVEN_TRIGGER_R
+    assert settings.MAX_PORTFOLIO_RISK_PERCENT == pytest.approx(0.80)
+    assert settings.USE_PROFIT_LOCK is True
+    assert settings.PROFIT_LOCK_TRIGGER_R == pytest.approx(1.75)
+    assert settings.PROFIT_LOCK_R == pytest.approx(0.55)
+    assert settings.USE_TRAILING_STOP is False
+    assert settings.BREAK_EVEN_TRIGGER_R > 1.0
 
 
 def test_portfolio_backtest_allows_two_symbols_but_blocks_third(monkeypatch):
@@ -76,7 +80,7 @@ def test_policy_calibration_constants_are_money_first():
     import config_model as cfg
 
     assert cfg.POLICY_CALIBRATION_BALANCE == pytest.approx(150.0)
-    assert cfg.POLICY_CALIBRATION_RISK_PERCENT == pytest.approx(0.30)
+    assert cfg.POLICY_CALIBRATION_RISK_PERCENT == pytest.approx(0.45)
     assert cfg.POLICY_CALIBRATION_NORMAL_MIN_PROFIT_FACTOR > 1.0
     assert cfg.POLICY_CALIBRATION_STRESS_MIN_PROFIT_FACTOR > 1.0
     assert cfg.POLICY_CALIBRATION_MIN_PAYOFF_RATIO >= 1.20

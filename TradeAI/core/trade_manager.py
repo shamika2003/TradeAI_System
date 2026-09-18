@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timezone
 
 from analytics.logger import log
+from shared.tradeai_core.management_policy import opportunity_thesis_exit
 from config.settings import (
     AI_DEFENSIVE_EXIT_ADVERSE_R,
     AI_DEFENSIVE_EXIT_MIN_BARS,
@@ -24,6 +25,16 @@ from config.settings import (
     USE_MAX_HOLD,
     USE_PROFIT_LOCK,
     USE_TRAILING_STOP,
+    USE_OPPORTUNITY_THESIS_EXIT,
+    THESIS_EXIT_MIN_BARS,
+    THESIS_EXIT_ADVERSE_R,
+    THESIS_STALE_BARS,
+    THESIS_STALE_MAX_R,
+    THESIS_OWN_PROBABILITY_FRACTION,
+    THESIS_OWN_EV_FLOOR,
+    THESIS_OPPOSITE_EV_MARGIN,
+    THESIS_OPPOSITE_PROBABILITY_MARGIN,
+    THESIS_SETUP_FRACTION,
 )
 
 
@@ -359,6 +370,29 @@ class TradeManager:
         return signal >= required_signal
 
     def _should_defensive_exit(self, trade, r_multiple, prediction):
+        # Stage 9: prefer the richer directional opportunity thesis. The rule
+        # is shared with validation so early exits are not a runtime-only trick.
+        if USE_OPPORTUNITY_THESIS_EXIT and isinstance(prediction, dict) and (
+            "buy_expected_r" in prediction or "sell_expected_r" in prediction
+        ):
+            should_exit, reason = opportunity_thesis_exit(
+                direction=trade["direction"],
+                r_multiple=r_multiple,
+                bars_held=int(trade.get("bars_held", 0)),
+                prediction=prediction,
+                min_bars=THESIS_EXIT_MIN_BARS,
+                adverse_r=THESIS_EXIT_ADVERSE_R,
+                stale_bars=THESIS_STALE_BARS,
+                stale_max_r=THESIS_STALE_MAX_R,
+                own_probability_fraction=THESIS_OWN_PROBABILITY_FRACTION,
+                own_ev_floor=THESIS_OWN_EV_FLOOR,
+                opposite_ev_margin=THESIS_OPPOSITE_EV_MARGIN,
+                opposite_probability_margin=THESIS_OPPOSITE_PROBABILITY_MARGIN,
+                setup_fraction=THESIS_SETUP_FRACTION,
+            )
+            trade["last_thesis_exit_reason"] = reason
+            return should_exit
+
         if not USE_AI_DEFENSIVE_EXIT:
             return False
         if int(trade.get("bars_held", 0)) < int(AI_DEFENSIVE_EXIT_MIN_BARS):
@@ -456,7 +490,7 @@ class TradeManager:
             return bool(
                 self.executor.close_position(
                     symbol,
-                    reason="AI_DEFENSIVE_EXIT",
+                    reason=str(trade.get("last_thesis_exit_reason") or "AI_DEFENSIVE_EXIT"),
                     candle_time=candle_time,
                 )
             )

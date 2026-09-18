@@ -1,0 +1,13 @@
+{
+  "version": "tradeai_risk_policy_v1_20260907",
+  "created_utc": "2026-09-18T04:37:12.629391+00:00",
+  "risk_percent": 0.6,
+  "source": "stage7_money_aware_calibration_normal_and_stress",
+  "calibration_safety": {
+    "normal_max_drawdown_percent": 8.0,
+    "stress_max_drawdown_percent": 10.0,
+    "selected_worst_drawdown_percent": 6.390084578052694,
+    "selected_worst_return_percent": 6.366666666666674,
+    "portfolio_risk_cap_percent": 0.9
+  }
+}

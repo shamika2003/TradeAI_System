@@ -39,26 +39,26 @@ def _settings(tmp_path: Path, *, profile: dict | None = None):
         LOT_STEP=0.001,
         RISK_PERCENT=0.30,
         MAX_ACTUAL_RISK_PERCENT=1.25,
-        ATR_SL_MULTIPLIER=1.25,
-        ATR_TP_MULTIPLIER=3.75,
+        ATR_SL_MULTIPLIER=0.75,
+        ATR_TP_MULTIPLIER=1.875,
         BREAK_EVEN_BUFFER_PIPS=0.15,
         BREAK_EVEN_MIN_PROFIT_MONEY=0.02,
         USE_BREAK_EVEN=True,
-        BREAK_EVEN_TRIGGER_R=1.10,
-        USE_PROFIT_LOCK=True,
-        PROFIT_LOCK_TRIGGER_R=1.75,
-        PROFIT_LOCK_R=0.75,
-        USE_TRAILING_STOP=True,
-        TRAILING_TRIGGER_R=2.25,
-        TRAILING_ATR_MULTIPLIER=1.25,
+        BREAK_EVEN_TRIGGER_R=1.35,
+        USE_PROFIT_LOCK=False,
+        PROFIT_LOCK_TRIGGER_R=2.00,
+        PROFIT_LOCK_R=1.00,
+        USE_TRAILING_STOP=False,
+        TRAILING_TRIGGER_R=2.40,
+        TRAILING_ATR_MULTIPLIER=0.90,
         USE_AI_DEFENSIVE_EXIT=True,
         AI_DEFENSIVE_EXIT_MIN_BARS=2,
-        AI_DEFENSIVE_EXIT_ADVERSE_R=0.30,
+        AI_DEFENSIVE_EXIT_ADVERSE_R=0.25,
         AI_DEFENSIVE_EXIT_SIGNAL_MULTIPLIER=1.0,
         USE_MAX_HOLD=True,
-        MAX_HOLD_BARS=36,
+        MAX_HOLD_BARS=48,
         MAX_OPEN_POSITIONS=2,
-        MAX_PORTFOLIO_RISK_PERCENT=0.90,
+        MAX_PORTFOLIO_RISK_PERCENT=0.80,
         COOLDOWN_SECONDS=300,
         MAX_DAILY_LOSS_PERCENT=5.0,
         MAX_DRAWDOWN_PERCENT=12.0,
@@ -124,7 +124,7 @@ def test_validation_uses_real_broker_volume_step(tmp_path):
     )
 
     assert lot is None
-    assert info["reason"] == "below_minimum_or_invalid_lot"
+    assert info["reason"] == "actual_risk_limit"
 
 
 def test_sell_exit_prices_use_ask_side_for_bid_ohlc(tmp_path):

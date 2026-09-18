@@ -1,0 +1,89 @@
+{
+  "dataset_contract_version": "tradeai_dataset_v3_opportunity",
+  "created_utc": "2026-09-18T06:30:18.244448+00:00",
+  "feature_schema_version": "tradeai_features_v5_opportunity_20260918",
+  "feature_hash": "089899052031b262d7117cce2d23d848b3fe9ddbac6fce4c8b4656f2bdae2eae",
+  "target_version": "tradeai_opportunity_target_v6_20260918",
+  "target_contract": {
+    "target_version": "tradeai_opportunity_target_v6_20260918",
+    "prediction_type": "directional_opportunity_ensemble",
+    "stop_atr_multiplier": 1.25,
+    "take_atr_multiplier": 3.125,
+    "gross_reward_to_risk": 2.5,
+    "max_hold_bars": 48,
+    "min_edge_r": 0.25,
+    "min_tp_success_r": 1.5,
+    "directional_label_rule": "take_profit_hit_before_stop_within_horizon",
+    "model_objective": "separate_buy_sell_tp_probability_plus_expected_net_r",
+    "label_slippage_pips": 0.2,
+    "label_commission_per_lot": 7.0,
+    "historical_ohlc_side": "BID",
+    "class_map": {
+      "SELL": 0,
+      "HOLD": 1,
+      "BUY": 2
+    }
+  },
+  "timeframe": "M5",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "rows": 1911176,
+  "max_target_horizon_bars": 48,
+  "closed_candles_only": true,
+  "causal_h1_alignment": true,
+  "feature_rebuild_source": "existing_causal_m5_aggregated_to_h1",
+  "symbol_ranges": {
+    "EURUSD": {
+      "rows": 478823,
+      "start": "2020-04-03 07:55:00",
+      "end": "2026-09-04 20:25:00",
+      "class_counts": {
+        "0": 104365,
+        "1": 282180,
+        "2": 92278
+      },
+      "buy_tp_hits": 120648,
+      "sell_tp_hits": 116466
+    },
+    "GBPUSD": {
+      "rows": 478852,
+      "start": "2020-04-03 06:55:00",
+      "end": "2026-09-04 20:25:00",
+      "class_counts": {
+        "0": 109786,
+        "1": 276781,
+        "2": 92285
+      },
+      "buy_tp_hits": 120502,
+      "sell_tp_hits": 111964
+    },
+    "USDJPY": {
+      "rows": 478826,
+      "start": "2020-04-03 08:55:00",
+      "end": "2026-09-04 20:25:00",
+      "class_counts": {
+        "0": 105682,
+        "1": 273641,
+        "2": 99503
+      },
+      "buy_tp_hits": 127093,
+      "sell_tp_hits": 116282
+    },
+    "USDCNH": {
+      "rows": 474675,
+      "start": "2020-04-03 14:55:00",
+      "end": "2026-09-04 20:25:00",
+      "class_counts": {
+        "0": 25388,
+        "1": 443363,
+        "2": 5924
+      },
+      "buy_tp_hits": 118470,
+      "sell_tp_hits": 35114
+    }
+  }
+}

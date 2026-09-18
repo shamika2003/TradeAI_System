@@ -3,12 +3,13 @@ import pandas as pd
 
 from shared.tradeai_core.target_definition import (
     BUY_CLASS,
+    HOLD_CLASS,
     MAX_HOLD_BARS,
     add_training_targets,
 )
 
 
-def _base_frame(n=40):
+def _base_frame(n=MAX_HOLD_BARS + 8):
     return pd.DataFrame(
         {
             "time": pd.date_range("2026-01-01", periods=n, freq="5min"),
@@ -34,10 +35,12 @@ def test_same_bar_sl_wins_conservatively():
 
 def test_target_does_not_look_beyond_max_horizon():
     df1 = _base_frame(n=MAX_HOLD_BARS + 8)
-    # Mild positive timeout move inside the horizon => BUY candidate.
+    # Mild positive timeout move inside the horizon must remain HOLD; v5 only
+    # awards a directional label to a full TP hit.
     df1.loc[MAX_HOLD_BARS, "close"] = 1.010
     out1 = add_training_targets(df1, symbol="EURUSD")
     first_label = out1.loc[0, "target_class"]
+    assert first_label == HOLD_CLASS
 
     df2 = df1.copy()
     # Huge move strictly AFTER row-0 horizon must not change row-0 label.
@@ -46,11 +49,11 @@ def test_target_does_not_look_beyond_max_horizon():
     assert out2.loc[0, "target_class"] == first_label
 
 
-def test_payoff_contract_targets_three_r_gross_reward():
+def test_payoff_contract_targets_two_and_half_r_gross_reward():
     from shared.tradeai_core.target_definition import target_contract
 
     contract = target_contract()
-    assert contract["gross_reward_to_risk"] == 3.0
+    assert contract["gross_reward_to_risk"] == 2.5
     assert contract["historical_ohlc_side"] == "BID"
 
 
@@ -87,3 +90,20 @@ def test_sell_label_uses_future_ask_for_stop_trigger():
     df.loc[1, "high"] = 1.00120
     out = add_training_targets(df, symbol="EURUSD")
     assert out.loc[0, "target_sell_r"] < 0
+
+
+def test_small_positive_timeout_is_hold_but_full_tp_is_directional():
+    quiet = _base_frame(n=MAX_HOLD_BARS + 4)
+    quiet["high"] = 1.0
+    quiet["low"] = 1.0
+    quiet["close"] = 1.0
+    quiet["atr"] = 0.001
+    quiet.loc[MAX_HOLD_BARS, "close"] = 1.0004
+    out = add_training_targets(quiet, symbol="EURUSD")
+    assert out.loc[0, "target_class"] == HOLD_CLASS
+
+    winner = quiet.copy()
+    winner.loc[1, "high"] = 1.0035  # beyond 3.125 ATR TP from 1.0
+    out2 = add_training_targets(winner, symbol="EURUSD")
+    assert out2.loc[0, "target_class"] == BUY_CLASS
+    assert out2.loc[0, "target_buy_tp_hit"] == 1

@@ -33,12 +33,16 @@ def _load_final_validation():
     return module
 
 
-def test_recent_deployment_split_is_not_old_70_15_15():
+def test_stage11_separates_policy_selection_score_calibration_and_final_test():
     import config_model as cfg
 
-    assert cfg.CALIBRATION_TRAIN_FRACTION == pytest.approx(0.94)
-    assert cfg.CALIBRATION_END_FRACTION == pytest.approx(0.97)
-    assert cfg.CALIBRATION_MIN_TRADES == 60
+    assert cfg.QUALIFICATION_TRAIN_FRACTION == pytest.approx(0.64)
+    assert cfg.QUALIFICATION_SCORE_CAL_END_FRACTION == pytest.approx(0.70)
+    assert cfg.POLICY_SELECTION_END_FRACTION == pytest.approx(0.90)
+    assert cfg.DEPLOYMENT_CALIBRATION_END_FRACTION == pytest.approx(0.95)
+    assert cfg.QUALIFICATION_TRAIN_FRACTION < cfg.QUALIFICATION_SCORE_CAL_END_FRACTION
+    assert cfg.QUALIFICATION_SCORE_CAL_END_FRACTION < cfg.POLICY_SELECTION_END_FRACTION
+    assert cfg.POLICY_SELECTION_END_FRACTION < cfg.DEPLOYMENT_CALIBRATION_END_FRACTION < 1.0
 
 
 def test_stage5_promotes_exact_validated_model_objects():

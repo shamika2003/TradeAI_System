@@ -1,0 +1,98 @@
+{
+  "dataset_contract_version": "tradeai_dataset_v4_quality",
+  "created_utc": "2026-09-18T09:09:33.023740+00:00",
+  "feature_schema_version": "tradeai_features_v7_structural_meta_20260918",
+  "feature_hash": "a4ddf51f3eb3025dcd5beb6ae05bed61b0733aae50e778bb576b617a2c820159",
+  "target_version": "tradeai_quality_target_v7_20260918",
+  "target_contract": {
+    "target_version": "tradeai_quality_target_v7_20260918",
+    "prediction_type": "directional_quality_barrier_plus_expected_r",
+    "stop_atr_multiplier": 1.25,
+    "take_atr_multiplier": 3.125,
+    "gross_reward_to_risk": 2.5,
+    "max_hold_bars": 48,
+    "min_edge_r": 0.2,
+    "quality_success_r": 1.0,
+    "min_tp_success_r": 1.5,
+    "directional_label_rule": "quality_barrier_hit_before_stop_within_horizon",
+    "model_objective": "separate_buy_sell_quality_probability_plus_expected_net_r",
+    "label_slippage_pips": 0.2,
+    "label_commission_per_lot": 7.0,
+    "historical_ohlc_side": "BID",
+    "class_map": {
+      "SELL": 0,
+      "HOLD": 1,
+      "BUY": 2
+    }
+  },
+  "timeframe": "M5",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "rows": 1901204,
+  "max_target_horizon_bars": 48,
+  "closed_candles_only": true,
+  "causal_h1_alignment": true,
+  "feature_rebuild_source": "existing_causal_m5_aggregated_to_h1",
+  "symbol_ranges": {
+    "EURUSD": {
+      "rows": 476330,
+      "start": "2020-04-15 15:55:00",
+      "end": "2026-09-04 12:25:00",
+      "class_counts": {
+        "0": 181010,
+        "1": 119775,
+        "2": 175545
+      },
+      "buy_tp_hits": 119971,
+      "sell_tp_hits": 115937,
+      "buy_quality_hits": 175545,
+      "sell_quality_hits": 181010
+    },
+    "GBPUSD": {
+      "rows": 476358,
+      "start": "2020-04-15 14:55:00",
+      "end": "2026-09-04 12:25:00",
+      "class_counts": {
+        "0": 181019,
+        "1": 117637,
+        "2": 177702
+      },
+      "buy_tp_hits": 119850,
+      "sell_tp_hits": 111416,
+      "buy_quality_hits": 177702,
+      "sell_quality_hits": 181019
+    },
+    "USDJPY": {
+      "rows": 476333,
+      "start": "2020-04-15 16:55:00",
+      "end": "2026-09-04 12:25:00",
+      "class_counts": {
+        "0": 177274,
+        "1": 116100,
+        "2": 182959
+      },
+      "buy_tp_hits": 126531,
+      "sell_tp_hits": 115622,
+      "buy_quality_hits": 182959,
+      "sell_quality_hits": 177274
+    },
+    "USDCNH": {
+      "rows": 472183,
+      "start": "2020-04-15 22:55:00",
+      "end": "2026-09-04 12:25:00",
+      "class_counts": {
+        "0": 51543,
+        "1": 370986,
+        "2": 49654
+      },
+      "buy_tp_hits": 117882,
+      "sell_tp_hits": 35069,
+      "buy_quality_hits": 49654,
+      "sell_quality_hits": 51543
+    }
+  }
+}

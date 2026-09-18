@@ -9,7 +9,7 @@ from .decision_policy import validate_decision_policy
 from .risk_policy import validate_risk_policy
 
 
-MODEL_ARTIFACT_VERSION = "tradeai_model_artifact_v3"
+MODEL_ARTIFACT_VERSION = "tradeai_model_artifact_v5_structural_meta"
 
 
 def _parse_datetime(value: Any, field_name: str) -> datetime:
@@ -30,7 +30,7 @@ def _parse_datetime(value: Any, field_name: str) -> datetime:
 def _normalize_training_window(training_window: dict | None, created_utc: str) -> dict:
     if not isinstance(training_window, dict):
         raise RuntimeError(
-            "Training provenance is required for model artifact v3. "
+            "Training provenance is required for the opportunity model artifact. "
             "Retrain with the Stage 1 backtest-integrity code."
         )
 

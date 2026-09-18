@@ -23,6 +23,7 @@ from config_model import (
     ACCEPT_STRESS_MIN_TRADES,
     CALIBRATION_CONFIDENCE_GRID,
     CALIBRATION_EDGE_GRID,
+    CALIBRATION_HOLD_MARGIN_GRID,
     CALIBRATION_END_FRACTION,
     CALIBRATION_MAX_COVERAGE,
     CALIBRATION_MIN_PROFIT_FACTOR,
@@ -74,6 +75,7 @@ from shared.tradeai_core.target_definition import (
 )
 from shared.tradeai_core.training_window import apply_supervised_training_cutoff
 from shared.tradeai_core.validation_execution import ValidationExecutionContext
+from shared.tradeai_core.management_policy import opportunity_thesis_exit
 
 
 SYSTEM_ROOT = Path(__file__).resolve().parent.parent
@@ -143,7 +145,7 @@ def _load_data(cutoff_exclusive=None):
     return df, features, window.as_dict()
 
 
-def _block_stability(model, proba, data, min_confidence, signal_threshold, blocks=3):
+def _block_stability(model, proba, data, min_confidence, signal_threshold, hold_margin=0.0, blocks=3):
     indices = np.array_split(np.arange(len(data)), blocks)
     block_metrics = []
     for idx in indices:
@@ -157,6 +159,7 @@ def _block_stability(model, proba, data, min_confidence, signal_threshold, block
             data["target_sell_r"].to_numpy(dtype=np.float64)[idx],
             min_confidence=min_confidence,
             signal_threshold=signal_threshold,
+            hold_margin=hold_margin,
         )
         block_metrics.append(m)
     positive = sum(1 for m in block_metrics if m["avg_r"] > 0 and m["profit_factor_r"] >= 1.0)
@@ -169,62 +172,67 @@ def _calibrate_policy(symbol, model, cal, proba):
     best = None
     for min_conf in CALIBRATION_CONFIDENCE_GRID:
         for edge in CALIBRATION_EDGE_GRID:
-            m = evaluate_probabilities(
-                model,
-                cal["target_class"].to_numpy(dtype=np.int32),
-                proba,
-                cal["target_buy_r"].to_numpy(dtype=np.float64),
-                cal["target_sell_r"].to_numpy(dtype=np.float64),
-                min_confidence=min_conf,
-                signal_threshold=edge,
-            )
-            if m["trades"] < CALIBRATION_MIN_TRADES:
-                continue
-            if m["profit_factor_r"] < CALIBRATION_MIN_PROFIT_FACTOR:
-                continue
-            if m["coverage"] > CALIBRATION_MAX_COVERAGE:
-                continue
-            if m["avg_r"] <= 0:
-                continue
+            for hold_margin in CALIBRATION_HOLD_MARGIN_GRID:
+                m = evaluate_probabilities(
+                    model,
+                    cal["target_class"].to_numpy(dtype=np.int32),
+                    proba,
+                    cal["target_buy_r"].to_numpy(dtype=np.float64),
+                    cal["target_sell_r"].to_numpy(dtype=np.float64),
+                    min_confidence=min_conf,
+                    signal_threshold=edge,
+                    hold_margin=hold_margin,
+                )
+                if m["trades"] < CALIBRATION_MIN_TRADES:
+                    continue
+                if m["profit_factor_r"] < CALIBRATION_MIN_PROFIT_FACTOR:
+                    continue
+                if m["coverage"] > CALIBRATION_MAX_COVERAGE:
+                    continue
+                if m["avg_r"] <= 0:
+                    continue
 
-            positive_blocks, block_std, block_metrics = _block_stability(
-                model, proba, cal, min_conf, edge
-            )
-            if positive_blocks < 2:
-                continue
+                positive_blocks, block_std, _ = _block_stability(
+                    model, proba, cal, min_conf, edge, hold_margin
+                )
+                if positive_blocks < 2:
+                    continue
 
-            score = (
-                m["avg_r"] * math.log1p(m["trades"])
-                + 0.05 * min(m["profit_factor_r"], 3.0)
-                + 0.04 * positive_blocks
-                - 0.20 * block_std
-            )
-            candidate = {
-                "enabled": True,
-                "min_confidence": float(min_conf),
-                "signal_threshold": float(edge),
-                "score": float(score),
-                "calibration": {
-                    "trades": int(m["trades"]),
-                    "coverage": float(m["coverage"]),
-                    "win_rate": float(m["win_rate"]),
-                    "avg_r": float(m["avg_r"]),
-                    "profit_factor_r": float(m["profit_factor_r"]),
-                    "positive_blocks": int(positive_blocks),
-                    "block_avg_r_std": float(block_std),
-                },
-            }
-            if best is None or candidate["score"] > best["score"]:
-                best = candidate
+                score = (
+                    m["avg_r"] * math.log1p(m["trades"])
+                    + 0.05 * min(m["profit_factor_r"], 3.0)
+                    + 0.04 * positive_blocks
+                    + 0.05 * hold_margin
+                    - 0.20 * block_std
+                )
+                candidate = {
+                    "enabled": True,
+                    "min_confidence": float(min_conf),
+                    "signal_threshold": float(edge),
+                    "hold_margin": float(hold_margin),
+                    "score": float(score),
+                    "calibration": {
+                        "trades": int(m["trades"]),
+                        "coverage": float(m["coverage"]),
+                        "win_rate": float(m["win_rate"]),
+                        "avg_r": float(m["avg_r"]),
+                        "profit_factor_r": float(m["profit_factor_r"]),
+                        "positive_blocks": int(positive_blocks),
+                        "block_avg_r_std": float(block_std),
+                    },
+                }
+                if best is None or candidate["score"] > best["score"]:
+                    best = candidate
 
     if best is None:
         return {
             "enabled": False,
             "min_confidence": 0.99,
             "signal_threshold": 0.99,
+            "hold_margin": 0.99,
             "score": -999.0,
             "calibration": {
-                "reason": "no_threshold_pair_passed_robustness_gates"
+                "reason": "no_threshold_triplet_passed_robustness_gates"
             },
         }
     return best
@@ -240,13 +248,15 @@ def _attach_management_state(data, model, proba, policy):
     p_sell, p_hold, p_buy = probability_columns(model, proba)
     signal = p_buy - p_sell
     confidence = np.maximum(p_buy, p_sell)
-    signal = np.where(p_hold >= confidence, 0.0, signal)
+    hold_margin = float(policy.get("hold_margin", 0.0))
+    signal = np.where(confidence < (p_hold + hold_margin), 0.0, signal)
 
     enriched = data.copy().reset_index(drop=True)
     enriched["_mgmt_signal"] = signal.astype(np.float64)
     enriched["_mgmt_confidence"] = confidence.astype(np.float64)
     enriched["_mgmt_min_confidence"] = float(policy.get("min_confidence", 1.0))
     enriched["_mgmt_signal_threshold"] = float(policy.get("signal_threshold", 1.0))
+    enriched["_mgmt_hold_margin"] = hold_margin
     enriched["_mgmt_policy_enabled"] = bool(policy.get("enabled", True))
     return enriched
 
@@ -260,6 +270,7 @@ def _build_candidates(symbol, model, test, proba, policy):
         proba,
         min_confidence=policy["min_confidence"],
         signal_threshold=policy["signal_threshold"],
+        hold_margin=policy.get("hold_margin", 0.0),
     )
     p_sell, _, p_buy = probability_columns(model, proba)
 
@@ -396,7 +407,45 @@ def _simulate_trade_path(data, idx, candidate, balance, scenario, settings, exec
             exit_time = management_time
             break
 
-        if bool(getattr(settings, "USE_AI_DEFENSIVE_EXIT", False)):
+        if bool(getattr(settings, "USE_OPPORTUNITY_THESIS_EXIT", False)) and (
+            "_mgmt_buy_expected_r" in management_row.index
+            or "_mgmt_sell_expected_r" in management_row.index
+        ):
+            prediction = {
+                "policy_enabled": bool(management_row.get("_mgmt_policy_enabled", True)),
+                "p_buy": float(management_row.get("_mgmt_buy_tp_probability", 0.0) or 0.0),
+                "p_sell": float(management_row.get("_mgmt_sell_tp_probability", 0.0) or 0.0),
+                "buy_expected_r": float(management_row.get("_mgmt_buy_expected_r", 0.0) or 0.0),
+                "sell_expected_r": float(management_row.get("_mgmt_sell_expected_r", 0.0) or 0.0),
+                "min_tp_probability": float(management_row.get("_mgmt_min_tp_probability", 1.0) or 1.0),
+                "min_expected_r": float(management_row.get("_mgmt_min_expected_r", 0.0) or 0.0),
+                "setup_buy_score": float(management_row.get("_mgmt_setup_buy_score", 0.0) or 0.0),
+                "setup_sell_score": float(management_row.get("_mgmt_setup_sell_score", 0.0) or 0.0),
+                "min_setup_score": float(management_row.get("_mgmt_min_setup_score", 0.0) or 0.0),
+                "min_setup_gap": float(management_row.get("_mgmt_min_setup_gap", 0.0) or 0.0),
+            }
+            should_exit, thesis_reason = opportunity_thesis_exit(
+                direction=direction,
+                r_multiple=r_multiple,
+                bars_held=bars_held,
+                prediction=prediction,
+                min_bars=int(getattr(settings, "THESIS_EXIT_MIN_BARS", 3)),
+                adverse_r=float(getattr(settings, "THESIS_EXIT_ADVERSE_R", 0.12)),
+                stale_bars=int(getattr(settings, "THESIS_STALE_BARS", 18)),
+                stale_max_r=float(getattr(settings, "THESIS_STALE_MAX_R", 0.20)),
+                own_probability_fraction=float(getattr(settings, "THESIS_OWN_PROBABILITY_FRACTION", 0.70)),
+                own_ev_floor=float(getattr(settings, "THESIS_OWN_EV_FLOOR", -0.05)),
+                opposite_ev_margin=float(getattr(settings, "THESIS_OPPOSITE_EV_MARGIN", 0.15)),
+                opposite_probability_margin=float(getattr(settings, "THESIS_OPPOSITE_PROBABILITY_MARGIN", 0.05)),
+                setup_fraction=float(getattr(settings, "THESIS_SETUP_FRACTION", 0.70)),
+            )
+            if should_exit:
+                exit_price = current_mark
+                exit_reason = thesis_reason
+                exit_time = management_time
+                break
+
+        elif bool(getattr(settings, "USE_AI_DEFENSIVE_EXIT", False)):
             adverse_gate = -abs(float(settings.AI_DEFENSIVE_EXIT_ADVERSE_R))
             min_bars = int(settings.AI_DEFENSIVE_EXIT_MIN_BARS)
             if bars_held >= min_bars and r_multiple <= adverse_gate:
@@ -405,15 +454,8 @@ def _simulate_trade_path(data, idx, candidate, balance, scenario, settings, exec
                 confidence = float(management_row.get("_mgmt_confidence", 0.0) or 0.0)
                 min_confidence = float(management_row.get("_mgmt_min_confidence", 1.0) or 1.0)
                 threshold = abs(float(management_row.get("_mgmt_signal_threshold", 1.0) or 1.0))
-                required_signal = threshold * max(
-                    0.0,
-                    float(settings.AI_DEFENSIVE_EXIT_SIGNAL_MULTIPLIER),
-                )
-                opposite = (
-                    signal <= -required_signal
-                    if direction == "BUY"
-                    else signal >= required_signal
-                )
+                required_signal = threshold * max(0.0, float(settings.AI_DEFENSIVE_EXIT_SIGNAL_MULTIPLIER))
+                opposite = signal <= -required_signal if direction == "BUY" else signal >= required_signal
                 if enabled and confidence >= min_confidence and opposite:
                     exit_price = current_mark
                     exit_reason = "AI_DEFENSIVE_EXIT"
@@ -837,11 +879,11 @@ def _calibrate_policy_money(
     normal,
     stress,
 ):
-    """Choose thresholds from executable money P/L, not label R alone.
+    """Select a sparse decision policy from executable broker-money P/L.
 
-    Label-R remains a cheap robustness pre-filter. A threshold pair is eligible
-    for production only if the same signals survive broker lot rules, spread,
-    commission, trade management and stress costs on the calibration slice.
+    Stage 8 searches confidence, direction edge, and an explicit margin over
+    HOLD. Directional label statistics remain diagnostics/robustness checks;
+    executable NORMAL+STRESS money is the authority.
     """
     best = None
     proxy = _RiskOverrideSettings(settings, POLICY_CALIBRATION_RISK_PERCENT)
@@ -852,126 +894,121 @@ def _calibrate_policy_money(
 
     for min_conf in CALIBRATION_CONFIDENCE_GRID:
         for edge in CALIBRATION_EDGE_GRID:
-            label_metrics = evaluate_probabilities(
-                model,
-                y,
-                proba,
-                buy_r,
-                sell_r,
-                min_confidence=min_conf,
-                signal_threshold=edge,
-            )
-            if label_metrics["trades"] < CALIBRATION_MIN_TRADES:
-                continue
-            if label_metrics["coverage"] > CALIBRATION_MAX_COVERAGE:
-                continue
-            if label_metrics["avg_r"] <= 0:
-                continue
-            if label_metrics["profit_factor_r"] < CALIBRATION_MIN_PROFIT_FACTOR:
-                continue
+            for hold_margin in CALIBRATION_HOLD_MARGIN_GRID:
+                label_metrics = evaluate_probabilities(
+                    model,
+                    y,
+                    proba,
+                    buy_r,
+                    sell_r,
+                    min_confidence=min_conf,
+                    signal_threshold=edge,
+                    hold_margin=hold_margin,
+                )
+                if label_metrics["trades"] < CALIBRATION_MIN_TRADES:
+                    continue
+                if label_metrics["coverage"] > CALIBRATION_MAX_COVERAGE:
+                    continue
 
-            positive_blocks, block_std, _ = _block_stability(
-                model, proba, cal, min_conf, edge
-            )
-            if positive_blocks < 2:
-                continue
+                positive_blocks, block_std, _ = _block_stability(
+                    model, proba, cal, min_conf, edge, hold_margin
+                )
+                if positive_blocks < 2:
+                    continue
 
-            policy = {
-                "enabled": True,
-                "min_confidence": float(min_conf),
-                "signal_threshold": float(edge),
-            }
-            enriched = _attach_management_state(cal, model, proba, policy)
-            policy_candidates = _build_candidates(symbol, model, enriched, proba, policy)
-            if len(policy_candidates) < POLICY_CALIBRATION_MIN_TRADES:
-                continue
+                policy = {
+                    "enabled": True,
+                    "min_confidence": float(min_conf),
+                    "signal_threshold": float(edge),
+                    "hold_margin": float(hold_margin),
+                }
+                enriched = _attach_management_state(cal, model, proba, policy)
+                policy_candidates = _build_candidates(symbol, model, enriched, proba, policy)
+                if len(policy_candidates) < POLICY_CALIBRATION_MIN_TRADES:
+                    continue
 
-            by_symbol = {symbol: enriched}
-            normal_result = _portfolio_backtest(
-                policy_candidates,
-                by_symbol,
-                POLICY_CALIBRATION_BALANCE,
-                normal,
-                proxy,
-                execution=execution,
-            )
-            stress_result = _portfolio_backtest(
-                policy_candidates,
-                by_symbol,
-                POLICY_CALIBRATION_BALANCE,
-                stress,
-                proxy,
-                execution=execution,
-            )
+                by_symbol = {symbol: enriched}
+                normal_result = _portfolio_backtest(
+                    policy_candidates, by_symbol, POLICY_CALIBRATION_BALANCE, normal, proxy, execution=execution
+                )
+                stress_result = _portfolio_backtest(
+                    policy_candidates, by_symbol, POLICY_CALIBRATION_BALANCE, stress, proxy, execution=execution
+                )
 
-            checks = {
-                "normal_profit": normal_result["net_profit"] > 0,
-                "stress_profit": stress_result["net_profit"] >= 0,
-                "normal_pf": normal_result["profit_factor"] >= POLICY_CALIBRATION_NORMAL_MIN_PROFIT_FACTOR,
-                "stress_pf": stress_result["profit_factor"] >= POLICY_CALIBRATION_STRESS_MIN_PROFIT_FACTOR,
-                "normal_payoff": normal_result["payoff_ratio"] >= POLICY_CALIBRATION_MIN_PAYOFF_RATIO,
-                "normal_trades": normal_result["trades"] >= POLICY_CALIBRATION_MIN_TRADES,
-                "stress_trades": stress_result["trades"] >= POLICY_CALIBRATION_MIN_TRADES,
-                "normal_dd": normal_result["max_drawdown_pct"] <= POLICY_CALIBRATION_NORMAL_MAX_DRAWDOWN_PERCENT,
-                "stress_dd": stress_result["max_drawdown_pct"] <= POLICY_CALIBRATION_STRESS_MAX_DRAWDOWN_PERCENT,
-            }
-            if not all(checks.values()):
-                continue
+                checks = {
+                    "normal_profit": normal_result["net_profit"] > 0,
+                    "stress_profit": stress_result["net_profit"] >= 0,
+                    "normal_pf": normal_result["profit_factor"] >= POLICY_CALIBRATION_NORMAL_MIN_PROFIT_FACTOR,
+                    "stress_pf": stress_result["profit_factor"] >= POLICY_CALIBRATION_STRESS_MIN_PROFIT_FACTOR,
+                    "normal_payoff": normal_result["payoff_ratio"] >= POLICY_CALIBRATION_MIN_PAYOFF_RATIO,
+                    "normal_trades": normal_result["trades"] >= POLICY_CALIBRATION_MIN_TRADES,
+                    "stress_trades": stress_result["trades"] >= POLICY_CALIBRATION_MIN_TRADES,
+                    "normal_dd": normal_result["max_drawdown_pct"] <= POLICY_CALIBRATION_NORMAL_MAX_DRAWDOWN_PERCENT,
+                    "stress_dd": stress_result["max_drawdown_pct"] <= POLICY_CALIBRATION_STRESS_MAX_DRAWDOWN_PERCENT,
+                }
+                if not all(checks.values()):
+                    continue
 
-            worst_return = min(normal_result["return_pct"], stress_result["return_pct"])
-            mean_return = 0.5 * (normal_result["return_pct"] + stress_result["return_pct"])
-            worst_pf = min(normal_result["profit_factor"], stress_result["profit_factor"])
-            worst_dd = max(normal_result["max_drawdown_pct"], stress_result["max_drawdown_pct"])
-            payoff = normal_result["payoff_ratio"]
+                worst_return = min(normal_result["return_pct"], stress_result["return_pct"])
+                mean_return = 0.5 * (normal_result["return_pct"] + stress_result["return_pct"])
+                worst_pf = min(normal_result["profit_factor"], stress_result["profit_factor"])
+                worst_dd = max(normal_result["max_drawdown_pct"], stress_result["max_drawdown_pct"])
+                payoff = normal_result["payoff_ratio"]
 
-            score = (
-                worst_return
-                + 0.25 * mean_return
-                + 2.0 * max(0.0, worst_pf - 1.0)
-                + 0.75 * min(payoff, 3.5)
-                + 0.05 * positive_blocks
-                - 0.10 * worst_dd
-                - 0.05 * block_std
-            )
+                # Precision-first score. Coverage is deliberately not rewarded;
+                # more trades only help when the money edge survives costs.
+                score = (
+                    worst_return
+                    + 0.20 * mean_return
+                    + 3.0 * max(0.0, worst_pf - 1.0)
+                    + 1.0 * min(payoff, 3.5)
+                    + 0.10 * positive_blocks
+                    + 0.10 * hold_margin
+                    - 0.15 * worst_dd
+                    - 0.05 * block_std
+                )
 
-            candidate = {
-                "enabled": True,
-                "min_confidence": float(min_conf),
-                "signal_threshold": float(edge),
-                "score": float(score),
-                "calibration": {
-                    "method": "broker_money_normal_and_stress",
-                    "reference_balance": float(POLICY_CALIBRATION_BALANCE),
-                    "reference_risk_percent": float(POLICY_CALIBRATION_RISK_PERCENT),
-                    "trades": int(label_metrics["trades"]),
-                    "coverage": float(label_metrics["coverage"]),
-                    "win_rate": float(label_metrics["win_rate"]),
-                    "avg_r": float(label_metrics["avg_r"]),
-                    "profit_factor_r": float(label_metrics["profit_factor_r"]),
-                    "positive_blocks": int(positive_blocks),
-                    "block_avg_r_std": float(block_std),
-                    "normal_money": _public_result(normal_result),
-                    "stress_money": _public_result(stress_result),
-                    "checks": checks,
-                },
-            }
-            if best is None or candidate["score"] > best["score"]:
-                best = candidate
+                candidate = {
+                    "enabled": True,
+                    "min_confidence": float(min_conf),
+                    "signal_threshold": float(edge),
+                    "hold_margin": float(hold_margin),
+                    "score": float(score),
+                    "calibration": {
+                        "method": "selective_broker_money_normal_and_stress",
+                        "reference_balance": float(POLICY_CALIBRATION_BALANCE),
+                        "reference_risk_percent": float(POLICY_CALIBRATION_RISK_PERCENT),
+                        "trades": int(label_metrics["trades"]),
+                        "coverage": float(label_metrics["coverage"]),
+                        "win_rate": float(label_metrics["win_rate"]),
+                        "avg_r": float(label_metrics["avg_r"]),
+                        "profit_factor_r": float(label_metrics["profit_factor_r"]),
+                        "positive_blocks": int(positive_blocks),
+                        "block_avg_r_std": float(block_std),
+                        "normal_money": _public_result(normal_result),
+                        "stress_money": _public_result(stress_result),
+                        "checks": checks,
+                    },
+                }
+                if best is None or candidate["score"] > best["score"]:
+                    best = candidate
 
     if best is None:
         return {
             "enabled": False,
             "min_confidence": 0.99,
             "signal_threshold": 0.99,
+            "hold_margin": 0.99,
             "score": -999.0,
             "calibration": {
-                "reason": "no_threshold_pair_passed_execution_money_gates",
+                "reason": "no_selective_policy_passed_execution_money_gates",
                 "reference_balance": float(POLICY_CALIBRATION_BALANCE),
                 "reference_risk_percent": float(POLICY_CALIBRATION_RISK_PERCENT),
             },
         }
 
     return best
+
 
 def _public_result(result):
     return {k: v for k, v in result.items() if k != "trades_detail"}
@@ -1110,7 +1147,8 @@ def run():
             nm = c.get("normal_money", {})
             sm = c.get("stress_money", {})
             print(
-                f"Policy: conf>={policy['min_confidence']:.2f} edge>={policy['signal_threshold']:.2f} | "
+                f"Policy: conf>={policy['min_confidence']:.2f} edge>={policy['signal_threshold']:.2f} "
+                f"hold+={policy.get('hold_margin', 0.0):.2f} | "
                 f"CAL PF_R={c['profit_factor_r']:.3f} AVG_R={c['avg_r']:+.4f} | "
                 f"MONEY PF={nm.get('profit_factor', 0.0):.3f}/{sm.get('profit_factor', 0.0):.3f} "
                 f"PAY={nm.get('payoff_ratio', 0.0):.2f}"
@@ -1130,6 +1168,7 @@ def run():
                 test["target_sell_r"].to_numpy(dtype=np.float64),
                 min_confidence=policy["min_confidence"],
                 signal_threshold=policy["signal_threshold"],
+                hold_margin=policy.get("hold_margin", 0.0),
             )
             print(
                 f"Final R check: trades={test_r['trades']:,} WIN={test_r['win_rate']*100:.1f}% "

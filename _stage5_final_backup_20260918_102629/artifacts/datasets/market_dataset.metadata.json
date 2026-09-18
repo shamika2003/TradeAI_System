@@ -1,0 +1,78 @@
+{
+  "dataset_contract_version": "tradeai_dataset_v2",
+  "created_utc": "2026-09-07T08:37:18.682885+00:00",
+  "feature_schema_version": "tradeai_features_v4_20260907",
+  "feature_hash": "137a5ffae3054e7d1a600729a843fed11cde7a07133faa58f9bc00a0c18bbfbb",
+  "target_version": "tradeai_payoff_target_v4_20260917",
+  "timeframe": "M5",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "rows": 1912472,
+  "max_target_horizon_bars": 36,
+  "closed_candles_only": true,
+  "causal_h1_alignment": true,
+  "symbol_ranges": {
+    "EURUSD": {
+      "rows": 479147,
+      "start": "2020-04-02 12:55:00",
+      "end": "2026-09-07 04:25:00",
+      "class_counts": {
+        "0": 120552,
+        "1": 234698,
+        "2": 123897
+      }
+    },
+    "GBPUSD": {
+      "rows": 479176,
+      "start": "2020-04-02 11:55:00",
+      "end": "2026-09-07 04:25:00",
+      "class_counts": {
+        "0": 114233,
+        "1": 241772,
+        "2": 123171
+      }
+    },
+    "USDJPY": {
+      "rows": 479150,
+      "start": "2020-04-02 13:55:00",
+      "end": "2026-09-07 04:25:00",
+      "class_counts": {
+        "0": 116618,
+        "1": 230811,
+        "2": 131721
+      }
+    },
+    "USDCNH": {
+      "rows": 474999,
+      "start": "2020-04-02 19:55:00",
+      "end": "2026-09-07 04:25:00",
+      "class_counts": {
+        "0": 35726,
+        "1": 346427,
+        "2": 92846
+      }
+    }
+  },
+  "target_contract": {
+    "target_version": "tradeai_payoff_target_v4_20260917",
+    "prediction_type": "barrier_multiclass",
+    "stop_atr_multiplier": 1.25,
+    "take_atr_multiplier": 3.75,
+    "gross_reward_to_risk": 3.0,
+    "max_hold_bars": 36,
+    "min_edge_r": 0.25,
+    "label_slippage_pips": 0.2,
+    "label_commission_per_lot": 7.0,
+    "historical_ohlc_side": "BID",
+    "class_map": {
+      "SELL": 0,
+      "HOLD": 1,
+      "BUY": 2
+    }
+  },
+  "stage3_relabelled_utc": "2026-09-17T10:32:51.670401+00:00"
+}

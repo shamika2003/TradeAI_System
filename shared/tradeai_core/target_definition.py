@@ -6,15 +6,19 @@ import numpy as np
 import pandas as pd
 
 
-# Stage 7: payoff-first, execution-aware target contract.
-TARGET_VERSION = "tradeai_payoff_target_v4_20260917"
-PREDICTION_TYPE = "barrier_multiclass"
+# Stage 9: execution-aware directional opportunity target contract.
+TARGET_VERSION = "tradeai_compact_quality_target_v8_20260918"
+PREDICTION_TYPE = "directional_quality_barrier_plus_expected_r"
 
 # Runtime and labels intentionally share the same geometry.
-# 1.25 ATR stop / 3.75 ATR target = 3.0R gross reward:risk.
-STOP_ATR_MULTIPLIER = 1.25
-TAKE_ATR_MULTIPLIER = 3.75
-MAX_HOLD_BARS = 36          # 3 hours on M5
+# 0.75 ATR stop / 1.875 ATR target = 2.5R gross reward:risk.
+# Stage 11.2 uses a compact invalidation stop because the live broker has a
+# 0.01 minimum lot and a $150 account cannot safely execute many 1.25 ATR M5
+# stops. The 2.5R payoff ratio is preserved; only the price distance is tighter.
+# Labels and runtime use the exact same geometry.
+STOP_ATR_MULTIPLIER = 0.75
+TAKE_ATR_MULTIPLIER = 1.875
+MAX_HOLD_BARS = 48          # 4 hours on M5
 MAX_TARGET_HORIZON_BARS = MAX_HOLD_BARS
 PRIMARY_HORIZON_BARS = MAX_HOLD_BARS
 LONG_HORIZON_BARS = MAX_HOLD_BARS
@@ -31,7 +35,11 @@ CLASS_MAP = {
 # Directional labels now require a more meaningful net edge. Tiny moves are
 # intentionally HOLD so the classifier spends capacity on trades with room to
 # pay spread/commission and still deliver asymmetric payoff.
-MIN_EDGE_R = 0.25
+MIN_EDGE_R = 0.20
+# Classifier target: can price achieve +1.0 net R before the original -1R stop?
+# Runtime is still allowed to hold winners toward the larger 2.5R target.
+QUALITY_SUCCESS_R = 1.00
+MIN_TP_SUCCESS_R = 1.50
 
 # Label economics mirror the production/BACKTEST execution convention:
 # MT5 OHLC is BID-side; BUY enters on ASK, SELL enters on BID; SELL exits are
@@ -65,6 +73,10 @@ def target_contract() -> dict:
         "gross_reward_to_risk": TAKE_ATR_MULTIPLIER / STOP_ATR_MULTIPLIER,
         "max_hold_bars": MAX_HOLD_BARS,
         "min_edge_r": MIN_EDGE_R,
+        "quality_success_r": QUALITY_SUCCESS_R,
+        "min_tp_success_r": MIN_TP_SUCCESS_R,
+        "directional_label_rule": "quality_barrier_hit_before_stop_within_horizon",
+        "model_objective": "separate_buy_sell_quality_probability_plus_expected_net_r",
         "label_slippage_pips": LABEL_SLIPPAGE_PIPS,
         "label_commission_per_lot": LABEL_COMMISSION_PER_LOT,
         "historical_ohlc_side": LABEL_OHLC_SIDE,
@@ -165,50 +177,46 @@ def _label_one_symbol(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
     sell_sl = close + sl_distance
     sell_tp = close - tp_distance
 
-    stop_pips = np.divide(
-        sl_distance,
-        pip,
-        out=np.zeros(n, dtype=np.float64),
-        where=sl_distance > 0,
-    )
     pip_value = _pip_value_per_lot(symbol, close)
-    price_risk_per_lot = stop_pips * pip_value
-    commission_r = np.divide(
-        LABEL_COMMISSION_PER_LOT,
-        price_risk_per_lot,
-        out=np.zeros(n, dtype=np.float64),
-        where=price_risk_per_lot > 0,
-    )
 
-    buy_stop_reward = np.divide(
-        buy_sl - buy_entry,
-        sl_distance,
-        out=np.full(n, np.nan, dtype=np.float64),
-        where=sl_distance > 0,
-    ) - commission_r
-    buy_tp_reward = np.divide(
-        buy_tp - buy_entry,
-        sl_distance,
-        out=np.full(n, np.nan, dtype=np.float64),
-        where=sl_distance > 0,
-    ) - commission_r
-    sell_stop_reward = np.divide(
-        sell_entry - sell_sl,
-        sl_distance,
-        out=np.full(n, np.nan, dtype=np.float64),
-        where=sl_distance > 0,
-    ) - commission_r
-    sell_tp_reward = np.divide(
-        sell_entry - sell_tp,
-        sl_distance,
-        out=np.full(n, np.nan, dtype=np.float64),
-        where=sl_distance > 0,
-    ) - commission_r
+    # R is normalized by the *actual executable net loss at the original stop*,
+    # including spread/slippage displacement and round-trip commission. This is
+    # the same risk concept used by Stage 2 runtime sizing.
+    buy_risk_money = ((buy_entry - buy_sl) / pip) * pip_value + LABEL_COMMISSION_PER_LOT
+    sell_risk_money = ((sell_sl - sell_entry) / pip) * pip_value + LABEL_COMMISSION_PER_LOT
+
+    def _buy_reward(exit_price):
+        pnl = ((exit_price - buy_entry) / pip) * pip_value - LABEL_COMMISSION_PER_LOT
+        return np.divide(
+            pnl, buy_risk_money, out=np.full(n, np.nan, dtype=np.float64), where=buy_risk_money > 0
+        )
+
+    def _sell_reward(exit_price):
+        pnl = ((sell_entry - exit_price) / pip) * pip_value - LABEL_COMMISSION_PER_LOT
+        return np.divide(
+            pnl, sell_risk_money, out=np.full(n, np.nan, dtype=np.float64), where=sell_risk_money > 0
+        )
+
+    buy_stop_reward = _buy_reward(buy_sl)
+    buy_tp_reward = _buy_reward(buy_tp)
+    sell_stop_reward = _sell_reward(sell_sl)
+    sell_tp_reward = _sell_reward(sell_tp)
+
+    # A +1R quality barrier is intentionally easier to learn than the final
+    # +2.5R take-profit. Entry quality and exit ambition are separate jobs.
+    buy_quality_price = buy_entry + ((QUALITY_SUCCESS_R * buy_risk_money + LABEL_COMMISSION_PER_LOT) / (pip_value + 1e-12)) * pip
+    sell_quality_price = sell_entry - ((QUALITY_SUCCESS_R * sell_risk_money + LABEL_COMMISSION_PER_LOT) / (pip_value + 1e-12)) * pip
 
     buy_r = np.full(n, np.nan, dtype=np.float64)
     sell_r = np.full(n, np.nan, dtype=np.float64)
     buy_exit_bar = np.full(n, -1, dtype=np.int16)
     sell_exit_bar = np.full(n, -1, dtype=np.int16)
+    buy_tp_success = np.zeros(n, dtype=bool)
+    sell_tp_success = np.zeros(n, dtype=bool)
+    buy_quality_success = np.zeros(n, dtype=bool)
+    sell_quality_success = np.zeros(n, dtype=bool)
+    buy_quality_bar = np.full(n, -1, dtype=np.int16)
+    sell_quality_bar = np.full(n, -1, dtype=np.int16)
 
     full_horizon = np.zeros(n, dtype=bool)
     if n > MAX_HOLD_BARS:
@@ -236,24 +244,34 @@ def _label_one_symbol(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         active_b = buy_active[:count]
         if active_b.any():
             sl_hit = fut_low_bid <= buy_sl[:count]
+            quality_hit = fut_high_bid >= buy_quality_price[:count]
+            first_quality = active_b & (~sl_hit) & quality_hit & (~buy_quality_success[:count])
+            buy_quality_success[idx[first_quality]] = True
+            buy_quality_bar[idx[first_quality]] = step
             tp_hit = fut_high_bid >= buy_tp[:count]
             resolve_sl = active_b & sl_hit
             resolve_tp = active_b & (~sl_hit) & tp_hit
 
             buy_r[idx[resolve_sl]] = buy_stop_reward[:count][resolve_sl]
             buy_r[idx[resolve_tp]] = buy_tp_reward[:count][resolve_tp]
+            buy_tp_success[idx[resolve_tp]] = True
             buy_exit_bar[idx[resolve_sl | resolve_tp]] = step
             buy_active[idx[resolve_sl | resolve_tp]] = False
 
         active_s = sell_active[:count]
         if active_s.any():
             sl_hit = fut_high_ask >= sell_sl[:count]
+            quality_hit = fut_low_ask <= sell_quality_price[:count]
+            first_quality = active_s & (~sl_hit) & quality_hit & (~sell_quality_success[:count])
+            sell_quality_success[idx[first_quality]] = True
+            sell_quality_bar[idx[first_quality]] = step
             tp_hit = fut_low_ask <= sell_tp[:count]
             resolve_sl = active_s & sl_hit
             resolve_tp = active_s & (~sl_hit) & tp_hit
 
             sell_r[idx[resolve_sl]] = sell_stop_reward[:count][resolve_sl]
             sell_r[idx[resolve_tp]] = sell_tp_reward[:count][resolve_tp]
+            sell_tp_success[idx[resolve_tp]] = True
             sell_exit_bar[idx[resolve_sl | resolve_tp]] = step
             sell_active[idx[resolve_sl | resolve_tp]] = False
 
@@ -264,13 +282,25 @@ def _label_one_symbol(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         terminal_bid = close[MAX_HOLD_BARS:]
         terminal_ask = terminal_bid + spread_price[MAX_HOLD_BARS:]
 
-        buy_timeout = (
-            (terminal_bid - buy_entry[:base_count]) / sl_distance[:base_count]
-            - commission_r[:base_count]
+        buy_timeout_money = (
+            ((terminal_bid - buy_entry[:base_count]) / pip) * pip_value[:base_count]
+            - LABEL_COMMISSION_PER_LOT
         )
-        sell_timeout = (
-            (sell_entry[:base_count] - terminal_ask) / sl_distance[:base_count]
-            - commission_r[:base_count]
+        sell_timeout_money = (
+            ((sell_entry[:base_count] - terminal_ask) / pip) * pip_value[:base_count]
+            - LABEL_COMMISSION_PER_LOT
+        )
+        buy_timeout = np.divide(
+            buy_timeout_money,
+            buy_risk_money[:base_count],
+            out=np.full(base_count, np.nan, dtype=np.float64),
+            where=buy_risk_money[:base_count] > 0,
+        )
+        sell_timeout = np.divide(
+            sell_timeout_money,
+            sell_risk_money[:base_count],
+            out=np.full(base_count, np.nan, dtype=np.float64),
+            where=sell_risk_money[:base_count] > 0,
         )
 
         # Keep timeout rewards within the same executable barrier envelope.
@@ -298,16 +328,22 @@ def _label_one_symbol(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
     if valid_rewards.any():
         best_r[valid_rewards] = np.maximum(buy_r[valid_rewards], sell_r[valid_rewards])
 
-        buy_choice = (
-            valid_rewards
-            & (buy_r >= MIN_EDGE_R)
-            & (buy_r > sell_r)
-        )
-        sell_choice = (
-            valid_rewards
-            & (sell_r >= MIN_EDGE_R)
-            & (sell_r > buy_r)
-        )
+        # Entry labels answer a narrower, more learnable question than the final
+        # exit target: which side reaches +1.0 net R before its stop?  This keeps
+        # quality-over-quantity while letting runtime management hold exceptional
+        # trades toward the larger 2.5R take-profit.
+        buy_only = valid_rewards & buy_quality_success & ~sell_quality_success
+        sell_only = valid_rewards & sell_quality_success & ~buy_quality_success
+        both = valid_rewards & buy_quality_success & sell_quality_success
+
+        buy_first = both & (buy_quality_bar < sell_quality_bar)
+        sell_first = both & (sell_quality_bar < buy_quality_bar)
+        same_bar = both & (buy_quality_bar == sell_quality_bar)
+        buy_tie = same_bar & (buy_r >= sell_r)
+        sell_tie = same_bar & ~buy_tie
+
+        buy_choice = buy_only | buy_first | buy_tie
+        sell_choice = sell_only | sell_first | sell_tie
         hold_choice = valid_rewards & ~(buy_choice | sell_choice)
 
         target[buy_choice] = BUY_CLASS
@@ -320,6 +356,12 @@ def _label_one_symbol(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
     result["target_best_r"] = best_r
     result["target_buy_exit_bar"] = buy_exit_bar
     result["target_sell_exit_bar"] = sell_exit_bar
+    result["target_buy_tp_hit"] = buy_tp_success.astype(np.int8)
+    result["target_sell_tp_hit"] = sell_tp_success.astype(np.int8)
+    result["target_buy_quality_hit"] = buy_quality_success.astype(np.int8)
+    result["target_sell_quality_hit"] = sell_quality_success.astype(np.int8)
+    result["target_buy_quality_bar"] = buy_quality_bar
+    result["target_sell_quality_bar"] = sell_quality_bar
 
     result.drop(
         columns=["future_return", "target_short", "target_long", "target"],

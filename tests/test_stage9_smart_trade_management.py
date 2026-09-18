@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "TradeAI"))
 
+import core.trade_manager as trade_manager_module
 from core.trade_manager import TradeManager
 
 
@@ -93,7 +94,7 @@ def test_mt5_numeric_buy_direction_is_normalized(tmp_path, monkeypatch):
 
 def test_break_even_is_r_based_and_covers_commission(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    position = make_buy_position(current=1.1012)  # +1.20R
+    position = make_buy_position(current=1.1015)  # +1.50R
     ex = FakeExecutor(position)
     manager = TradeManager(ex)
     assert manager.register_trade(position)
@@ -111,7 +112,13 @@ def test_break_even_is_r_based_and_covers_commission(tmp_path, monkeypatch):
 
 def test_trailing_uses_r_trigger_and_never_goes_back_below_cost_be(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    position = make_buy_position(current=1.1024)  # +2.40R
+    monkeypatch.setattr(trade_manager_module, "USE_PROFIT_LOCK", True)
+    monkeypatch.setattr(trade_manager_module, "USE_TRAILING_STOP", True)
+    monkeypatch.setattr(trade_manager_module, "PROFIT_LOCK_TRIGGER_R", 2.00)
+    monkeypatch.setattr(trade_manager_module, "PROFIT_LOCK_R", 1.00)
+    monkeypatch.setattr(trade_manager_module, "TRAILING_TRIGGER_R", 2.40)
+    monkeypatch.setattr(trade_manager_module, "TRAILING_ATR_MULTIPLIER", 0.90)
+    position = make_buy_position(current=1.1025)  # +2.50R
     ex = FakeExecutor(position)
     manager = TradeManager(ex)
     assert manager.register_trade(position)
@@ -119,15 +126,18 @@ def test_trailing_uses_r_trigger_and_never_goes_back_below_cost_be(tmp_path, mon
     assert manager.update("EURUSD", atr=0.0005) is True
 
     trade = manager.active_trades["EURUSD"]
-    # Late trailing uses 1.25 ATR after the +0.75R profit lock:
-    # 1.1024 - (1.25 * 0.0005) = 1.101775.
+    # Optional runner trail uses 0.90 ATR after the +1.00R lock:
+    # 1.1025 - (0.90 * 0.0005) = 1.10205.
     assert trade["be_done"] is True
-    assert trade["sl"] == pytest.approx(1.101775, abs=1e-10)
+    assert trade["sl"] == pytest.approx(1.10205, abs=1e-10)
 
 
 def test_profit_lock_preserves_meaningful_gain_before_runner_trail(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    position = make_buy_position(current=1.1018)  # +1.80R
+    monkeypatch.setattr(trade_manager_module, "USE_PROFIT_LOCK", True)
+    monkeypatch.setattr(trade_manager_module, "PROFIT_LOCK_TRIGGER_R", 2.00)
+    monkeypatch.setattr(trade_manager_module, "PROFIT_LOCK_R", 1.00)
+    position = make_buy_position(current=1.1021)  # +2.10R
     ex = FakeExecutor(position)
     manager = TradeManager(ex)
     assert manager.register_trade(position)
@@ -136,8 +146,8 @@ def test_profit_lock_preserves_meaningful_gain_before_runner_trail(tmp_path, mon
 
     trade = manager.active_trades["EURUSD"]
     assert trade["be_done"] is True
-    # +0.75R lock on a 10-pip initial risk = +7.5 pips.
-    assert trade["sl"] == pytest.approx(1.10075, abs=1e-10)
+    # +1.00R lock on a 10-pip initial risk = +10 pips.
+    assert trade["sl"] == pytest.approx(1.1010, abs=1e-10)
 
 
 def test_strong_opposite_model_edge_cuts_meaningful_loser_early(tmp_path, monkeypatch):

@@ -1,3 +1,4 @@
+from shared.tradeai_core.decision_policy import SIGNAL_EPISODE_RESET_BARS
 from analytics.logger import log
 
 
@@ -20,6 +21,13 @@ class TradeEntryEngine:
         # prevent duplicate entries on same candle
         self.last_signal = {}
 
+        # One execution attempt per continuous structural signal episode.
+        # Repeated adjacent BUY/SELL predictions are the same opportunity, not
+        # fresh independent trades. The episode resets only after several HOLD
+        # bars (or on a direct direction reversal).
+        self.signal_episode_direction = {}
+        self.signal_episode_hold_bars = {}
+
         log(
             "INFO | Trade Entry Engine initialized"
         )
@@ -34,83 +42,38 @@ class TradeEntryEngine:
             self,
             prediction
     ):
-
         if prediction is None:
             return None
 
+        # Stage 9 opportunity models make an explicit eligibility decision.
+        # This avoids converting every weak signed score into a trade.
+        if "trade_eligible" in prediction:
+            if prediction.get("policy_enabled", True) is False:
+                return None
+            if not bool(prediction.get("trade_eligible", False)):
+                return None
+            direction = str(prediction.get("direction") or "").upper()
+            if direction not in ("BUY", "SELL"):
+                return None
+            log(
+                f"DEBUG | Opportunity {direction} "
+                f"P={float(prediction.get('confidence', 0.0)):.3f} "
+                f"EV={float(prediction.get('selected_expected_r', 0.0)):+.3f}R"
+            )
+            return direction
 
-        signal = prediction.get(
-            "signal"
-        )
-
-
-        confidence = prediction.get(
-            "confidence",
-            0
-        )
-
-
-        log(
-            f"DEBUG | Prediction "
-            f"signal={signal:.6f} "
-            f"confidence={confidence:.2f}"
-            if signal is not None
-            else
-            "DEBUG | Empty prediction"
-        )
-
-
-
+        # Legacy fallback for old tests/artifacts.
+        signal = prediction.get("signal")
+        confidence = prediction.get("confidence", 0)
         if signal is None:
             return None
-
-
-
-        # calibrated per-symbol policy thresholds are supplied by Predictor.
-        # Fall back to config only for compatibility/testing.
-        min_confidence = float(
-            prediction.get(
-                "min_confidence",
-                self.config.MIN_CONFIDENCE
-            )
-        )
-
-        signal_threshold = float(
-            prediction.get(
-                "signal_threshold",
-                self.config.SIGNAL_THRESHOLD
-            )
-        )
-
-        if prediction.get("policy_enabled", True) is False:
+        min_confidence = float(prediction.get("min_confidence", self.config.MIN_CONFIDENCE))
+        signal_threshold = float(prediction.get("signal_threshold", self.config.SIGNAL_THRESHOLD))
+        if prediction.get("policy_enabled", True) is False or confidence < min_confidence:
             return None
-
-        if confidence < min_confidence:
-
-            log(
-                f"DEBUG | Low confidence "
-                f"{confidence:.2f} < {min_confidence:.2f}"
-            )
-
+        if abs(float(signal)) < signal_threshold:
             return None
-
-
-
-        # movement / probability-edge filter
-
-        if abs(signal) < signal_threshold:
-
-            return None
-
-
-
-        if signal > 0:
-
-            return "BUY"
-
-
-        return "SELL"
-
+        return "BUY" if float(signal) > 0 else "SELL"
 
 
 
@@ -137,8 +100,23 @@ class TradeEntryEngine:
 
 
             if direction is None:
-
+                hold_bars = int(self.signal_episode_hold_bars.get(symbol, 0)) + 1
+                self.signal_episode_hold_bars[symbol] = hold_bars
+                if hold_bars >= int(SIGNAL_EPISODE_RESET_BARS):
+                    self.signal_episode_direction.pop(symbol, None)
                 return False
+
+            active_episode = self.signal_episode_direction.get(symbol)
+            if active_episode == direction:
+                self.signal_episode_hold_bars[symbol] = 0
+                log(f"DEBUG | Same setup episode blocked {symbol} {direction}")
+                return False
+
+            # A direct reversal is a genuinely different setup. Otherwise this
+            # records the first eligible bar of a new episode even if broker
+            # risk later rejects it, matching offline candidate de-clustering.
+            self.signal_episode_direction[symbol] = direction
+            self.signal_episode_hold_bars[symbol] = 0
 
 
 

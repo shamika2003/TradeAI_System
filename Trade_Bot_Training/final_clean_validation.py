@@ -34,6 +34,7 @@ from config_model import (
     SYMBOLS,
 )
 from shared.tradeai_core.target_definition import TARGET_VERSION
+from shared.tradeai_core.feature_schema import FEATURE_HASH, FEATURE_SCHEMA_VERSION
 
 
 TRADEAI_DIR = SYSTEM_ROOT / "TradeAI"
@@ -58,28 +59,44 @@ def _load_json(path: Path) -> dict:
     return payload
 
 
-def _ensure_payoff_target(env: dict[str, str]) -> None:
-    """Relabel only when the stored dataset target contract is stale.
-
-    The feature matrix is preserved; only supervised future-path targets are
-    rebuilt. This keeps the final command reproducible after a target/payoff
-    architecture change without making the user run a hidden manual step.
-    """
+def _ensure_dataset_contract(env: dict[str, str]) -> None:
+    """Upgrade features/targets before training without touching June leakage rules."""
     metadata = _load_json(DATASET_METADATA_PATH)
-    current = str(metadata.get("target_version") or "")
-    if current == TARGET_VERSION:
-        print(f"Target contract already current: {TARGET_VERSION}")
+    feature_ok = (
+        metadata.get("feature_schema_version") == FEATURE_SCHEMA_VERSION
+        and metadata.get("feature_hash") == FEATURE_HASH
+    )
+    target_ok = metadata.get("target_version") == TARGET_VERSION
+
+    if feature_ok and target_ok:
+        print(f"Dataset contract already current: {FEATURE_SCHEMA_VERSION} / {TARGET_VERSION}")
         return
 
-    print(f"Target contract upgrade: {current or 'UNKNOWN'} -> {TARGET_VERSION}")
-    _run(
-        "1/4 RELABEL EXECUTION-AWARE PAYOFF TARGET",
-        TRAINING_DIR / "relabel_dataset.py",
-        env,
-    )
+    if not feature_ok:
+        print(
+            "Feature contract upgrade: "
+            f"{metadata.get('feature_schema_version', 'UNKNOWN')} -> {FEATURE_SCHEMA_VERSION}"
+        )
+        _run(
+            "1/4 REBUILD CAUSAL OPPORTUNITY FEATURES + TARGETS",
+            TRAINING_DIR / "rebuild_dataset_features.py",
+            env,
+        )
+    else:
+        print(f"Target contract upgrade: {metadata.get('target_version', 'UNKNOWN')} -> {TARGET_VERSION}")
+        _run(
+            "1/4 RELABEL OPPORTUNITY TARGET",
+            TRAINING_DIR / "relabel_dataset.py",
+            env,
+        )
+
     refreshed = _load_json(DATASET_METADATA_PATH)
+    if refreshed.get("feature_schema_version") != FEATURE_SCHEMA_VERSION:
+        raise RuntimeError("Dataset rebuild completed but feature schema did not update")
+    if refreshed.get("feature_hash") != FEATURE_HASH:
+        raise RuntimeError("Dataset rebuild completed but feature hash did not update")
     if refreshed.get("target_version") != TARGET_VERSION:
-        raise RuntimeError("Dataset relabel completed but target contract did not update")
+        raise RuntimeError("Dataset rebuild completed but target contract did not update")
 
 
 def _require_exact_deployment_model(artifact: dict) -> dict:
@@ -90,7 +107,7 @@ def _require_exact_deployment_model(artifact: dict) -> dict:
     deployment = metadata.get("deployment_validation")
     if not isinstance(deployment, dict) or deployment.get("exact_runtime_model") is not True:
         raise RuntimeError(
-            "Stage 5 did not promote the exact validated models; "
+            "Stage 11.2 did not certify the exact validated models/runtime deployment artifact; "
             "runtime backtest blocked"
         )
 
@@ -223,7 +240,7 @@ def run() -> dict:
 
     # Step 1 is conditional. If the dataset already carries the current payoff
     # target it is a no-op; otherwise the relabel script is run automatically.
-    _ensure_payoff_target(env)
+    _ensure_dataset_contract(env)
 
     _run("2/4 TRAIN HISTORICAL MODEL", TRAINING_DIR / "trainer.py", env)
 
@@ -232,19 +249,20 @@ def run() -> dict:
     # Stage 4 model-training pass here would duplicate work and re-introduce
     # model identity ambiguity.
     _run(
-        "3/4 MONEY-AWARE POLICY + RISK VALIDATION",
+        "3/4 STRUCTURAL META-OPPORTUNITY + RISK VALIDATION",
         TRAINING_DIR / "stage5_risk_validate.py",
         env,
     )
     stage5 = _load_json(STAGE5_REPORT)
     if stage5.get("acceptance_pass") is not True:
-        raise RuntimeError("Stage 5 acceptance failed; final backtest blocked")
+        raise RuntimeError("Stage 11.2 acceptance failed; final backtest blocked")
 
     promoted_artifact = joblib.load(MODEL_PATH)
     deployment_validation = _require_exact_deployment_model(promoted_artifact)
     print(
-        "Exact-model promotion verified | "
-        f"split={deployment_validation.get('split_method', 'UNKNOWN')}"
+        "Runtime deployment verified | "
+        f"split={deployment_validation.get('split_method', 'UNKNOWN')} | "
+        f"refit={deployment_validation.get('refit_after_policy_freeze', False)}"
     )
 
     backtest_env = env.copy()
@@ -257,7 +275,7 @@ def run() -> dict:
     runtime = _load_json(RUNTIME_REPORT)
 
     report = {
-        "stage": "stage7_profit_expectancy_final_validation_v1",
+        "stage": "stage11_2_compact_structural_final_validation_v1",
         "created_utc": _utc_now(),
         "training_cutoff_exclusive": FINAL_BACKTEST_START_DATE,
         "backtest_start": FINAL_BACKTEST_START_DATE,
@@ -267,7 +285,7 @@ def run() -> dict:
         "broker_profile_captured_at_utc": profile.get("captured_at_utc"),
         "backup_directory": str(backup),
         "target_version": TARGET_VERSION,
-        "policy_calibration": "broker_money_normal_and_stress",
+        "policy_calibration": "compact_structural_episode_sparse_stable_broker_money",
         "stage5_acceptance": True,
         "exact_runtime_model_verified": True,
         "deployment_validation": deployment_validation,

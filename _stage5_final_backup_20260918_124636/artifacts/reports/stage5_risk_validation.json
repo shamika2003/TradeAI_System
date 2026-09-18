@@ -1,0 +1,2010 @@
+{
+  "stage": "stage9_directional_opportunity_validation_v1",
+  "created_utc": "2026-09-18T06:58:21.665957+00:00",
+  "feature_schema_version": "tradeai_features_v5_opportunity_20260918",
+  "feature_hash": "089899052031b262d7117cce2d23d848b3fe9ddbac6fce4c8b4656f2bdae2eae",
+  "target_version": "tradeai_opportunity_target_v6_20260918",
+  "training_window": {
+    "mode": "historical_cutoff",
+    "cutoff_exclusive": "2026-06-01 00:00:00",
+    "backtest_safe_from": "2026-06-01 00:00:00",
+    "label_horizon_bars": 48,
+    "purged_rows_per_symbol": 48,
+    "fit_start": "2020-04-03 06:55:00",
+    "fit_end": "2026-05-29 19:55:00",
+    "rows": 1830522,
+    "symbol_ranges": {
+      "EURUSD": {
+        "source_rows": 478823,
+        "fit_rows": 458657,
+        "start": "2020-04-03 07:55:00",
+        "end": "2026-05-29 19:55:00"
+      },
+      "GBPUSD": {
+        "source_rows": 478852,
+        "fit_rows": 458686,
+        "start": "2020-04-03 06:55:00",
+        "end": "2026-05-29 19:55:00"
+      },
+      "USDCNH": {
+        "source_rows": 474675,
+        "fit_rows": 454519,
+        "start": "2020-04-03 14:55:00",
+        "end": "2026-05-29 19:55:00"
+      },
+      "USDJPY": {
+        "source_rows": 478826,
+        "fit_rows": 458660,
+        "start": "2020-04-03 08:55:00",
+        "end": "2026-05-29 19:55:00"
+      }
+    }
+  },
+  "deployment_validation": {
+    "exact_runtime_model": true,
+    "refit_after_policy_freeze": true,
+    "qualification_model_distinct_from_runtime_refit": true,
+    "architecture": "directional_opportunity_v1",
+    "split_method": "0.94_0.03_0.03_recent_chronological",
+    "label_purge_bars": 48,
+    "symbol_ranges": {
+      "EURUSD": {
+        "train_start": "2020-04-03 07:55:00",
+        "train_end": "2026-01-15 18:15:00",
+        "cal_start": "2026-01-15 22:20:00",
+        "cal_end": "2026-03-24 20:15:00",
+        "test_start": "2026-03-25 00:20:00",
+        "test_end": "2026-05-29 19:55:00"
+      },
+      "GBPUSD": {
+        "train_start": "2020-04-03 06:55:00",
+        "train_end": "2026-01-15 16:20:00",
+        "cal_start": "2026-01-15 20:25:00",
+        "cal_end": "2026-03-24 20:10:00",
+        "test_start": "2026-03-25 00:15:00",
+        "test_end": "2026-05-29 19:55:00"
+      },
+      "USDJPY": {
+        "train_start": "2020-04-03 08:55:00",
+        "train_end": "2026-01-15 18:10:00",
+        "cal_start": "2026-01-15 22:15:00",
+        "cal_end": "2026-03-24 20:15:00",
+        "test_start": "2026-03-25 00:20:00",
+        "test_end": "2026-05-29 19:55:00"
+      },
+      "USDCNH": {
+        "train_start": "2020-04-03 14:55:00",
+        "train_end": "2026-01-16 13:25:00",
+        "cal_start": "2026-01-16 17:30:00",
+        "cal_end": "2026-03-25 05:40:00",
+        "test_start": "2026-03-25 09:45:00",
+        "test_end": "2026-05-29 19:55:00"
+      }
+    },
+    "information_safe_from": "2026-06-01 00:00:00"
+  },
+  "enabled_symbols": [
+    "USDJPY"
+  ],
+  "decision_policy": {
+    "version": "tradeai_opportunity_policy_v2_20260918",
+    "created_utc": "2026-09-18T06:58:21.665907+00:00",
+    "method": "directional_probability_expected_r_broker_money_calibration",
+    "symbols": {
+      "EURUSD": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_policy_passed_execution_money_gates"
+        }
+      },
+      "GBPUSD": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_policy_passed_execution_money_gates"
+        }
+      },
+      "USDJPY": {
+        "enabled": true,
+        "min_tp_probability": 0.56,
+        "min_expected_r": 0.05,
+        "min_ev_gap": 0.05,
+        "min_probability_gap": 0.0,
+        "score": 9.92151984369166,
+        "calibration": {
+          "samples": 13712,
+          "trades": 39,
+          "coverage": 0.0028442240373395566,
+          "wins": 28,
+          "win_rate": 0.717948717948718,
+          "avg_r": 0.894245740936887,
+          "total_r": 34.87558389653859,
+          "profit_factor_r": 4.170507626958055,
+          "gross_win_r": 45.8755838965386,
+          "gross_loss_r": 11.0,
+          "buy_auc": 0.5753206193532967,
+          "sell_auc": 0.5577297843845069,
+          "mean_abs_ev_gap": 0.113125452278721,
+          "normal_money": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 152.82,
+            "net_profit": 2.819999999999993,
+            "return_pct": 1.8799999999999955,
+            "trades": 7,
+            "wins": 6,
+            "losses": 1,
+            "breakeven_trades": 0,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 11.07142857142857,
+            "expectancy": 0.40285714285714286,
+            "average_win": 0.5166666666666666,
+            "average_loss": -0.28,
+            "payoff_ratio": 1.845238095238095,
+            "max_drawdown_money": 0.5300099005446555,
+            "max_drawdown_pct": 0.34634378915549596,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.49000000000000005,
+            "estimated_entry_friction": 0.09000495027232928,
+            "rejected": {
+              "position_busy": 19,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 13,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.41,
+              "2026-02": 2.62,
+              "2026-03": -0.21
+            },
+            "best_month": [
+              "2026-02",
+              2.62
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.21
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 7,
+                "net_profit": 2.82,
+                "win_rate": 0.8571428571428571,
+                "profit_factor": 11.07142857142857,
+                "average_win": 0.5166666666666666,
+                "average_loss": -0.28,
+                "payoff_ratio": 1.845238095238095
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress_money": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 151.76,
+            "net_profit": 1.759999999999991,
+            "return_pct": 1.1733333333333273,
+            "trades": 7,
+            "wins": 6,
+            "losses": 1,
+            "breakeven_trades": 0,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 5.190476190476191,
+            "expectancy": 0.25142857142857145,
+            "average_win": 0.36333333333333334,
+            "average_loss": -0.42,
+            "payoff_ratio": 0.8650793650793651,
+            "max_drawdown_money": 0.7157256006223633,
+            "max_drawdown_pct": 0.47037697201785184,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.63,
+            "estimated_entry_friction": 0.22501237568100593,
+            "rejected": {
+              "position_busy": 16,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 16,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.37,
+              "2026-02": 1.79,
+              "2026-03": -0.4
+            },
+            "best_month": [
+              "2026-02",
+              1.79
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.4
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 7,
+                "net_profit": 1.7600000000000002,
+                "win_rate": 0.8571428571428571,
+                "profit_factor": 5.190476190476191,
+                "average_win": 0.36333333333333334,
+                "average_loss": -0.42,
+                "payoff_ratio": 0.8650793650793651
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "checks": {
+            "normal_profit": true,
+            "stress_profit": true,
+            "normal_pf": true,
+            "stress_pf": true,
+            "normal_payoff": true,
+            "normal_trades": true,
+            "stress_trades": true,
+            "normal_dd": true,
+            "stress_dd": true
+          }
+        }
+      },
+      "USDCNH": {
+        "enabled": false,
+        "min_tp_probability": 0.99,
+        "min_expected_r": 5.0,
+        "min_ev_gap": 5.0,
+        "min_probability_gap": 0.99,
+        "calibration": {
+          "reason": "no_opportunity_threshold_passed_label_stability"
+        }
+      }
+    }
+  },
+  "risk_policy": {
+    "version": "tradeai_risk_policy_v1_20260907",
+    "created_utc": "2026-09-18T06:58:21.665944+00:00",
+    "risk_percent": 0.45,
+    "source": "stage9_opportunity_calibration_normal_and_stress",
+    "calibration_safety": {
+      "normal_max_drawdown_percent": 7.0,
+      "stress_max_drawdown_percent": 9.0,
+      "selected_worst_drawdown_percent": 0.555350712850714,
+      "selected_worst_return_percent": 1.8466666666666736,
+      "portfolio_risk_cap_percent": 0.8
+    }
+  },
+  "risk_grid": [
+    {
+      "risk_percent": 0.2,
+      "all_safe": false,
+      "score": -0.0044289250194481135,
+      "worst_return_pct": 0.0,
+      "mean_return_pct": 0.13666666666666555,
+      "worst_drawdown_pct": 0.07238236674445868,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 150.41,
+            "net_profit": 0.4099999999999966,
+            "return_pct": 0.2733333333333311,
+            "trades": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakeven_trades": 0,
+            "win_rate": 1.0,
+            "profit_factor": 999.0,
+            "expectancy": 0.41,
+            "average_win": 0.41,
+            "average_loss": 0.0,
+            "payoff_ratio": 999.0,
+            "max_drawdown_money": 0.10857355011668801,
+            "max_drawdown_pct": 0.07238236674445868,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.07,
+            "estimated_entry_friction": 0.012857850038956389,
+            "rejected": {
+              "position_busy": 0,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 38,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.41
+            },
+            "best_month": [
+              "2026-01",
+              0.41
+            ],
+            "worst_month": [
+              "2026-01",
+              0.41
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 1,
+                "net_profit": 0.41,
+                "win_rate": 1.0,
+                "profit_factor": 999.0,
+                "average_win": 0.41,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 150.0,
+            "net_profit": 0.0,
+            "return_pct": 0.0,
+            "trades": 0,
+            "wins": 0,
+            "losses": 0,
+            "breakeven_trades": 0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "expectancy": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0,
+            "max_drawdown_money": 0.0,
+            "max_drawdown_pct": 0.0,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.0,
+            "estimated_entry_friction": 0.0,
+            "rejected": {
+              "position_busy": 0,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 39,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {},
+            "best_month": null,
+            "worst_month": null,
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": false,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": false
+        }
+      }
+    },
+    {
+      "risk_percent": 0.25,
+      "all_safe": true,
+      "score": 0.5862575174734576,
+      "worst_return_pct": 0.5933333333333243,
+      "mean_return_pct": 0.9633333333333289,
+      "worst_drawdown_pct": 0.41363659677279874,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 152.0,
+            "net_profit": 2.0,
+            "return_pct": 1.3333333333333335,
+            "trades": 7,
+            "wins": 6,
+            "losses": 1,
+            "breakeven_trades": 0,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 6.263157894736842,
+            "expectancy": 0.2857142857142857,
+            "average_win": 0.39666666666666667,
+            "average_loss": -0.38,
+            "payoff_ratio": 1.043859649122807,
+            "max_drawdown_money": 0.6300099005446498,
+            "max_drawdown_pct": 0.41363659677279874,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.49000000000000005,
+            "estimated_entry_friction": 0.09000495027214656,
+            "rejected": {
+              "position_busy": 13,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 19,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.41,
+              "2026-02": 1.9,
+              "2026-03": -0.31
+            },
+            "best_month": [
+              "2026-02",
+              1.9
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.31
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 7,
+                "net_profit": 2.0,
+                "win_rate": 0.8571428571428571,
+                "profit_factor": 6.263157894736842,
+                "average_win": 0.39666666666666667,
+                "average_loss": -0.38,
+                "payoff_ratio": 1.043859649122807
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 150.89,
+            "net_profit": 0.8899999999999864,
+            "return_pct": 0.5933333333333243,
+            "trades": 3,
+            "wins": 3,
+            "losses": 0,
+            "breakeven_trades": 0,
+            "win_rate": 1.0,
+            "profit_factor": 999.0,
+            "expectancy": 0.2966666666666667,
+            "average_win": 0.2966666666666667,
+            "average_loss": 0.0,
+            "payoff_ratio": 999.0,
+            "max_drawdown_money": 0.3342991507390707,
+            "max_drawdown_pct": 0.22231771679129525,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.27,
+            "estimated_entry_friction": 0.09643387529180747,
+            "rejected": {
+              "position_busy": 7,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 29,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.37,
+              "2026-02": 0.5,
+              "2026-03": 0.02
+            },
+            "best_month": [
+              "2026-02",
+              0.5
+            ],
+            "worst_month": [
+              "2026-03",
+              0.02
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 3,
+                "net_profit": 0.89,
+                "win_rate": 1.0,
+                "profit_factor": 999.0,
+                "average_win": 0.2966666666666667,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.3,
+      "all_safe": true,
+      "score": 1.2084057569955304,
+      "worst_return_pct": 1.1733333333333273,
+      "mean_return_pct": 1.5266666666666615,
+      "worst_drawdown_pct": 0.47037697201785184,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 152.82,
+            "net_profit": 2.819999999999993,
+            "return_pct": 1.8799999999999955,
+            "trades": 7,
+            "wins": 6,
+            "losses": 1,
+            "breakeven_trades": 0,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 11.07142857142857,
+            "expectancy": 0.40285714285714286,
+            "average_win": 0.5166666666666666,
+            "average_loss": -0.28,
+            "payoff_ratio": 1.845238095238095,
+            "max_drawdown_money": 0.5300099005446555,
+            "max_drawdown_pct": 0.34634378915549596,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.49000000000000005,
+            "estimated_entry_friction": 0.09000495027232928,
+            "rejected": {
+              "position_busy": 19,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 13,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.41,
+              "2026-02": 2.62,
+              "2026-03": -0.21
+            },
+            "best_month": [
+              "2026-02",
+              2.62
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.21
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 7,
+                "net_profit": 2.82,
+                "win_rate": 0.8571428571428571,
+                "profit_factor": 11.07142857142857,
+                "average_win": 0.5166666666666666,
+                "average_loss": -0.28,
+                "payoff_ratio": 1.845238095238095
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 151.76,
+            "net_profit": 1.759999999999991,
+            "return_pct": 1.1733333333333273,
+            "trades": 7,
+            "wins": 6,
+            "losses": 1,
+            "breakeven_trades": 0,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 5.190476190476191,
+            "expectancy": 0.25142857142857145,
+            "average_win": 0.36333333333333334,
+            "average_loss": -0.42,
+            "payoff_ratio": 0.8650793650793651,
+            "max_drawdown_money": 0.7157256006223633,
+            "max_drawdown_pct": 0.47037697201785184,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.63,
+            "estimated_entry_friction": 0.22501237568100593,
+            "rejected": {
+              "position_busy": 16,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 16,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.37,
+              "2026-02": 1.79,
+              "2026-03": -0.4
+            },
+            "best_month": [
+              "2026-02",
+              1.79
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.4
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 7,
+                "net_profit": 1.7600000000000002,
+                "win_rate": 0.8571428571428571,
+                "profit_factor": 5.190476190476191,
+                "average_win": 0.36333333333333334,
+                "average_loss": -0.42,
+                "payoff_ratio": 0.8650793650793651
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.35,
+      "all_safe": true,
+      "score": 1.2370338435470676,
+      "worst_return_pct": 1.2133333333333287,
+      "mean_return_pct": 1.4099999999999966,
+      "worst_drawdown_pct": 0.4691979591450432,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 152.41,
+            "net_profit": 2.4099999999999966,
+            "return_pct": 1.6066666666666642,
+            "trades": 9,
+            "wins": 7,
+            "losses": 2,
+            "breakeven_trades": 0,
+            "win_rate": 0.7777777777777778,
+            "profit_factor": 3.7701149425287355,
+            "expectancy": 0.2677777777777777,
+            "average_win": 0.4685714285714285,
+            "average_loss": -0.435,
+            "payoff_ratio": 1.0771756978653528,
+            "max_drawdown_money": 0.7057206503500595,
+            "max_drawdown_pct": 0.4691979591450432,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.6300000000000001,
+            "estimated_entry_friction": 0.11572065035005934,
+            "rejected": {
+              "position_busy": 22,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 8,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.41,
+              "2026-02": 2.28,
+              "2026-03": -0.28
+            },
+            "best_month": [
+              "2026-02",
+              2.28
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.28
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 9,
+                "net_profit": 2.4099999999999997,
+                "win_rate": 0.7777777777777778,
+                "profit_factor": 3.7701149425287355,
+                "average_win": 0.4685714285714285,
+                "average_loss": -0.435,
+                "payoff_ratio": 1.0771756978653528
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 151.82,
+            "net_profit": 1.8199999999999932,
+            "return_pct": 1.2133333333333287,
+            "trades": 7,
+            "wins": 6,
+            "losses": 1,
+            "breakeven_trades": 0,
+            "win_rate": 0.8571428571428571,
+            "profit_factor": 5.666666666666666,
+            "expectancy": 0.25999999999999995,
+            "average_win": 0.36833333333333335,
+            "average_loss": -0.39,
+            "payoff_ratio": 0.9444444444444444,
+            "max_drawdown_money": 0.6857256006223622,
+            "max_drawdown_pct": 0.4505720485067101,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.63,
+            "estimated_entry_friction": 0.22501237568100593,
+            "rejected": {
+              "position_busy": 20,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 12,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.37,
+              "2026-02": 1.82,
+              "2026-03": -0.37
+            },
+            "best_month": [
+              "2026-02",
+              1.82
+            ],
+            "worst_month": [
+              "2026-03",
+              -0.37
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 7,
+                "net_profit": 1.8199999999999998,
+                "win_rate": 0.8571428571428571,
+                "profit_factor": 5.666666666666666,
+                "average_win": 0.36833333333333335,
+                "average_loss": -0.39,
+                "payoff_ratio": 0.9444444444444444
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.4,
+      "all_safe": true,
+      "score": 1.6624349132537488,
+      "worst_return_pct": 1.5933333333333244,
+      "mean_return_pct": 2.0733333333333333,
+      "worst_drawdown_pct": 0.5529270136516353,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 153.83,
+            "net_profit": 3.8300000000000125,
+            "return_pct": 2.5533333333333417,
+            "trades": 10,
+            "wins": 8,
+            "losses": 2,
+            "breakeven_trades": 0,
+            "win_rate": 0.8,
+            "profit_factor": 5.208791208791209,
+            "expectancy": 0.383,
+            "average_win": 0.5925,
+            "average_loss": -0.455,
+            "payoff_ratio": 1.3021978021978022,
+            "max_drawdown_money": 0.7457206503500515,
+            "max_drawdown_pct": 0.494444138940493,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.77,
+            "estimated_entry_friction": 0.15429420046711123,
+            "rejected": {
+              "position_busy": 27,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 2,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.82,
+              "2026-02": 2.24,
+              "2026-03": 0.77
+            },
+            "best_month": [
+              "2026-02",
+              2.24
+            ],
+            "worst_month": [
+              "2026-03",
+              0.77
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 10,
+                "net_profit": 3.83,
+                "win_rate": 0.8,
+                "profit_factor": 5.208791208791209,
+                "average_win": 0.5925,
+                "average_loss": -0.455,
+                "payoff_ratio": 1.3021978021978022
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 152.39,
+            "net_profit": 2.3899999999999864,
+            "return_pct": 1.5933333333333244,
+            "trades": 10,
+            "wins": 8,
+            "losses": 2,
+            "breakeven_trades": 0,
+            "win_rate": 0.8,
+            "profit_factor": 3.414141414141414,
+            "expectancy": 0.23900000000000002,
+            "average_win": 0.4225,
+            "average_loss": -0.495,
+            "payoff_ratio": 0.8535353535353535,
+            "max_drawdown_money": 0.831436350427964,
+            "max_drawdown_pct": 0.5529270136516353,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.8999999999999999,
+            "estimated_entry_friction": 0.340733026031248,
+            "rejected": {
+              "position_busy": 27,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 2,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.37,
+              "2026-02": 1.39,
+              "2026-03": 0.63
+            },
+            "best_month": [
+              "2026-02",
+              1.39
+            ],
+            "worst_month": [
+              "2026-01",
+              0.37
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 10,
+                "net_profit": 2.39,
+                "win_rate": 0.8,
+                "profit_factor": 3.414141414141414,
+                "average_win": 0.4225,
+                "average_loss": -0.495,
+                "payoff_ratio": 0.8535353535353535
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    },
+    {
+      "risk_percent": 0.45,
+      "all_safe": true,
+      "score": 1.930162321787329,
+      "worst_return_pct": 1.8466666666666736,
+      "mean_return_pct": 2.2233333333333385,
+      "worst_drawdown_pct": 0.555350712850714,
+      "balances": {
+        "150.0": {
+          "normal": {
+            "scenario": "NORMAL",
+            "start_balance": 150.0,
+            "end_balance": 153.9,
+            "net_profit": 3.9000000000000057,
+            "return_pct": 2.6000000000000036,
+            "trades": 10,
+            "wins": 8,
+            "losses": 2,
+            "breakeven_trades": 0,
+            "win_rate": 0.8,
+            "profit_factor": 5.285714285714285,
+            "expectancy": 0.39,
+            "average_win": 0.60125,
+            "average_loss": -0.455,
+            "payoff_ratio": 1.3214285714285712,
+            "max_drawdown_money": 0.850019801089303,
+            "max_drawdown_pct": 0.555350712850714,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.8400000000000001,
+            "estimated_entry_friction": 0.16715205050606763,
+            "rejected": {
+              "position_busy": 27,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 2,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.82,
+              "2026-02": 2.24,
+              "2026-03": 0.84
+            },
+            "best_month": [
+              "2026-02",
+              2.24
+            ],
+            "worst_month": [
+              "2026-01",
+              0.82
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 10,
+                "net_profit": 3.9000000000000004,
+                "win_rate": 0.8,
+                "profit_factor": 5.285714285714285,
+                "average_win": 0.60125,
+                "average_loss": -0.455,
+                "payoff_ratio": 1.3214285714285712
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "stress": {
+            "scenario": "STRESS",
+            "start_balance": 150.0,
+            "end_balance": 152.77,
+            "net_profit": 2.7700000000000102,
+            "return_pct": 1.8466666666666736,
+            "trades": 10,
+            "wins": 8,
+            "losses": 2,
+            "breakeven_trades": 0,
+            "win_rate": 0.8,
+            "profit_factor": 3.797979797979798,
+            "expectancy": 0.277,
+            "average_win": 0.47,
+            "average_loss": -0.495,
+            "payoff_ratio": 0.9494949494949495,
+            "max_drawdown_money": 0.831436350427964,
+            "max_drawdown_pct": 0.5515332341147356,
+            "max_concurrent_positions": 2,
+            "portfolio_risk_cap_percent": 0.8,
+            "total_commission": 0.99,
+            "estimated_entry_friction": 0.37287765112863896,
+            "rejected": {
+              "position_busy": 27,
+              "portfolio_risk": 0,
+              "cooldown": 0,
+              "daily_loss": 0,
+              "drawdown_protection": 0,
+              "lot_or_risk": 2,
+              "invalid_trade": 0
+            },
+            "monthly_pl": {
+              "2026-01": 0.75,
+              "2026-02": 1.39,
+              "2026-03": 0.63
+            },
+            "best_month": [
+              "2026-02",
+              1.39
+            ],
+            "worst_month": [
+              "2026-03",
+              0.63
+            ],
+            "per_symbol": {
+              "EURUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "GBPUSD": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              },
+              "USDJPY": {
+                "trades": 10,
+                "net_profit": 2.77,
+                "win_rate": 0.8,
+                "profit_factor": 3.797979797979798,
+                "average_win": 0.47,
+                "average_loss": -0.495,
+                "payoff_ratio": 0.9494949494949495
+              },
+              "USDCNH": {
+                "trades": 0,
+                "net_profit": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "average_win": 0.0,
+                "average_loss": 0.0,
+                "payoff_ratio": 0.0
+              }
+            }
+          },
+          "normal_checks": {
+            "net_profit_positive": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "stress_checks": {
+            "net_profit_nonnegative": true,
+            "profit_factor": true,
+            "max_drawdown": true,
+            "trade_count": true
+          },
+          "normal_pass": true,
+          "stress_pass": true
+        }
+      }
+    }
+  ],
+  "symbol_validation": {
+    "EURUSD": {
+      "final": null
+    },
+    "GBPUSD": {
+      "final": null
+    },
+    "USDJPY": {
+      "final": {
+        "samples": 13760,
+        "trades": 24,
+        "coverage": 0.0017441860465116279,
+        "wins": 7,
+        "win_rate": 0.2916666666666667,
+        "avg_r": -0.2484376316483595,
+        "total_r": -5.962503159560628,
+        "profit_factor_r": 0.6345222555338291,
+        "gross_win_r": 10.351768365425555,
+        "gross_loss_r": 16.314271524986182,
+        "buy_auc": 0.5564351238177202,
+        "sell_auc": 0.573047692583192,
+        "mean_abs_ev_gap": 0.11517549926366275
+      }
+    },
+    "USDCNH": {
+      "final": null
+    }
+  },
+  "money_results": {
+    "NORMAL": {
+      "50.0": {
+        "scenario": "NORMAL",
+        "start_balance": 50.0,
+        "end_balance": 50.0,
+        "net_profit": 0.0,
+        "return_pct": 0.0,
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "breakeven_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "expectancy": 0.0,
+        "average_win": 0.0,
+        "average_loss": 0.0,
+        "payoff_ratio": 0.0,
+        "max_drawdown_money": 0.0,
+        "max_drawdown_pct": 0.0,
+        "max_concurrent_positions": 2,
+        "portfolio_risk_cap_percent": 0.8,
+        "total_commission": 0.0,
+        "estimated_entry_friction": 0.0,
+        "rejected": {
+          "position_busy": 0,
+          "portfolio_risk": 0,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 24,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {},
+        "best_month": null,
+        "worst_month": null,
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDJPY": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDCNH": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          }
+        }
+      },
+      "100.0": {
+        "scenario": "NORMAL",
+        "start_balance": 100.0,
+        "end_balance": 100.72,
+        "net_profit": 0.7199999999999989,
+        "return_pct": 0.7199999999999989,
+        "trades": 5,
+        "wins": 3,
+        "losses": 2,
+        "breakeven_trades": 0,
+        "win_rate": 0.6,
+        "profit_factor": 2.161290322580645,
+        "expectancy": 0.144,
+        "average_win": 0.4466666666666666,
+        "average_loss": -0.31,
+        "payoff_ratio": 1.4408602150537633,
+        "max_drawdown_money": 0.5700099005444628,
+        "max_drawdown_pct": 0.5671740303925003,
+        "max_concurrent_positions": 2,
+        "portfolio_risk_cap_percent": 0.8,
+        "total_commission": 0.35000000000000003,
+        "estimated_entry_friction": 0.0642892501944165,
+        "rejected": {
+          "position_busy": 12,
+          "portfolio_risk": 0,
+          "cooldown": 2,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 5,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2026-03": 0.63,
+          "2026-05": 0.09
+        },
+        "best_month": [
+          "2026-03",
+          0.63
+        ],
+        "worst_month": [
+          "2026-05",
+          0.09
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDJPY": {
+            "trades": 5,
+            "net_profit": 0.72,
+            "win_rate": 0.6,
+            "profit_factor": 2.161290322580645,
+            "average_win": 0.4466666666666666,
+            "average_loss": -0.31,
+            "payoff_ratio": 1.4408602150537633
+          },
+          "USDCNH": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          }
+        }
+      },
+      "150.0": {
+        "scenario": "NORMAL",
+        "start_balance": 150.0,
+        "end_balance": 150.5,
+        "net_profit": 0.5,
+        "return_pct": 0.33333333333333337,
+        "trades": 9,
+        "wins": 5,
+        "losses": 4,
+        "breakeven_trades": 0,
+        "win_rate": 0.5555555555555556,
+        "profit_factor": 1.2252252252252254,
+        "expectancy": 0.055555555555555566,
+        "average_win": 0.544,
+        "average_loss": -0.5549999999999999,
+        "payoff_ratio": 0.9801801801801804,
+        "max_drawdown_money": 1.7514314001558375,
+        "max_drawdown_pct": 1.1579711736567522,
+        "max_concurrent_positions": 2,
+        "portfolio_risk_cap_percent": 0.8,
+        "total_commission": 0.9800000000000001,
+        "estimated_entry_friction": 0.21858345066097956,
+        "rejected": {
+          "position_busy": 12,
+          "portfolio_risk": 0,
+          "cooldown": 3,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 0,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2026-03": 1.25,
+          "2026-04": -0.97,
+          "2026-05": 0.22
+        },
+        "best_month": [
+          "2026-03",
+          1.25
+        ],
+        "worst_month": [
+          "2026-04",
+          -0.97
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDJPY": {
+            "trades": 9,
+            "net_profit": 0.5000000000000001,
+            "win_rate": 0.5555555555555556,
+            "profit_factor": 1.2252252252252254,
+            "average_win": 0.544,
+            "average_loss": -0.5549999999999999,
+            "payoff_ratio": 0.9801801801801804
+          },
+          "USDCNH": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          }
+        }
+      }
+    },
+    "STRESS": {
+      "50.0": {
+        "scenario": "STRESS",
+        "start_balance": 50.0,
+        "end_balance": 50.0,
+        "net_profit": 0.0,
+        "return_pct": 0.0,
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "breakeven_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "expectancy": 0.0,
+        "average_win": 0.0,
+        "average_loss": 0.0,
+        "payoff_ratio": 0.0,
+        "max_drawdown_money": 0.0,
+        "max_drawdown_pct": 0.0,
+        "max_concurrent_positions": 2,
+        "portfolio_risk_cap_percent": 0.8,
+        "total_commission": 0.0,
+        "estimated_entry_friction": 0.0,
+        "rejected": {
+          "position_busy": 0,
+          "portfolio_risk": 0,
+          "cooldown": 0,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 24,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {},
+        "best_month": null,
+        "worst_month": null,
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDJPY": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDCNH": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          }
+        }
+      },
+      "100.0": {
+        "scenario": "STRESS",
+        "start_balance": 100.0,
+        "end_balance": 100.09,
+        "net_profit": 0.09000000000000341,
+        "return_pct": 0.09000000000000341,
+        "trades": 5,
+        "wins": 3,
+        "losses": 2,
+        "breakeven_trades": 0,
+        "win_rate": 0.6,
+        "profit_factor": 1.1304347826086958,
+        "expectancy": 0.017999999999999995,
+        "average_win": 0.26,
+        "average_loss": -0.345,
+        "payoff_ratio": 0.7536231884057972,
+        "max_drawdown_money": 0.6557256006223895,
+        "max_drawdown_pct": 0.6555944817260444,
+        "max_concurrent_positions": 2,
+        "portfolio_risk_cap_percent": 0.8,
+        "total_commission": 0.44999999999999996,
+        "estimated_entry_friction": 0.16072312548604126,
+        "rejected": {
+          "position_busy": 12,
+          "portfolio_risk": 0,
+          "cooldown": 2,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 5,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2026-03": 0.07,
+          "2026-05": 0.02
+        },
+        "best_month": [
+          "2026-03",
+          0.07
+        ],
+        "worst_month": [
+          "2026-05",
+          0.02
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDJPY": {
+            "trades": 5,
+            "net_profit": 0.08999999999999997,
+            "win_rate": 0.6,
+            "profit_factor": 1.1304347826086958,
+            "average_win": 0.26,
+            "average_loss": -0.345,
+            "payoff_ratio": 0.7536231884057972
+          },
+          "USDCNH": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          }
+        }
+      },
+      "150.0": {
+        "scenario": "STRESS",
+        "start_balance": 150.0,
+        "end_balance": 149.5,
+        "net_profit": -0.5,
+        "return_pct": -0.33333333333333337,
+        "trades": 9,
+        "wins": 5,
+        "losses": 4,
+        "breakeven_trades": 0,
+        "win_rate": 0.5555555555555556,
+        "profit_factor": 0.7607655502392344,
+        "expectancy": -0.055555555555555566,
+        "average_win": 0.31799999999999995,
+        "average_loss": -0.5225,
+        "payoff_ratio": 0.6086124401913875,
+        "max_drawdown_money": 1.9928628003112578,
+        "max_drawdown_pct": 1.324337320781006,
+        "max_concurrent_positions": 2,
+        "portfolio_risk_cap_percent": 0.8,
+        "total_commission": 1.08,
+        "estimated_entry_friction": 0.44359582634143735,
+        "rejected": {
+          "position_busy": 12,
+          "portfolio_risk": 0,
+          "cooldown": 3,
+          "daily_loss": 0,
+          "drawdown_protection": 0,
+          "lot_or_risk": 0,
+          "invalid_trade": 0
+        },
+        "monthly_pl": {
+          "2026-03": 0.48,
+          "2026-04": -1.04,
+          "2026-05": 0.06
+        },
+        "best_month": [
+          "2026-03",
+          0.48
+        ],
+        "worst_month": [
+          "2026-04",
+          -1.04
+        ],
+        "per_symbol": {
+          "EURUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "GBPUSD": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          },
+          "USDJPY": {
+            "trades": 9,
+            "net_profit": -0.5000000000000001,
+            "win_rate": 0.5555555555555556,
+            "profit_factor": 0.7607655502392344,
+            "average_win": 0.31799999999999995,
+            "average_loss": -0.5225,
+            "payoff_ratio": 0.6086124401913875
+          },
+          "USDCNH": {
+            "trades": 0,
+            "net_profit": 0.0,
+            "win_rate": 0.0,
+            "profit_factor": 0.0,
+            "average_win": 0.0,
+            "average_loss": 0.0,
+            "payoff_ratio": 0.0
+          }
+        }
+      }
+    }
+  },
+  "acceptance_gates": {
+    "150.0": {
+      "normal": {
+        "net_profit_positive": true,
+        "profit_factor": false,
+        "max_drawdown": true,
+        "trade_count": false
+      },
+      "normal_pass": false,
+      "stress": {
+        "net_profit_nonnegative": false,
+        "profit_factor": false,
+        "max_drawdown": true,
+        "trade_count": true
+      },
+      "stress_pass": false
+    }
+  },
+  "acceptance_pass": false
+}

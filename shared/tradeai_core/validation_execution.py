@@ -209,13 +209,23 @@ class ValidationExecutionContext:
         allowed_risk = float(balance) * float(risk_percent) / 100.0
         raw_lot = allowed_risk / risk_per_lot
         minimum, maximum, step = self.lot_limits(symbol)
-        lot = normalize_lot(raw_lot, minimum, maximum, step)
+
+        # Runtime RiskManager deliberately supports a broker-minimum fallback:
+        # when the mathematically sized lot is below the broker minimum, try
+        # the minimum lot and then judge the REAL net risk against the hard
+        # max-actual-risk cap. Validation must mirror that exact behaviour or
+        # a $150 account can show zero executable trades offline while runtime
+        # would legally accept the same 0.01-lot setup.
+        used_minimum_fallback = raw_lot < minimum
+        lot_request = minimum if used_minimum_fallback else raw_lot
+        lot = normalize_lot(lot_request, minimum, maximum, step)
         info.update({
             "allowed_risk": float(allowed_risk),
             "raw_lot": float(raw_lot),
             "minimum": float(minimum),
             "maximum": float(maximum),
             "step": float(step),
+            "used_minimum_fallback": bool(used_minimum_fallback),
         })
 
         if lot is None:
