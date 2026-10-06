@@ -1,6 +1,6 @@
 {
   "account_currency": "USD",
-  "captured_at_utc": "2026-09-17T06:21:40.197983+00:00",
+  "captured_at_utc": "2026-09-21T10:29:15.341177+00:00",
   "source": "MT5_CURRENT_BROKER_SNAPSHOT",
   "symbols": {
     "EURUSD": {
@@ -8,7 +8,7 @@
       "digits": 5,
       "point": 1e-05,
       "slippage_pips": 0.2,
-      "spread_pips": 0.20000000000131024,
+      "spread_pips": 0.0,
       "trade_freeze_level": 0,
       "trade_stops_level": 0,
       "trade_tick_size": 1e-05,
@@ -22,7 +22,7 @@
       "digits": 5,
       "point": 1e-05,
       "slippage_pips": 0.2,
-      "spread_pips": 0.10000000000065512,
+      "spread_pips": 0.0,
       "trade_freeze_level": 0,
       "trade_stops_level": 0,
       "trade_tick_size": 1e-05,
@@ -40,7 +40,7 @@
       "trade_freeze_level": 0,
       "trade_stops_level": 0,
       "trade_tick_size": 1e-05,
-      "trade_tick_value": 0.149112853080597,
+      "trade_tick_value": 0.14939018924749176,
       "volume_max": 1000.0,
       "volume_min": 0.01,
       "volume_step": 0.01
@@ -54,7 +54,7 @@
       "trade_freeze_level": 0,
       "trade_stops_level": 0,
       "trade_tick_size": 0.001,
-      "trade_tick_value": 0.6428925019447498,
+      "trade_tick_value": 0.6358976967785422,
       "volume_max": 500.0,
       "volume_min": 0.01,
       "volume_step": 0.01

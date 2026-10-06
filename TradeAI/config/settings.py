@@ -78,6 +78,17 @@ if _symbol_override:
     if parsed_symbols:
         SYMBOLS = parsed_symbols
 
+# Manual directional research defaults; override on the CLI when desired.
+RESEARCH_BALANCE = 150.0
+RESEARCH_RISK_PERCENT = 0.40
+
+# One canonical symbol list for runtime, dataset builder, trainer and CLI defaults.
+SYMBOLS = [str(symbol).strip().upper() for symbol in SYMBOLS]
+if not SYMBOLS or any(not symbol or not symbol.replace("_", "").replace(".", "").isalnum() for symbol in SYMBOLS):
+    raise ValueError("TradeAI SYMBOLS must be a nonempty list of valid MT5 symbol names")
+if len(SYMBOLS) != len(set(SYMBOLS)):
+    raise ValueError("TradeAI SYMBOLS contains duplicate names")
+
 
 # =====================================================
 # TIMEFRAME

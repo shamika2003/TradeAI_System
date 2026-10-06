@@ -1,0 +1,212 @@
+{
+  "symbol": "USDJPY",
+  "created_utc": "2026-10-06T07:30:09.919511+00:00",
+  "model_type": "three_class_selective_xgboost",
+  "class_map": {
+    "DOWN": 0,
+    "HOLD": 1,
+    "UP": 2
+  },
+  "action_confidence": 0.55,
+  "selected_trees": 235,
+  "feature_columns": [
+    "body_atr",
+    "range_atr",
+    "close_loc",
+    "upper_wick_atr",
+    "lower_wick_atr",
+    "ret_1",
+    "ret_atr_1",
+    "ret_2",
+    "ret_atr_2",
+    "ret_3",
+    "ret_atr_3",
+    "ret_6",
+    "ret_atr_6",
+    "ret_12",
+    "ret_atr_12",
+    "ret_24",
+    "ret_atr_24",
+    "ret_48",
+    "ret_atr_48",
+    "ret_96",
+    "ret_atr_96",
+    "ret_192",
+    "ret_atr_192",
+    "ret_288",
+    "ret_atr_288",
+    "vol_6",
+    "vol_12",
+    "vol_24",
+    "vol_48",
+    "vol_96",
+    "vol_192",
+    "vol_288",
+    "ema_dist_5",
+    "ema_slope_5",
+    "ema_dist_9",
+    "ema_slope_9",
+    "ema_dist_20",
+    "ema_slope_20",
+    "ema_dist_50",
+    "ema_slope_50",
+    "ema_dist_100",
+    "ema_slope_100",
+    "ema_dist_200",
+    "ema_slope_200",
+    "rsi14",
+    "atr_pct",
+    "range_pos_24",
+    "range_width_atr_24",
+    "range_pos_48",
+    "range_width_atr_48",
+    "range_pos_96",
+    "range_width_atr_96",
+    "range_pos_192",
+    "range_width_atr_192",
+    "range_pos_288",
+    "range_width_atr_288",
+    "vol_log",
+    "vol_z_24",
+    "vol_z_96",
+    "vol_z_288",
+    "tod_sin",
+    "tod_cos",
+    "dow_sin",
+    "dow_cos"
+  ],
+  "split": {
+    "train_rows": 350331,
+    "validation_rows": 75066,
+    "test_rows": 75073,
+    "test_start": "2025-09-29 20:15:00+00:00",
+    "test_end": "2026-10-05 07:55:00+00:00",
+    "purge_bars": 6
+  },
+  "final_test": {
+    "rows": 75073,
+    "three_class_accuracy": 0.39083292262198127,
+    "three_class_balanced_accuracy": 0.3839976204668473,
+    "confusion_matrix": [
+      [
+        3995,
+        8383,
+        11000
+      ],
+      [
+        2952,
+        12300,
+        9515
+      ],
+      [
+        3614,
+        10268,
+        13046
+      ]
+    ],
+    "action_rows": 672,
+    "action_coverage": 0.008951287413584112,
+    "directional_accuracy": 0.8333333333333334,
+    "mean_signed_move_atr": 1.567378728466186,
+    "median_signed_move_atr": 1.6537699103355408,
+    "sides": {
+      "DOWN": {
+        "rows": 473,
+        "directional_accuracy": 0.864693446088795
+      },
+      "UP": {
+        "rows": 199,
+        "directional_accuracy": 0.7587939698492462
+      }
+    },
+    "monthly": [
+      {
+        "month": "2025-09",
+        "rows": 5,
+        "directional_accuracy": 1.0,
+        "mean_signed_move_atr": 2.8316627979278564
+      },
+      {
+        "month": "2025-10",
+        "rows": 48,
+        "directional_accuracy": 0.8958333333333334,
+        "mean_signed_move_atr": 1.892729806092878
+      },
+      {
+        "month": "2025-11",
+        "rows": 62,
+        "directional_accuracy": 0.7903225806451613,
+        "mean_signed_move_atr": 1.079903373975427
+      },
+      {
+        "month": "2025-12",
+        "rows": 62,
+        "directional_accuracy": 0.9032258064516129,
+        "mean_signed_move_atr": 2.003573822278169
+      },
+      {
+        "month": "2026-01",
+        "rows": 62,
+        "directional_accuracy": 0.7580645161290323,
+        "mean_signed_move_atr": 1.3408168599370025
+      },
+      {
+        "month": "2026-02",
+        "rows": 52,
+        "directional_accuracy": 0.8461538461538461,
+        "mean_signed_move_atr": 1.8479883776655277
+      },
+      {
+        "month": "2026-03",
+        "rows": 17,
+        "directional_accuracy": 0.6470588235294118,
+        "mean_signed_move_atr": 0.6764327642672202
+      },
+      {
+        "month": "2026-04",
+        "rows": 40,
+        "directional_accuracy": 0.825,
+        "mean_signed_move_atr": 1.094888635352254
+      },
+      {
+        "month": "2026-05",
+        "rows": 68,
+        "directional_accuracy": 0.8529411764705882,
+        "mean_signed_move_atr": 2.3036042289698826
+      },
+      {
+        "month": "2026-06",
+        "rows": 89,
+        "directional_accuracy": 0.8539325842696629,
+        "mean_signed_move_atr": 1.5372768506575167
+      },
+      {
+        "month": "2026-07",
+        "rows": 86,
+        "directional_accuracy": 0.8372093023255814,
+        "mean_signed_move_atr": 1.609982386058153
+      },
+      {
+        "month": "2026-08",
+        "rows": 43,
+        "directional_accuracy": 0.8372093023255814,
+        "mean_signed_move_atr": 1.4520414932522663
+      },
+      {
+        "month": "2026-09",
+        "rows": 35,
+        "directional_accuracy": 0.7714285714285715,
+        "mean_signed_move_atr": 0.6072776833815234
+      },
+      {
+        "month": "2026-10",
+        "rows": 3,
+        "directional_accuracy": 1.0,
+        "mean_signed_move_atr": 2.3196385701497397
+      }
+    ]
+  },
+  "production_ready_by_historical_gate": true,
+  "production_gate_failures": [],
+  "important": "Historical gate success is not a substitute for post-training forward validation. Do not promote to automatic live execution until new post-lock data also passes."
+}

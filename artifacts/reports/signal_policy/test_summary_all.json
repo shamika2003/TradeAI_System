@@ -1,0 +1,330 @@
+{
+  "policy_version": "tradeai_signal_policy",
+  "evaluated_utc": "2026-10-06T07:02:49.194701+00:00",
+  "symbols": {
+    "EURUSD": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "EURUSD",
+      "evaluated_utc": "2026-10-06T07:00:28.102192+00:00",
+      "test_start": "2026-02-02 11:05:00+00:00",
+      "test_end": "2026-10-05 07:55:00+00:00",
+      "market_rows": 49458,
+      "policy_trade_enabled": false,
+      "policy_live_enabled": false,
+      "minimum_confidence": null,
+      "minimum_edge_atr": null,
+      "candidate_rows": 0,
+      "executed_non_overlapping_rows": 0,
+      "precision_policy": {
+        "trades": 0,
+        "buy_trades": 0,
+        "sell_trades": 0,
+        "win_rate": null,
+        "net_pips": 0.0,
+        "mean_net_pips": null,
+        "profit_factor": null,
+        "max_drawdown_pips": 0.0
+      },
+      "baseline_direction_model": {
+        "trades": 8340,
+        "buy_trades": 5375,
+        "sell_trades": 2965,
+        "win_rate": 0.354916067146283,
+        "net_pips": -12534.90000000003,
+        "mean_net_pips": -1.5029856115107951,
+        "profit_factor": 0.4716919899690224,
+        "max_drawdown_pips": 12558.600000000037
+      },
+      "monthly": [],
+      "positive_months": 0,
+      "negative_months": 0,
+      "cost_contract": {
+        "symbol": "EURUSD",
+        "pip_size": 0.0001,
+        "commission_per_lot": 7.0,
+        "commission_pips": 0.7,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 0.8,
+        "entry_spread_rows_imputed": 35525,
+        "exit_spread_rows_imputed": 35576,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "notes": [
+        "FINAL TEST is not used to select the gate.",
+        "One position per symbol at a time in this evaluator.",
+        "BUY uses entry spread; SELL realized result uses exit spread because historical OHLC is BID."
+      ]
+    },
+    "GBPUSD": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "GBPUSD",
+      "evaluated_utc": "2026-10-06T07:01:16.829353+00:00",
+      "test_start": "2026-02-02 13:05:00+00:00",
+      "test_end": "2026-10-05 07:55:00+00:00",
+      "market_rows": 49577,
+      "policy_trade_enabled": false,
+      "policy_live_enabled": false,
+      "minimum_confidence": null,
+      "minimum_edge_atr": null,
+      "candidate_rows": 0,
+      "executed_non_overlapping_rows": 0,
+      "precision_policy": {
+        "trades": 0,
+        "buy_trades": 0,
+        "sell_trades": 0,
+        "win_rate": null,
+        "net_pips": 0.0,
+        "mean_net_pips": null,
+        "profit_factor": null,
+        "max_drawdown_pips": 0.0
+      },
+      "baseline_direction_model": {
+        "trades": 8332,
+        "buy_trades": 5665,
+        "sell_trades": 2667,
+        "win_rate": 0.350096015362458,
+        "net_pips": -16250.699999999966,
+        "mean_net_pips": -1.9503960633701352,
+        "profit_factor": 0.4857064190568435,
+        "max_drawdown_pips": 16273.999999999998
+      },
+      "monthly": [],
+      "positive_months": 0,
+      "negative_months": 0,
+      "cost_contract": {
+        "symbol": "GBPUSD",
+        "pip_size": 0.0001,
+        "commission_per_lot": 7.0,
+        "commission_pips": 0.7,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 1.8,
+        "entry_spread_rows_imputed": 26414,
+        "exit_spread_rows_imputed": 26445,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "notes": [
+        "FINAL TEST is not used to select the gate.",
+        "One position per symbol at a time in this evaluator.",
+        "BUY uses entry spread; SELL realized result uses exit spread because historical OHLC is BID."
+      ]
+    },
+    "USDJPY": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "USDJPY",
+      "evaluated_utc": "2026-10-06T07:02:04.037344+00:00",
+      "test_start": "2026-02-02 15:25:00+00:00",
+      "test_end": "2026-10-05 07:55:00+00:00",
+      "market_rows": 49575,
+      "policy_trade_enabled": true,
+      "policy_live_enabled": true,
+      "minimum_confidence": 0.6395486284797015,
+      "minimum_edge_atr": 0.0860119011132914,
+      "candidate_rows": 354,
+      "executed_non_overlapping_rows": 108,
+      "precision_policy": {
+        "trades": 108,
+        "buy_trades": 18,
+        "sell_trades": 90,
+        "win_rate": 0.5185185185185185,
+        "net_pips": 78.51295199999514,
+        "mean_net_pips": 0.7269717777777328,
+        "profit_factor": 1.347030978062078,
+        "max_drawdown_pips": 75.33627000000767
+      },
+      "baseline_direction_model": {
+        "trades": 8333,
+        "buy_trades": 5504,
+        "sell_trades": 2829,
+        "win_rate": 0.36361454458178327,
+        "net_pips": -18150.31639799991,
+        "mean_net_pips": -2.1781250927637,
+        "profit_factor": 0.5094876862186534,
+        "max_drawdown_pips": 18214.403501999794
+      },
+      "monthly": [
+        {
+          "month": "2026-02",
+          "trades": 14,
+          "buy_trades": 2,
+          "sell_trades": 12,
+          "win_rate": 0.7142857142857143,
+          "net_pips": 39.488716000005574,
+          "mean_net_pips": 2.8206225714289697,
+          "profit_factor": 2.102937433791025,
+          "max_drawdown_pips": 24.200806000000387
+        },
+        {
+          "month": "2026-03",
+          "trades": 12,
+          "buy_trades": 2,
+          "sell_trades": 10,
+          "win_rate": 0.4166666666666667,
+          "net_pips": 2.690328000002885,
+          "mean_net_pips": 0.2241940000002404,
+          "profit_factor": 1.0879030082101713,
+          "max_drawdown_pips": 18.003223999995342
+        },
+        {
+          "month": "2026-04",
+          "trades": 13,
+          "buy_trades": 2,
+          "sell_trades": 11,
+          "win_rate": 0.3076923076923077,
+          "net_pips": -41.11047800000057,
+          "mean_net_pips": -3.1623444615385052,
+          "profit_factor": 0.34959240596021374,
+          "max_drawdown_pips": 41.40886600000018
+        },
+        {
+          "month": "2026-05",
+          "trades": 13,
+          "buy_trades": 2,
+          "sell_trades": 11,
+          "win_rate": 0.23076923076923078,
+          "net_pips": -4.410478000006117,
+          "mean_net_pips": -0.339267538462009,
+          "profit_factor": 0.7986824027319326,
+          "max_drawdown_pips": 20.104030000006894
+        },
+        {
+          "month": "2026-06",
+          "trades": 13,
+          "buy_trades": 1,
+          "sell_trades": 12,
+          "win_rate": 0.38461538461538464,
+          "net_pips": -9.410478000008593,
+          "mean_net_pips": -0.7238829230775841,
+          "profit_factor": 0.612840263620303,
+          "max_drawdown_pips": 19.00483599999682
+        },
+        {
+          "month": "2026-07",
+          "trades": 14,
+          "buy_trades": 1,
+          "sell_trades": 13,
+          "win_rate": 0.7857142857142857,
+          "net_pips": 23.488716000001773,
+          "mean_net_pips": 1.6777654285715553,
+          "profit_factor": 3.2365055361545116,
+          "max_drawdown_pips": 5.000805999999136
+        },
+        {
+          "month": "2026-08",
+          "trades": 13,
+          "buy_trades": 3,
+          "sell_trades": 10,
+          "win_rate": 0.5384615384615384,
+          "net_pips": 40.689521999999954,
+          "mean_net_pips": 3.1299632307692273,
+          "profit_factor": 2.8833525049668784,
+          "max_drawdown_pips": 13.404029999996748
+        },
+        {
+          "month": "2026-09",
+          "trades": 14,
+          "buy_trades": 4,
+          "sell_trades": 10,
+          "win_rate": 0.7142857142857143,
+          "net_pips": 20.18871599999791,
+          "mean_net_pips": 1.4420511428569935,
+          "profit_factor": 2.4114800970742247,
+          "max_drawdown_pips": 9.80080600000216
+        },
+        {
+          "month": "2026-10",
+          "trades": 2,
+          "buy_trades": 1,
+          "sell_trades": 1,
+          "win_rate": 0.5,
+          "net_pips": 6.89838800000232,
+          "mean_net_pips": 3.44919400000116,
+          "profit_factor": 2.72424956371408,
+          "max_drawdown_pips": 4.000805999998636
+        }
+      ],
+      "positive_months": 6,
+      "negative_months": 3,
+      "cost_contract": {
+        "symbol": "USDJPY",
+        "pip_size": 0.01,
+        "commission_per_lot": 7.0,
+        "commission_pips": 1.100806,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 1.3,
+        "entry_spread_rows_imputed": 29670,
+        "exit_spread_rows_imputed": 29748,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "notes": [
+        "FINAL TEST is not used to select the gate.",
+        "One position per symbol at a time in this evaluator.",
+        "BUY uses entry spread; SELL realized result uses exit spread because historical OHLC is BID."
+      ]
+    },
+    "USDCNH": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "USDCNH",
+      "evaluated_utc": "2026-10-06T07:02:49.170282+00:00",
+      "test_start": "2026-02-04 21:15:00+00:00",
+      "test_end": "2026-10-05 07:55:00+00:00",
+      "market_rows": 48951,
+      "policy_trade_enabled": false,
+      "policy_live_enabled": false,
+      "minimum_confidence": null,
+      "minimum_edge_atr": null,
+      "candidate_rows": 0,
+      "executed_non_overlapping_rows": 0,
+      "precision_policy": {
+        "trades": 0,
+        "buy_trades": 0,
+        "sell_trades": 0,
+        "win_rate": null,
+        "net_pips": 0.0,
+        "mean_net_pips": null,
+        "profit_factor": null,
+        "max_drawdown_pips": 0.0
+      },
+      "baseline_direction_model": {
+        "trades": 8207,
+        "buy_trades": 5341,
+        "sell_trades": 2866,
+        "win_rate": 0.19264042890215669,
+        "net_pips": -92702.27121199999,
+        "mean_net_pips": -11.295512515169976,
+        "profit_factor": 0.15182727676787638,
+        "max_drawdown_pips": 92702.27121200027
+      },
+      "monthly": [],
+      "positive_months": 0,
+      "negative_months": 0,
+      "cost_contract": {
+        "symbol": "USDCNH",
+        "pip_size": 0.0001,
+        "commission_per_lot": 7.0,
+        "commission_pips": 4.685715999999999,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 22.0,
+        "entry_spread_rows_imputed": 1909,
+        "exit_spread_rows_imputed": 1959,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "notes": [
+        "FINAL TEST is not used to select the gate.",
+        "One position per symbol at a time in this evaluator.",
+        "BUY uses entry spread; SELL realized result uses exit spread because historical OHLC is BID."
+      ]
+    }
+  }
+}

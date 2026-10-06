@@ -79,3 +79,10 @@ build/
 dist/
 *.egg-info/
 elvara_nira_tradeai_dashboard_v3.py
+
+# Research candidates and temporary dataset rebuilds
+artifacts/research/
+artifacts/datasets/*.tmp.json
+_local_archive/
+
+artifacts/datasets/*.building.tmp

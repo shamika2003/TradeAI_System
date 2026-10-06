@@ -1,0 +1,63 @@
+{
+  "version": "tradeai_precision_demo_execution_v1",
+  "started_utc": "2026-10-06T08:27:05.708429Z",
+  "updated_utc": "2026-10-06T08:42:37.602308Z",
+  "magic": 26061055,
+  "mode": "DEMO_ONLY",
+  "execution_enabled": true,
+  "broker_minimum_volume": true,
+  "max_bot_positions": 3,
+  "open_positions": {},
+  "decisions": {},
+  "completed": {},
+  "account": {
+    "verified_demo": true,
+    "currency": "USD",
+    "balance": 3000.0,
+    "equity": 3000.0,
+    "server": "MetaQuotes-Demo"
+  },
+  "simulated_start_capital": 100.0,
+  "sizing_mode": "LOW_BALANCE_BROKER_MINIMUM_LOT",
+  "root_log": "C:\\Users\\user\\Documents\\MULTI-LANG-PROJECT\\TradeAI_System\\TRADEAI_DEMO.log",
+  "low_balance": {
+    "start_capital": 100.0,
+    "realized_profit": 0.0,
+    "floating_profit": 0.0,
+    "balance": 100.0,
+    "equity": 100.0,
+    "reserved_margin": 0.0,
+    "free_margin": 100.0,
+    "return_percent": 0.0
+  },
+  "symbols": {
+    "EURUSD": {
+      "historical_gate_pass": true,
+      "broker_tradable": true,
+      "volume_min": 0.01,
+      "volume_step": 0.01,
+      "volume_max": 500.0
+    },
+    "GBPUSD": {
+      "historical_gate_pass": true,
+      "broker_tradable": true,
+      "volume_min": 0.01,
+      "volume_step": 0.01,
+      "volume_max": 500.0
+    },
+    "USDJPY": {
+      "historical_gate_pass": true,
+      "broker_tradable": true,
+      "volume_min": 0.01,
+      "volume_step": 0.01,
+      "volume_max": 500.0
+    },
+    "USDCNH": {
+      "historical_gate_pass": false,
+      "broker_tradable": true,
+      "volume_min": 0.01,
+      "volume_step": 0.01,
+      "volume_max": 1000.0
+    }
+  }
+}

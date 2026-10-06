@@ -1,0 +1,56 @@
+{
+  "policy_version": "tradeai_signal_policy",
+  "symbol": "EURUSD",
+  "evaluated_utc": "2026-10-06T07:00:28.102192+00:00",
+  "test_start": "2026-02-02 11:05:00+00:00",
+  "test_end": "2026-10-05 07:55:00+00:00",
+  "market_rows": 49458,
+  "policy_trade_enabled": false,
+  "policy_live_enabled": false,
+  "minimum_confidence": null,
+  "minimum_edge_atr": null,
+  "candidate_rows": 0,
+  "executed_non_overlapping_rows": 0,
+  "precision_policy": {
+    "trades": 0,
+    "buy_trades": 0,
+    "sell_trades": 0,
+    "win_rate": null,
+    "net_pips": 0.0,
+    "mean_net_pips": null,
+    "profit_factor": null,
+    "max_drawdown_pips": 0.0
+  },
+  "baseline_direction_model": {
+    "trades": 8340,
+    "buy_trades": 5375,
+    "sell_trades": 2965,
+    "win_rate": 0.354916067146283,
+    "net_pips": -12534.90000000003,
+    "mean_net_pips": -1.5029856115107951,
+    "profit_factor": 0.4716919899690224,
+    "max_drawdown_pips": 12558.600000000037
+  },
+  "monthly": [],
+  "positive_months": 0,
+  "negative_months": 0,
+  "cost_contract": {
+    "symbol": "EURUSD",
+    "pip_size": 0.0001,
+    "commission_per_lot": 7.0,
+    "commission_pips": 0.7,
+    "slippage_pips": 0.2,
+    "spread_fallback_pips": 0.8,
+    "entry_spread_rows_imputed": 35525,
+    "exit_spread_rows_imputed": 35576,
+    "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+    "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+    "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+    "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+  },
+  "notes": [
+    "FINAL TEST is not used to select the gate.",
+    "One position per symbol at a time in this evaluator.",
+    "BUY uses entry spread; SELL realized result uses exit spread because historical OHLC is BID."
+  ]
+}

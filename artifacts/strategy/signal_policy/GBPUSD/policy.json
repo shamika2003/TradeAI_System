@@ -1,0 +1,72 @@
+{
+  "policy_version": "tradeai_signal_policy",
+  "symbol": "GBPUSD",
+  "created_utc": "2026-10-06T06:58:21.337718+00:00",
+  "architecture": "Precision-first entry gate on top of the causal direction ensemble. The gate uses only model confidence and expected selected-side move after currently-known transaction cost. FINAL TEST is not used.",
+  "source_model_version": "tradeai_direction_m5",
+  "trade_enabled": false,
+  "live_enabled": false,
+  "live_disabled_reason": "No precision gate stayed profitable on both chronological SEARCH and CONFIRM blocks.",
+  "minimum_confidence": null,
+  "minimum_edge_atr": null,
+  "selection": {
+    "minimum_confidence": 0.8565501095992204,
+    "minimum_edge_atr": 0.538573208598154,
+    "search": {
+      "trades": 2,
+      "win_rate": 0.5,
+      "net_pips": 5.400000000000823,
+      "mean_net_pips": 2.7000000000004114,
+      "profit_factor": 6.400000000005331,
+      "max_drawdown_pips": 0.9999999999991651
+    },
+    "confirm": {
+      "trades": 3,
+      "win_rate": 0.6666666666666666,
+      "net_pips": 9.699999999999028,
+      "mean_net_pips": 3.233333333333009,
+      "profit_factor": 49.49999999979974,
+      "max_drawdown_pips": 0.20000000000080576
+    },
+    "valid": false,
+    "score": 378.42900000014777
+  },
+  "meta_split": {
+    "search_end": "2025-12-11 13:00:00+00:00",
+    "confirm_start": "2025-12-11 13:35:00+00:00",
+    "confirm_end": "2026-02-02 12:30:00+00:00",
+    "search_rows": 14871,
+    "confirm_rows": 9908,
+    "purge_minutes": 30,
+    "rule": "Chronological reserved-META split. Gate candidates are learned on SEARCH and must remain profitable on independent CONFIRM. FINAL TEST is not used."
+  },
+  "spread_fallback": {
+    "fallback_pips": 1.8,
+    "fallback_source": "trailing_90_day_positive_median",
+    "cutoff_utc": "2025-09-30 01:05:00+00:00",
+    "lookback_days": 90,
+    "recent_positive_rows": 18223,
+    "all_positive_rows": 323307,
+    "recent_positive_median_pips": 1.8,
+    "full_positive_median_pips": 0.5,
+    "broker_snapshot_spread_pips": 0.0,
+    "fallback_to_snapshot_ratio": null,
+    "spread_regime_warning": false,
+    "spread_regime_rule": "warning only when broker snapshot spread is positive and fallback/snapshot is outside [0.125, 8.000]"
+  },
+  "cost_contract": {
+    "symbol": "GBPUSD",
+    "pip_size": 0.0001,
+    "commission_per_lot": 7.0,
+    "commission_pips": 0.7,
+    "slippage_pips": 0.2,
+    "spread_fallback_pips": 1.8,
+    "entry_spread_rows_imputed": 0,
+    "exit_spread_rows_imputed": 25,
+    "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+    "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+    "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+    "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+  },
+  "final_test_used": false
+}

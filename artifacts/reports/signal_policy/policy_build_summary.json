@@ -1,0 +1,294 @@
+{
+  "policy_version": "tradeai_signal_policy",
+  "created_utc": "2026-10-06T06:59:37.158014+00:00",
+  "symbols": {
+    "EURUSD": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "EURUSD",
+      "created_utc": "2026-10-06T06:57:49.829778+00:00",
+      "architecture": "Precision-first entry gate on top of the causal direction ensemble. The gate uses only model confidence and expected selected-side move after currently-known transaction cost. FINAL TEST is not used.",
+      "source_model_version": "tradeai_direction_m5",
+      "trade_enabled": false,
+      "live_enabled": false,
+      "live_disabled_reason": "No precision gate stayed profitable on both chronological SEARCH and CONFIRM blocks.",
+      "minimum_confidence": null,
+      "minimum_edge_atr": null,
+      "selection": {
+        "minimum_confidence": 0.721418870209373,
+        "minimum_edge_atr": 0.027005545923535698,
+        "search": {
+          "trades": 14,
+          "win_rate": 0.7142857142857143,
+          "net_pips": 17.00000000000294,
+          "mean_net_pips": 1.2142857142859245,
+          "profit_factor": 4.541666666669021,
+          "max_drawdown_pips": 3.2000000000006192
+        },
+        "confirm": {
+          "trades": 14,
+          "win_rate": 0.7857142857142857,
+          "net_pips": 10.79999999999909,
+          "mean_net_pips": 0.7714285714285064,
+          "profit_factor": 3.1599999999987487,
+          "max_drawdown_pips": 4.000000000001745
+        },
+        "valid": false,
+        "score": 121.03285714282563
+      },
+      "meta_split": {
+        "search_end": "2025-12-11 03:45:00+00:00",
+        "confirm_start": "2025-12-11 04:20:00+00:00",
+        "confirm_end": "2026-02-02 10:30:00+00:00",
+        "search_rows": 14835,
+        "confirm_rows": 9885,
+        "purge_minutes": 30,
+        "rule": "Chronological reserved-META split. Gate candidates are learned on SEARCH and must remain profitable on independent CONFIRM. FINAL TEST is not used."
+      },
+      "spread_fallback": {
+        "fallback_pips": 0.8,
+        "fallback_source": "trailing_90_day_positive_median",
+        "cutoff_utc": "2025-09-29 15:40:00+00:00",
+        "lookback_days": 90,
+        "recent_positive_rows": 17017,
+        "all_positive_rows": 226164,
+        "recent_positive_median_pips": 0.8,
+        "full_positive_median_pips": 0.30000000000000004,
+        "broker_snapshot_spread_pips": 0.0,
+        "fallback_to_snapshot_ratio": null,
+        "spread_regime_warning": false,
+        "spread_regime_rule": "warning only when broker snapshot spread is positive and fallback/snapshot is outside [0.125, 8.000]"
+      },
+      "cost_contract": {
+        "symbol": "EURUSD",
+        "pip_size": 0.0001,
+        "commission_per_lot": 7.0,
+        "commission_pips": 0.7,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 0.8,
+        "entry_spread_rows_imputed": 10737,
+        "exit_spread_rows_imputed": 10755,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "final_test_used": false
+    },
+    "GBPUSD": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "GBPUSD",
+      "created_utc": "2026-10-06T06:58:21.337718+00:00",
+      "architecture": "Precision-first entry gate on top of the causal direction ensemble. The gate uses only model confidence and expected selected-side move after currently-known transaction cost. FINAL TEST is not used.",
+      "source_model_version": "tradeai_direction_m5",
+      "trade_enabled": false,
+      "live_enabled": false,
+      "live_disabled_reason": "No precision gate stayed profitable on both chronological SEARCH and CONFIRM blocks.",
+      "minimum_confidence": null,
+      "minimum_edge_atr": null,
+      "selection": {
+        "minimum_confidence": 0.8565501095992204,
+        "minimum_edge_atr": 0.538573208598154,
+        "search": {
+          "trades": 2,
+          "win_rate": 0.5,
+          "net_pips": 5.400000000000823,
+          "mean_net_pips": 2.7000000000004114,
+          "profit_factor": 6.400000000005331,
+          "max_drawdown_pips": 0.9999999999991651
+        },
+        "confirm": {
+          "trades": 3,
+          "win_rate": 0.6666666666666666,
+          "net_pips": 9.699999999999028,
+          "mean_net_pips": 3.233333333333009,
+          "profit_factor": 49.49999999979974,
+          "max_drawdown_pips": 0.20000000000080576
+        },
+        "valid": false,
+        "score": 378.42900000014777
+      },
+      "meta_split": {
+        "search_end": "2025-12-11 13:00:00+00:00",
+        "confirm_start": "2025-12-11 13:35:00+00:00",
+        "confirm_end": "2026-02-02 12:30:00+00:00",
+        "search_rows": 14871,
+        "confirm_rows": 9908,
+        "purge_minutes": 30,
+        "rule": "Chronological reserved-META split. Gate candidates are learned on SEARCH and must remain profitable on independent CONFIRM. FINAL TEST is not used."
+      },
+      "spread_fallback": {
+        "fallback_pips": 1.8,
+        "fallback_source": "trailing_90_day_positive_median",
+        "cutoff_utc": "2025-09-30 01:05:00+00:00",
+        "lookback_days": 90,
+        "recent_positive_rows": 18223,
+        "all_positive_rows": 323307,
+        "recent_positive_median_pips": 1.8,
+        "full_positive_median_pips": 0.5,
+        "broker_snapshot_spread_pips": 0.0,
+        "fallback_to_snapshot_ratio": null,
+        "spread_regime_warning": false,
+        "spread_regime_rule": "warning only when broker snapshot spread is positive and fallback/snapshot is outside [0.125, 8.000]"
+      },
+      "cost_contract": {
+        "symbol": "GBPUSD",
+        "pip_size": 0.0001,
+        "commission_per_lot": 7.0,
+        "commission_pips": 0.7,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 1.8,
+        "entry_spread_rows_imputed": 0,
+        "exit_spread_rows_imputed": 25,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "final_test_used": false
+    },
+    "USDJPY": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "USDJPY",
+      "created_utc": "2026-10-06T06:58:56.748113+00:00",
+      "architecture": "Precision-first entry gate on top of the causal direction ensemble. The gate uses only model confidence and expected selected-side move after currently-known transaction cost. FINAL TEST is not used.",
+      "source_model_version": "tradeai_direction_m5",
+      "trade_enabled": true,
+      "live_enabled": true,
+      "live_disabled_reason": null,
+      "minimum_confidence": 0.6395486284797015,
+      "minimum_edge_atr": 0.0860119011132914,
+      "selection": {
+        "minimum_confidence": 0.6395486284797015,
+        "minimum_edge_atr": 0.0860119011132914,
+        "search": {
+          "trades": 36,
+          "win_rate": 0.5555555555555556,
+          "net_pips": 75.17098400001214,
+          "mean_net_pips": 2.088082888889226,
+          "profit_factor": 2.533698069994057,
+          "max_drawdown_pips": 21.90725399999468
+        },
+        "confirm": {
+          "trades": 25,
+          "win_rate": 0.68,
+          "net_pips": 49.97985000000068,
+          "mean_net_pips": 1.9991940000000272,
+          "profit_factor": 2.0565124229999427,
+          "max_drawdown_pips": 26.10483599999739
+        },
+        "valid": true,
+        "score": 223.84393168000213
+      },
+      "meta_split": {
+        "search_end": "2025-12-11 17:20:00+00:00",
+        "confirm_start": "2025-12-11 17:55:00+00:00",
+        "confirm_end": "2026-02-02 14:50:00+00:00",
+        "search_rows": 14870,
+        "confirm_rows": 9908,
+        "purge_minutes": 30,
+        "rule": "Chronological reserved-META split. Gate candidates are learned on SEARCH and must remain profitable on independent CONFIRM. FINAL TEST is not used."
+      },
+      "spread_fallback": {
+        "fallback_pips": 1.3,
+        "fallback_source": "trailing_90_day_positive_median",
+        "cutoff_utc": "2025-09-30 07:45:00+00:00",
+        "lookback_days": 90,
+        "recent_positive_rows": 18217,
+        "all_positive_rows": 278106,
+        "recent_positive_median_pips": 1.3,
+        "full_positive_median_pips": 0.4,
+        "broker_snapshot_spread_pips": 0.20000000000095497,
+        "fallback_to_snapshot_ratio": 6.4999999999689635,
+        "spread_regime_warning": false,
+        "spread_regime_rule": "warning only when broker snapshot spread is positive and fallback/snapshot is outside [0.125, 8.000]"
+      },
+      "cost_contract": {
+        "symbol": "USDJPY",
+        "pip_size": 0.01,
+        "commission_per_lot": 7.0,
+        "commission_pips": 1.100806,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 1.3,
+        "entry_spread_rows_imputed": 2,
+        "exit_spread_rows_imputed": 26,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "final_test_used": false
+    },
+    "USDCNH": {
+      "policy_version": "tradeai_signal_policy",
+      "symbol": "USDCNH",
+      "created_utc": "2026-10-06T06:59:35.351846+00:00",
+      "architecture": "Precision-first entry gate on top of the causal direction ensemble. The gate uses only model confidence and expected selected-side move after currently-known transaction cost. FINAL TEST is not used.",
+      "source_model_version": "tradeai_direction_m5",
+      "trade_enabled": false,
+      "live_enabled": false,
+      "live_disabled_reason": "No precision gate stayed profitable on both chronological SEARCH and CONFIRM blocks.",
+      "minimum_confidence": null,
+      "minimum_edge_atr": null,
+      "selection": {
+        "minimum_confidence": 0.8346168732870366,
+        "minimum_edge_atr": 0.13188940384108072,
+        "search": {
+          "trades": 6,
+          "win_rate": 0.6666666666666666,
+          "net_pips": 9.485703999998385,
+          "mean_net_pips": 1.5809506666663975,
+          "profit_factor": 1.5622346698253924,
+          "max_drawdown_pips": 12.1571480000005
+        },
+        "confirm": {
+          "trades": 8,
+          "win_rate": 0.5,
+          "net_pips": -32.08572800000178,
+          "mean_net_pips": -4.010716000000222,
+          "profit_factor": 0.6544082483280116,
+          "max_drawdown_pips": 65.11429599999718
+        },
+        "valid": false,
+        "score": -403.29502960002236
+      },
+      "meta_split": {
+        "search_end": "2025-12-16 11:25:00+00:00",
+        "confirm_start": "2025-12-16 12:00:00+00:00",
+        "confirm_end": "2026-02-04 20:40:00+00:00",
+        "search_rows": 14683,
+        "confirm_rows": 9783,
+        "purge_minutes": 30,
+        "rule": "Chronological reserved-META split. Gate candidates are learned on SEARCH and must remain profitable on independent CONFIRM. FINAL TEST is not used."
+      },
+      "spread_fallback": {
+        "fallback_pips": 22.0,
+        "fallback_source": "trailing_90_day_positive_median",
+        "cutoff_utc": "2025-10-03 20:05:00+00:00",
+        "lookback_days": 90,
+        "recent_positive_rows": 18613,
+        "all_positive_rows": 425213,
+        "recent_positive_median_pips": 22.0,
+        "full_positive_median_pips": 15.9,
+        "broker_snapshot_spread_pips": 1.1999999999989797,
+        "fallback_to_snapshot_ratio": 18.33333333334892,
+        "spread_regime_warning": true,
+        "spread_regime_rule": "warning only when broker snapshot spread is positive and fallback/snapshot is outside [0.125, 8.000]"
+      },
+      "cost_contract": {
+        "symbol": "USDCNH",
+        "pip_size": 0.0001,
+        "commission_per_lot": 7.0,
+        "commission_pips": 4.685715999999999,
+        "slippage_pips": 0.2,
+        "spread_fallback_pips": 22.0,
+        "entry_spread_rows_imputed": 0,
+        "exit_spread_rows_imputed": 24,
+        "commission_semantics": "commission_per_lot is treated as full round-trip commission",
+        "slippage_semantics": "broker-profile slippage_pips is treated as the full round-trip slippage allowance",
+        "spread_semantics": "MT5 OHLC is BID. BUY realized spread cost uses entry spread; SELL realized spread cost uses exit spread. Zero/missing spread uses a fallback frozen strictly before META training.",
+        "live_feature_cost_semantics": "At decision time only current/entry spread + commission + slippage is supplied as a feature. Future exit spread is target/evaluation only."
+      },
+      "final_test_used": false
+    }
+  }
+}
