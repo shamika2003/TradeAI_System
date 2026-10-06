@@ -1,0 +1,125 @@
+
+
+=====================================
+ AI TRADING BACKTEST REPORT
+=====================================
+
+Generated:
+2026-09-17 13:50:16.170712
+
+INITIAL BALANCE:
+$150.00
+
+FINAL BALANCE:
+$151.15
+
+TOTAL RETURN:
+0.77%
+
+
+-------------------------------------
+TRADE STATISTICS
+-------------------------------------
+
+Total Trades:
+48
+
+Winning Trades:
+26
+
+Losing Trades:
+22
+
+Win Rate:
+54.17%
+
+
+-------------------------------------
+PROFIT ANALYSIS
+-------------------------------------
+
+Net Profit:
+$1.15
+
+Gross Profit:
+$11.02
+
+Gross Loss:
+$9.87
+
+Profit Factor:
+1.12
+
+Average Trade:
+$0.02
+
+Average Win:
+$0.42
+
+Average Loss:
+$0.45
+
+Risk Reward:
+1 : 0.94
+
+Expectancy:
+$0.02
+
+
+-------------------------------------
+RISK METRICS
+-------------------------------------
+
+Maximum Drawdown:
+$3.31
+
+Maximum Drawdown:
+2.16%
+
+Recovery Factor:
+0.35
+
+Sharpe Ratio:
+0.05
+
+
+-------------------------------------
+STREAKS
+-------------------------------------
+
+Best Win Streak:
+5
+
+Worst Loss Streak:
+4
+
+
+-------------------------------------
+TRADE EXTREMES
+-------------------------------------
+
+Best Trade:
+
+Symbol:
+GBPUSD
+
+Type:
+BUY
+
+Profit:
+$1.01
+
+
+Worst Trade:
+
+Symbol:
+USDCNH
+
+Type:
+SELL
+
+Profit:
+$-0.68
+
+=====================================
+
