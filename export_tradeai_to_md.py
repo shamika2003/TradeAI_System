@@ -65,6 +65,8 @@ TEXT_EXTENSIONS = {
 
     # XML
     ".xml",
+    
+    ".ps1"
 }
 
 
