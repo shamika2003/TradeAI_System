@@ -7,7 +7,7 @@ and overlays into one component library.  This module gives the desktop product
 those same primitives instead of styling one-off widgets page by page.
 """
 
-from PySide6.QtCore import QEvent, QPointF, QRectF, QSize, QTimer, Qt
+from PySide6.QtCore import QEvent, QPointF, QRectF, QSize, QTimer, Signal, Qt
 from PySide6.QtGui import QAction, QColor, QPainter, QPen, QRadialGradient
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QLineEdit,
+    QPlainTextEdit,
     QPushButton,
     QTableWidget,
     QVBoxLayout,
@@ -514,17 +515,16 @@ class NiraMiniOrb(QWidget):
 
 
 class NiraTopBar(QFrame):
-    """Global reserved NIRA command surface shown directly below the title bar.
+    """Compact live command surface for the shared NIRA runtime."""
 
-    This is deliberately a visual reservation only.  It never invents an AI
-    response.  When the NIRA runtime is connected later, the shell does not
-    need to move again.
-    """
+    message_submitted = Signal(str)
+    panel_toggled = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("NiraTopBar")
         self.setFixedHeight(40)
+        self._busy = False
 
         root = QHBoxLayout(self)
         root.setContentsMargins(8, 4, 8, 4)
@@ -538,94 +538,160 @@ class NiraTopBar(QFrame):
         title.setObjectName("NiraDockTitle")
         root.addWidget(title)
 
-        self.state = QLabel("RESERVED")
+        self.state = QLabel("CONNECTING")
         self.state.setObjectName("NiraDockState")
         root.addWidget(self.state)
 
         self.input = QLineEdit()
         self.input.setObjectName("NiraTopInput")
         self.input.setPlaceholderText("Ask NIRA…")
-        self.input.setToolTip("NIRA conversational runtime is reserved for a future connection.")
+        self.input.setToolTip(
+            "Ask the shared NIRA runtime about TradeAI. "
+            "TradeAI itself has no direct LLM connection."
+        )
         self.input.setFixedHeight(30)
         root.addWidget(self.input, 1)
+
+        self.panel = QPushButton("CHAT")
+        self.panel.setObjectName("NiraTopSend")
+        self.panel.setFixedSize(48, 30)
+        self.panel.setToolTip("Open or close the TradeAI NIRA conversation")
+        root.addWidget(self.panel)
 
         self.send = QPushButton("›")
         self.send.setObjectName("NiraTopSend")
         self.send.setFixedSize(30, 30)
-        self.send.setToolTip("NIRA bridge reserved")
+        self.send.setToolTip("Send to NIRA")
         root.addWidget(self.send)
 
-        self.input.returnPressed.connect(self._reserved_action)
-        self.send.clicked.connect(self._reserved_action)
+        self.input.returnPressed.connect(self._submit)
+        self.send.clicked.connect(self._submit)
+        self.panel.clicked.connect(self.panel_toggled.emit)
 
-        self._reset_timer = QTimer(self)
-        self._reset_timer.setSingleShot(True)
-        self._reset_timer.timeout.connect(self._reset_state)
+    def _submit(self) -> None:
+        if self._busy:
+            return
+        message = self.input.text().strip()
+        if not message:
+            self.input.setFocus()
+            return
+        self.set_busy(True)
+        self.state.setText("THINKING")
+        self.message_submitted.emit(message)
 
-    def _reserved_action(self) -> None:
-        self.state.setText("BRIDGE RESERVED")
-        self._reset_timer.start(1600)
+    def set_busy(self, busy: bool) -> None:
+        self._busy = bool(busy)
+        self.input.setEnabled(not self._busy)
+        self.send.setEnabled(not self._busy)
 
-    def _reset_state(self) -> None:
-        self.state.setText("RESERVED")
+    def finish_request(self, *, state: str, clear_input: bool = False) -> None:
+        self.set_busy(False)
+        self.state.setText(state)
+        if clear_input:
+            self.input.clear()
+        self.input.setFocus()
+
+    def set_bridge_state(self, state: str) -> None:
+        if not self._busy:
+            self.state.setText(str(state or "").strip().upper() or "OFFLINE")
 
 
 class NiraSidebarDock(QFrame):
-    """Global placeholder for the future NIRA conversational bridge.
+    """Collapsible TradeAI conversation surface backed by the shared NIRA runtime."""
 
-    It intentionally does not fabricate assistant replies.  The control remains
-    visible everywhere so the eventual NIRA runtime can be connected without
-    redesigning the product shell.
-    """
+    close_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("NiraSidebarDock")
+        self.setMinimumWidth(330)
+        self.setMaximumWidth(410)
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(8, 8, 8, 8)
-        root.setSpacing(6)
+        root.setContentsMargins(10, 10, 10, 10)
+        root.setSpacing(8)
 
         head = QHBoxLayout()
-        head.setSpacing(6)
+        head.setSpacing(7)
+
         self.orb = NiraMiniOrb(self)
+        self.orb.setFixedSize(30, 30)
         head.addWidget(self.orb)
 
-        text = QVBoxLayout()
-        text.setSpacing(0)
+        title_box = QVBoxLayout()
+        title_box.setSpacing(0)
+
         title = QLabel("NIRA")
         title.setObjectName("NiraDockTitle")
-        self.state = QLabel("GLOBAL INTERFACE · RESERVED")
+        title_box.addWidget(title)
+
+        self.state = QLabel("TRADEAI THREAD · CONNECTING")
         self.state.setObjectName("NiraDockState")
-        text.addWidget(title)
-        text.addWidget(self.state)
-        head.addLayout(text, 1)
+        title_box.addWidget(self.state)
+
+        head.addLayout(title_box, 1)
+
+        close = QPushButton("×")
+        close.setObjectName("NiraTopSend")
+        close.setFixedSize(30, 30)
+        close.setToolTip("Close NIRA conversation panel")
+        close.clicked.connect(self.close_requested.emit)
+        head.addWidget(close)
+
         root.addLayout(head)
 
-        row = QHBoxLayout()
-        row.setSpacing(4)
-        self.input = QLineEdit()
-        self.input.setObjectName("NiraDockInput")
-        self.input.setPlaceholderText("Ask NIRA…")
-        self.input.setToolTip("NIRA conversation bridge is reserved for a future runtime connection.")
-        self.input.setFixedHeight(31)
-        self.send = QPushButton("›")
-        self.send.setObjectName("NiraDockSend")
-        self.send.setFixedSize(31, 31)
-        self.send.setToolTip("Reserved NIRA action")
-        row.addWidget(self.input, 1)
-        row.addWidget(self.send)
-        root.addLayout(row)
+        self.context = QLabel("Context · Command Center")
+        self.context.setObjectName("BrandSub")
+        self.context.setWordWrap(True)
+        root.addWidget(self.context)
 
-        self.input.returnPressed.connect(self._reserved_action)
-        self.send.clicked.connect(self._reserved_action)
-        self._reset_timer = QTimer(self)
-        self._reset_timer.setSingleShot(True)
-        self._reset_timer.timeout.connect(self._reset_state)
+        self.transcript = QPlainTextEdit()
+        self.transcript.setObjectName("NiraChatTranscript")
+        self.transcript.setReadOnly(True)
+        self.transcript.setMaximumBlockCount(300)
+        self.transcript.setPlaceholderText(
+            "Ask NIRA about TradeAI status, signals, positions, performance, "
+            "risk, or what you are currently viewing."
+        )
+        root.addWidget(self.transcript, 1)
 
-    def _reserved_action(self) -> None:
-        self.state.setText("NIRA BRIDGE · COMING LATER")
-        self._reset_timer.start(1800)
+        self.note = QLabel(
+            "Same NIRA · TradeAI-scoped working thread · TradeAI data is read-only"
+        )
+        self.note.setObjectName("BrandSub")
+        self.note.setWordWrap(True)
+        root.addWidget(self.note)
 
-    def _reset_state(self) -> None:
-        self.state.setText("GLOBAL INTERFACE · RESERVED")
+    def set_state(self, state: str) -> None:
+        clean = str(state or "").strip().upper() or "OFFLINE"
+        self.state.setText(f"TRADEAI THREAD · {clean}")
+
+    def set_context(self, page: str, selected_entity: str = "") -> None:
+        page_text = str(page or "overview").strip().replace("_", " ").title()
+        entity = str(selected_entity or "").strip()
+        if entity:
+            self.context.setText(f"Context · {page_text} · {entity}")
+        else:
+            self.context.setText(f"Context · {page_text}")
+
+    def add_user_message(self, message: str) -> None:
+        self._append_message("YOU", message)
+
+    def add_nira_message(self, message: str) -> None:
+        self._append_message("NIRA", message)
+
+    def add_error_message(self, message: str) -> None:
+        self._append_message("BRIDGE", message)
+
+    def _append_message(self, speaker: str, message: str) -> None:
+        clean = str(message or "").strip()
+        if not clean:
+            return
+
+        if self.transcript.toPlainText().strip():
+            self.transcript.appendPlainText("")
+
+        self.transcript.appendPlainText(f"{speaker}")
+        self.transcript.appendPlainText(clean)
+        bar = self.transcript.verticalScrollBar()
+        bar.setValue(bar.maximum())

@@ -22,11 +22,19 @@ from .components import (
     ElvaraNavButton,
     ElvaraStatusBadge,
     ElvaraWindowButton,
+    NiraSidebarDock,
     NiraTopBar,
 )
 from .control_service import EngineControlService
 from .config_service import TradeAIConfigService
 from .data_service import RuntimeSnapshot, TradeAIDataService
+from .nira_bridge import (
+    NiraBridgeClient,
+    NiraBridgeContext,
+    NiraBridgeProbeWorker,
+    NiraBridgeReply,
+    NiraBridgeWorker,
+)
 from .pages import BacktestPage, ControlPage, LogsPage, OverviewPage, ReportsPage, RiskPage, SettingsPage, SignalsPage
 from .theme import get_app_style, set_theme_mode, theme_mode
 from .widgets import AmbientCanvas, HolographicShell, PulseDot, TradeAILogo
@@ -162,6 +170,9 @@ class TradeAIMainWindow(QMainWindow):
         self.service = TradeAIDataService()
         self.control = EngineControlService()
         self.config = TradeAIConfigService()
+        self.nira_client = NiraBridgeClient()
+        self._nira_worker: NiraBridgeWorker | None = None
+        self._nira_probe_worker: NiraBridgeProbeWorker | None = None
 
         root = QWidget()
         root.setObjectName("AppRoot")
@@ -205,6 +216,12 @@ class TradeAIMainWindow(QMainWindow):
         self.stack = QStackedWidget()
         workspace.addWidget(self.stack, 1)
         body.addLayout(workspace, 1)
+
+        self.nira_dock = NiraSidebarDock()
+        self.nira_dock.hide()
+        self.nira_dock.close_requested.connect(self._hide_nira_panel)
+        body.addWidget(self.nira_dock)
+
         canvas_l.addLayout(body, 1)
         canvas_l.addWidget(self._build_statusbar())
 
@@ -250,6 +267,14 @@ class TradeAIMainWindow(QMainWindow):
         self.control_timer.start(1000)
         self.apply_theme(self.theme_mode)
         self._refresh_engine_status()
+
+        # NIRA may start before or after TradeAI. Keep probing so OFFLINE
+        # automatically recovers to CONNECTED without restarting the dashboard.
+        self.nira_reconnect_timer = QTimer(self)
+        self.nira_reconnect_timer.setInterval(3000)
+        self.nira_reconnect_timer.timeout.connect(self._probe_nira_bridge)
+        self.nira_reconnect_timer.start()
+        QTimer.singleShot(250, self._probe_nira_bridge)
 
         # Full work-area window: visually fullscreen, but Windows taskbar remains usable.
         QTimer.singleShot(0, self.fit_to_available_screen)
@@ -397,10 +422,11 @@ class TradeAIMainWindow(QMainWindow):
         layout.setContentsMargins(4, 3, 8, 3)
         layout.setSpacing(6)
 
-        # Global NIRA reservation lives immediately below the custom window bar.
-        # It is intentionally non-functional until the NIRA runtime is connected.
+        # Shared NIRA lives immediately below the custom window bar.
         self.nira_bar = NiraTopBar()
         self.nira_bar.setMinimumWidth(260)
+        self.nira_bar.message_submitted.connect(self._ask_nira)
+        self.nira_bar.panel_toggled.connect(self._toggle_nira_panel)
         layout.addWidget(self.nira_bar, 1)
 
         self.engine_pill = ElvaraStatusBadge("ENGINE OFFLINE", "danger")
@@ -472,11 +498,121 @@ class TradeAIMainWindow(QMainWindow):
         if app is not None:
             app.processEvents()
 
+    def _toggle_nira_panel(self) -> None:
+        if self.nira_dock.isVisible():
+            self._hide_nira_panel()
+        else:
+            self._show_nira_panel()
+
+    def _show_nira_panel(self) -> None:
+        context = self._nira_context()
+        self.nira_dock.set_context(context.page, context.selected_entity)
+        self.nira_dock.show()
+
+    def _hide_nira_panel(self) -> None:
+        self.nira_dock.hide()
+
+    def _nira_context(self) -> NiraBridgeContext:
+        page_names = (
+            "overview",
+            "control",
+            "signals",
+            "backtest",
+            "risk",
+            "reports",
+            "logs",
+            "settings",
+        )
+
+        index = self.stack.currentIndex()
+        page = page_names[index] if 0 <= index < len(page_names) else "overview"
+        selected = ""
+
+        if index == 0 and hasattr(self, "overview"):
+            selector = getattr(self.overview, "chart_symbol", None)
+            if selector is not None:
+                selected = str(selector.currentText() or "").strip()
+        elif index == 2 and hasattr(self, "signals"):
+            selector = getattr(self.signals, "symbol", None)
+            if selector is not None:
+                selected = str(selector.currentText() or "").strip()
+
+        return NiraBridgeContext(page=page, selected_entity=selected)
+
+    def _probe_nira_bridge(self) -> None:
+        if self._nira_probe_worker is not None and self._nira_probe_worker.isRunning():
+            return
+
+        worker = NiraBridgeProbeWorker(self.nira_client, self)
+        self._nira_probe_worker = worker
+        worker.online.connect(self._nira_probe_online)
+        worker.offline.connect(self._nira_probe_offline)
+        worker.finished.connect(self._nira_probe_finished)
+        worker.start()
+
+    def _nira_probe_online(self, _health: object) -> None:
+        self.nira_bar.set_bridge_state("CONNECTED")
+        self.nira_dock.set_state("CONNECTED")
+
+    def _nira_probe_offline(self, _message: str) -> None:
+        self.nira_bar.set_bridge_state("OFFLINE")
+        self.nira_dock.set_state("OFFLINE")
+
+    def _nira_probe_finished(self) -> None:
+        worker = self._nira_probe_worker
+        self._nira_probe_worker = None
+        if worker is not None:
+            worker.deleteLater()
+
+    def _ask_nira(self, message: str) -> None:
+        if self._nira_worker is not None and self._nira_worker.isRunning():
+            return
+
+        context = self._nira_context()
+        self.nira_dock.set_context(context.page, context.selected_entity)
+        self.nira_dock.set_state("THINKING")
+        self.nira_dock.add_user_message(message)
+        self.nira_dock.show()
+
+        worker = NiraBridgeWorker(
+            self.nira_client,
+            message,
+            context,
+            self,
+        )
+        self._nira_worker = worker
+        worker.succeeded.connect(self._nira_reply)
+        worker.failed.connect(self._nira_error)
+        worker.finished.connect(self._nira_worker_finished)
+        worker.start()
+
+    def _nira_reply(self, response: NiraBridgeReply) -> None:
+        self.nira_bar.finish_request(state="CONNECTED", clear_input=True)
+        self.nira_dock.set_state("CONNECTED")
+        self.nira_dock.add_nira_message(response.reply)
+        self.nira_dock.show()
+
+    def _nira_error(self, message: str) -> None:
+        self.nira_bar.finish_request(state="OFFLINE", clear_input=False)
+        self.nira_dock.set_state("OFFLINE")
+        self.nira_dock.add_error_message(message)
+        self.nira_dock.show()
+
+    def _nira_worker_finished(self) -> None:
+        worker = self._nira_worker
+        self._nira_worker = None
+        if worker is not None:
+            worker.deleteLater()
+
     def set_page(self, index: int):
         self.stack.setCurrentIndex(index)
         for i, button in enumerate(self.nav_buttons):
             button.setChecked(i == index)
         self._refresh_visible_page()
+
+        if self.nira_dock.isVisible():
+            context = self._nira_context()
+            self.nira_dock.set_context(context.page, context.selected_entity)
 
     def _refresh_visible_page(self):
         page = self.stack.currentWidget()
@@ -576,9 +712,23 @@ class TradeAIMainWindow(QMainWindow):
         self.bottom_state.setText("CORE LINK / DATA BRIDGE ERROR · CHECK RUNTIME CONSOLE")
 
     def _stop_ui_worker(self) -> None:
+        if hasattr(self, "nira_reconnect_timer"):
+            self.nira_reconnect_timer.stop()
+
         if hasattr(self, "worker") and self.worker.isRunning():
             self.worker.stop()
             self.worker.wait(2500)
+
+        if self._nira_probe_worker is not None and self._nira_probe_worker.isRunning():
+            self._nira_probe_worker.requestInterruption()
+            self._nira_probe_worker.wait(1000)
+
+        if self._nira_worker is not None and self._nira_worker.isRunning():
+            try:
+                self._nira_worker.succeeded.disconnect()
+                self._nira_worker.failed.disconnect()
+            except (RuntimeError, TypeError):
+                pass
 
     def closeEvent(self, event: QCloseEvent):
         # Once a close path has been explicitly approved, never show the modal again.
