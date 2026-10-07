@@ -39,6 +39,8 @@ def _load_predictions(symbol: str) -> pd.DataFrame:
         )
 
     df = pd.read_csv(path, compression="gzip")
+    if "prediction" not in df.columns and "direction" in df.columns:
+        df["prediction"] = df["direction"]
     required = {
         "decision_time",
         "target_up",
