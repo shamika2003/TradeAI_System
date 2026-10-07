@@ -9,9 +9,7 @@ import os
 # CONFIGURATION
 # ============================================================
 
-ROOT_DIR = Path(
-    r"C:\Users\user\Documents\MULTI-LANG-PROJECT\TradeAI_System"
-)
+ROOT_DIR = Path(__file__).resolve().parent
 
 OUTPUT_FILE = ROOT_DIR / "TRADEAI_SYSTEM_FULL_CODE.md"
 
