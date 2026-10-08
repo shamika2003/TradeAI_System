@@ -1,0 +1,133 @@
+{
+  "dataset_contract_version": "tradeai_dataset_v2",
+  "created_utc": "2026-09-22T05:40:51.140562+00:00",
+  "feature_schema_version": "tradeai_features_v7_structural_meta_20260918",
+  "feature_hash": "a4ddf51f3eb3025dcd5beb6ae05bed61b0733aae50e778bb576b617a2c820159",
+  "target_version": "tradeai_compact_quality_target_v8_20260918",
+  "target_contract": {
+    "target_version": "tradeai_compact_quality_target_v8_20260918",
+    "prediction_type": "directional_quality_barrier_plus_expected_r",
+    "stop_atr_multiplier": 0.75,
+    "take_atr_multiplier": 1.875,
+    "gross_reward_to_risk": 2.5,
+    "max_hold_bars": 48,
+    "min_edge_r": 0.2,
+    "quality_success_r": 1.0,
+    "min_tp_success_r": 1.5,
+    "directional_label_rule": "quality_barrier_hit_before_stop_within_horizon",
+    "model_objective": "separate_buy_sell_quality_probability_plus_expected_net_r",
+    "label_slippage_pips": 0.2,
+    "label_commission_per_lot": 7.0,
+    "historical_ohlc_side": "BID",
+    "class_map": {
+      "SELL": 0,
+      "HOLD": 1,
+      "BUY": 2
+    }
+  },
+  "timeframe": "M5",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "rows": 1914652,
+  "max_target_horizon_bars": 48,
+  "closed_candles_only": true,
+  "causal_h1_alignment": true,
+  "feature_rebuild_source": "existing_causal_m5_aggregated_to_h1",
+  "symbol_ranges": {
+    "EURUSD": {
+      "rows": 479692,
+      "start": "2020-04-15 15:55:00",
+      "end": "2026-09-22 04:35:00",
+      "class_counts": {
+        "0": 159316,
+        "1": 166134,
+        "2": 154242
+      }
+    },
+    "GBPUSD": {
+      "rows": 479720,
+      "start": "2020-04-15 14:55:00",
+      "end": "2026-09-22 04:35:00",
+      "class_counts": {
+        "0": 157112,
+        "1": 164552,
+        "2": 158056
+      }
+    },
+    "USDJPY": {
+      "rows": 479695,
+      "start": "2020-04-15 16:55:00",
+      "end": "2026-09-22 04:35:00",
+      "class_counts": {
+        "0": 154964,
+        "1": 163051,
+        "2": 161680
+      }
+    },
+    "USDCNH": {
+      "rows": 475545,
+      "start": "2020-04-15 22:55:00",
+      "end": "2026-09-22 04:35:00",
+      "class_counts": {
+        "0": 24897,
+        "1": 425321,
+        "2": 25327
+      }
+    }
+  },
+  "stage3_relabelled_utc": "2026-09-18T10:23:18.999057+00:00",
+  "frozen_backfill": {
+    "captured_utc": "2026-09-22T05:40:51.140562+00:00",
+    "frozen_lock_sha256": "e54053fc3a3397afde46328e83a636a64897725818057a30c86251e144a52a5a",
+    "classification": "HISTORICAL_BACKFILL_NOT_REAL_TIME_FORWARD",
+    "explicit_broker_time_offset_hours": 3.0,
+    "new_labelled_rows_by_symbol": {
+      "EURUSD": 3410,
+      "GBPUSD": 3410,
+      "USDJPY": 3410,
+      "USDCNH": 3410
+    },
+    "first_new_time_by_symbol": {
+      "EURUSD": "2026-09-04 08:30:00",
+      "GBPUSD": "2026-09-04 08:30:00",
+      "USDJPY": "2026-09-04 08:30:00",
+      "USDCNH": "2026-09-04 08:30:00"
+    },
+    "last_new_time_by_symbol": {
+      "EURUSD": "2026-09-22 04:35:00",
+      "GBPUSD": "2026-09-22 04:35:00",
+      "USDJPY": "2026-09-22 04:35:00",
+      "USDCNH": "2026-09-22 04:35:00"
+    }
+  },
+  "frozen_backfill_batches": [
+    {
+      "captured_utc": "2026-09-22T05:40:51.140562+00:00",
+      "frozen_lock_sha256": "e54053fc3a3397afde46328e83a636a64897725818057a30c86251e144a52a5a",
+      "classification": "HISTORICAL_BACKFILL_NOT_REAL_TIME_FORWARD",
+      "explicit_broker_time_offset_hours": 3.0,
+      "new_labelled_rows_by_symbol": {
+        "EURUSD": 3410,
+        "GBPUSD": 3410,
+        "USDJPY": 3410,
+        "USDCNH": 3410
+      },
+      "first_new_time_by_symbol": {
+        "EURUSD": "2026-09-04 08:30:00",
+        "GBPUSD": "2026-09-04 08:30:00",
+        "USDJPY": "2026-09-04 08:30:00",
+        "USDCNH": "2026-09-04 08:30:00"
+      },
+      "last_new_time_by_symbol": {
+        "EURUSD": "2026-09-22 04:35:00",
+        "GBPUSD": "2026-09-22 04:35:00",
+        "USDJPY": "2026-09-22 04:35:00",
+        "USDCNH": "2026-09-22 04:35:00"
+      }
+    }
+  ]
+}
