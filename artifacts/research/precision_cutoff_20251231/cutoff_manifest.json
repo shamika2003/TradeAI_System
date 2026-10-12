@@ -1,0 +1,106 @@
+{
+  "study": "RETROSPECTIVE_PRECISION_M5_2025_CUTOFF_V1",
+  "created_utc": "2026-10-10T03:39:03.569501+00:00",
+  "train_exclusive_end": "2026-01-01",
+  "train_inclusive_end": "2025-12-31",
+  "replay_start_inclusive": "2026-01-01",
+  "replay_end_exclusive": "2026-10-01",
+  "replay_warmup_from": "2025-12-01",
+  "source_raw_dir": "E:\\New folder\\Multi-lang-project\\TradeAI_System\\artifacts\\datasets\\direction_m5_raw",
+  "source_broker_profile": "E:\\New folder\\Multi-lang-project\\TradeAI_System\\artifacts\\reports\\broker_profile.json",
+  "broker_profile_sha256": "4359f46c1f1fc07edde486c582d92bd7916980644133cccb2f69f6669bfab14c",
+  "snapshotted_scripts": {
+    "Trade_Bot_Training/__init__.py": "28ea6f2b3096ffbaa9747c15053cf23721be84ab4523addb268f2148ad1b2151",
+    "Trade_Bot_Training/precision_config.py": "d518ba67117b606b4d1a1f24bd46d3be9d95e3d162c601e8c867c99696f2c825",
+    "Trade_Bot_Training/precision_dataset_builder.py": "956c9014bf032ad0b54511ebc87c84c497bb15c85d181d48b5ac0a0754e1d1d3",
+    "Trade_Bot_Training/precision_feature_engine.py": "6e63d02335a9411cac2a01f7bf2ee3596c865cf1d790d2b373fcf5ef6e4abd03",
+    "Trade_Bot_Training/train_precision_model.py": "243853857d1de5a60bfc6105820b2036a2d66c0943c776aedafd6ed371ebe942",
+    "Trade_Bot_Training/precision_workflow.py": "b4cad9c2624fee5abc5fd370a6364d0de283c9b53e43d24f067ebd3609bd1d92",
+    "Trade_Bot_Training/refit_precision_2025.py": "6ea51277f285d425d2b4718eb6f2883c181be8ab89a673d79728e641c79c1e2b"
+  },
+  "raw_files": {
+    "EURUSD_M5.csv.gz": {
+      "train_rows": 443009,
+      "replay_rows": 61920,
+      "holdout_rows": 55776,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:55:00",
+      "last_train": "2025-12-31 19:55:00",
+      "source_sha256": "7a77203bd312f8f4e3fd35fad34d089c799bd1fbbdba89a3509eafe6b6414f3a",
+      "train_sha256": "76582416ec5725694adf151ddce54bc86a78bebf62ecebf2d3329492570a2bdd"
+    },
+    "EURUSD_H1.csv.gz": {
+      "train_rows": 37292,
+      "replay_rows": 5160,
+      "holdout_rows": 4648,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:00:00",
+      "last_train": "2025-12-31 19:00:00",
+      "source_sha256": "4d8b3c47dd0cf891ff2fbba5122dda0ee557bddc3a46babca706c8fd76b27e5f",
+      "train_sha256": "82336adcd5fbc4bfd2b75aebac71cfaa76c67511f0f7defd26805a825ee64850"
+    },
+    "GBPUSD_M5.csv.gz": {
+      "train_rows": 443012,
+      "replay_rows": 61912,
+      "holdout_rows": 55772,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:55:00",
+      "last_train": "2025-12-31 19:55:00",
+      "source_sha256": "5fa028b5be6b897073ff543a7541216a28fe5d8375832f01a8f03e50e077746d",
+      "train_sha256": "60420e732a4583b144097a6d964c88b47d025528e103ce434591d6d17e1c4f1e"
+    },
+    "GBPUSD_H1.csv.gz": {
+      "train_rows": 37292,
+      "replay_rows": 5160,
+      "holdout_rows": 4648,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:00:00",
+      "last_train": "2025-12-31 19:00:00",
+      "source_sha256": "8a1f0edb213ae0f30910d0d639bbf74e6bfef63f26805d5e33c8781733d2bf9c",
+      "train_sha256": "d6a459a1548405d289b40990f6831294a09ffbda9fe7caf4a2157f44762f2a8d"
+    },
+    "USDJPY_M5.csv.gz": {
+      "train_rows": 443015,
+      "replay_rows": 61917,
+      "holdout_rows": 55773,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:55:00",
+      "last_train": "2025-12-31 19:55:00",
+      "source_sha256": "c36dc26d436bdb7719c1880bc1297e78e90446e9d4256b21da8042a20ed84c57",
+      "train_sha256": "29e264ee642192a96d36c582ca8dcc5c807f465ed12ef4f1799ea1c76328c0d4"
+    },
+    "USDJPY_H1.csv.gz": {
+      "train_rows": 37292,
+      "replay_rows": 5160,
+      "holdout_rows": 4648,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:00:00",
+      "last_train": "2025-12-31 19:00:00",
+      "source_sha256": "ddbffa74e101cd0b473c803405e2888bc1c923d789854df38b4c5be240cf1431",
+      "train_sha256": "c629caa95462c1c7724145197ac22cc5bc26f975ec0a11528587ed8d4e069420"
+    },
+    "USDCNH_M5.csv.gz": {
+      "train_rows": 443010,
+      "replay_rows": 61918,
+      "holdout_rows": 55774,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:55:00",
+      "last_train": "2025-12-31 19:55:00",
+      "source_sha256": "f23a15df6de53e1df2f9d0740817d679f8d3d183e5a77d4a2bed0f9868d8e355",
+      "train_sha256": "9b3792edd9b169197ce9693a6b2251215991323169c148e7776201259f8c542f"
+    },
+    "USDCNH_H1.csv.gz": {
+      "train_rows": 37289,
+      "replay_rows": 5160,
+      "holdout_rows": 4648,
+      "first_holdout": "2026-01-02 08:00:00",
+      "last_holdout": "2026-09-30 23:00:00",
+      "last_train": "2025-12-31 19:00:00",
+      "source_sha256": "0dcace03d431ca218db0e1526db0d0e3f3ff2788e625375e8c902094ba1221ad",
+      "train_sha256": "0c87c814d1e799579468ff26c66f32e20af6935b0b944f21c30fb8d822620eb3"
+    }
+  },
+  "replay_archive_sha256": "45115b693eef6799df22a425eeb6a04204599fd9030b43bf635db4b8e41eb0b1",
+  "label_boundary": "All labels generated inside isolated pre-2026 raw history, including 6 future M5 bars",
+  "classification": "RETROSPECTIVE_2026_HOLDOUT_NOT_REALTIME_FORWARD"
+}

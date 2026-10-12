@@ -1,0 +1,204 @@
+{
+  "symbol": "USDJPY",
+  "created_utc": "2026-10-10T03:43:37.256072+00:00",
+  "model_type": "three_class_selective_xgboost",
+  "class_map": {
+    "DOWN": 0,
+    "HOLD": 1,
+    "UP": 2
+  },
+  "action_confidence": 0.55,
+  "selected_trees": 269,
+  "feature_columns": [
+    "body_atr",
+    "range_atr",
+    "close_loc",
+    "upper_wick_atr",
+    "lower_wick_atr",
+    "ret_1",
+    "ret_atr_1",
+    "ret_2",
+    "ret_atr_2",
+    "ret_3",
+    "ret_atr_3",
+    "ret_6",
+    "ret_atr_6",
+    "ret_12",
+    "ret_atr_12",
+    "ret_24",
+    "ret_atr_24",
+    "ret_48",
+    "ret_atr_48",
+    "ret_96",
+    "ret_atr_96",
+    "ret_192",
+    "ret_atr_192",
+    "ret_288",
+    "ret_atr_288",
+    "vol_6",
+    "vol_12",
+    "vol_24",
+    "vol_48",
+    "vol_96",
+    "vol_192",
+    "vol_288",
+    "ema_dist_5",
+    "ema_slope_5",
+    "ema_dist_9",
+    "ema_slope_9",
+    "ema_dist_20",
+    "ema_slope_20",
+    "ema_dist_50",
+    "ema_slope_50",
+    "ema_dist_100",
+    "ema_slope_100",
+    "ema_dist_200",
+    "ema_slope_200",
+    "rsi14",
+    "atr_pct",
+    "range_pos_24",
+    "range_width_atr_24",
+    "range_pos_48",
+    "range_width_atr_48",
+    "range_pos_96",
+    "range_width_atr_96",
+    "range_pos_192",
+    "range_width_atr_192",
+    "range_pos_288",
+    "range_width_atr_288",
+    "vol_log",
+    "vol_z_24",
+    "vol_z_96",
+    "vol_z_288",
+    "tod_sin",
+    "tod_cos",
+    "dow_sin",
+    "dow_cos"
+  ],
+  "split": {
+    "train_rows": 308557,
+    "validation_rows": 66114,
+    "test_rows": 66122,
+    "test_start": "2025-02-10 14:45:00+00:00",
+    "test_end": "2025-12-31 19:30:00+00:00",
+    "purge_bars": 6
+  },
+  "final_test": {
+    "rows": 66122,
+    "three_class_accuracy": 0.3838661867457125,
+    "three_class_balanced_accuracy": 0.3836000493129708,
+    "confusion_matrix": [
+      [
+        4466,
+        7220,
+        10503
+      ],
+      [
+        2889,
+        9350,
+        8434
+      ],
+      [
+        3751,
+        7943,
+        11566
+      ]
+    ],
+    "action_rows": 645,
+    "action_coverage": 0.009754695865218838,
+    "directional_accuracy": 0.834108527131783,
+    "mean_signed_move_atr": 1.686514756854537,
+    "median_signed_move_atr": 1.42531418800354,
+    "sides": {
+      "DOWN": {
+        "rows": 307,
+        "directional_accuracy": 0.9022801302931596
+      },
+      "UP": {
+        "rows": 338,
+        "directional_accuracy": 0.772189349112426
+      }
+    },
+    "monthly": [
+      {
+        "month": "2025-02",
+        "rows": 36,
+        "directional_accuracy": 0.9166666666666666,
+        "mean_signed_move_atr": 1.9619110094176397
+      },
+      {
+        "month": "2025-03",
+        "rows": 28,
+        "directional_accuracy": 0.32142857142857145,
+        "mean_signed_move_atr": -0.7671453415948365
+      },
+      {
+        "month": "2025-04",
+        "rows": 44,
+        "directional_accuracy": 0.6818181818181818,
+        "mean_signed_move_atr": 0.933341330086643
+      },
+      {
+        "month": "2025-05",
+        "rows": 44,
+        "directional_accuracy": 0.6818181818181818,
+        "mean_signed_move_atr": 1.5063574131239543
+      },
+      {
+        "month": "2025-06",
+        "rows": 48,
+        "directional_accuracy": 0.8958333333333334,
+        "mean_signed_move_atr": 1.709143341286108
+      },
+      {
+        "month": "2025-07",
+        "rows": 69,
+        "directional_accuracy": 0.8840579710144928,
+        "mean_signed_move_atr": 1.5281948209132836
+      },
+      {
+        "month": "2025-08",
+        "rows": 70,
+        "directional_accuracy": 0.8428571428571429,
+        "mean_signed_move_atr": 2.371735269469874
+      },
+      {
+        "month": "2025-09",
+        "rows": 92,
+        "directional_accuracy": 0.9021739130434783,
+        "mean_signed_move_atr": 2.2041008902470702
+      },
+      {
+        "month": "2025-10",
+        "rows": 73,
+        "directional_accuracy": 0.8493150684931506,
+        "mean_signed_move_atr": 1.8545372109502962
+      },
+      {
+        "month": "2025-11",
+        "rows": 66,
+        "directional_accuracy": 0.9090909090909091,
+        "mean_signed_move_atr": 1.323917985301126
+      },
+      {
+        "month": "2025-12",
+        "rows": 75,
+        "directional_accuracy": 0.9066666666666666,
+        "mean_signed_move_atr": 2.0301822596788406
+      }
+    ]
+  },
+  "production_ready_by_historical_gate": true,
+  "production_gate_failures": [],
+  "important": "Full pre-2026 refit uses all available 2025 data including former internal test. Stored final_test / historical gate refer ONLY to the earlier initial candidate. 2026 holdout remains unseen by fit and hyperparameter selection; do not tune on it.",
+  "final_refit_on_all_pre2026": true,
+  "final_refit_created_utc": "2026-10-10T03:45:55.416060+00:00",
+  "final_refit_train_rows": 440805,
+  "final_refit_last_decision_time": "2025-12-31 19:30:00+00:00",
+  "final_refit_first_decision_time": "2020-01-24 19:15:00+00:00",
+  "final_refit_tree_count_selected_without_2026": 269,
+  "initial_candidate_sha256": "e2e92d62a5fde647ad764a8218b274ed6a05c3156ff1509325b3b86838593b6e",
+  "internal_pre2026_test_metrics_apply_to_initial_candidate_only": true,
+  "production_gate_is_pre_refit_internal_candidate_gate": true,
+  "post_refit_validation": "2026 RETROSPECTIVE HOLDOUT REPLAY ONLY; NOT REALTIME FORWARD"
+}

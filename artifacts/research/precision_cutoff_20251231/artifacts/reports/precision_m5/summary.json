@@ -1,0 +1,37 @@
+{
+  "created_utc": "2026-10-10T03:44:12.739876+00:00",
+  "symbols": {
+    "EURUSD": {
+      "directional_accuracy": 0.8728323699421965,
+      "action_rows": 346,
+      "action_coverage": 0.005232355921181968,
+      "mean_signed_move_atr": 1.4953701866284617,
+      "historical_gate": true,
+      "gate_failures": []
+    },
+    "GBPUSD": {
+      "directional_accuracy": 0.8642857142857143,
+      "action_rows": 980,
+      "action_coverage": 0.014822209114146135,
+      "mean_signed_move_atr": 1.483937723280824,
+      "historical_gate": true,
+      "gate_failures": []
+    },
+    "USDJPY": {
+      "directional_accuracy": 0.834108527131783,
+      "action_rows": 645,
+      "action_coverage": 0.009754695865218838,
+      "mean_signed_move_atr": 1.686514756854537,
+      "historical_gate": true,
+      "gate_failures": []
+    },
+    "USDCNH": {
+      "directional_accuracy": 0.8701030927835052,
+      "action_rows": 1455,
+      "action_coverage": 0.022025764846576545,
+      "mean_signed_move_atr": 3.9239334666211785,
+      "historical_gate": true,
+      "gate_failures": []
+    }
+  }
+}

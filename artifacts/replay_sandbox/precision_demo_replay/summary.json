@@ -1,0 +1,102 @@
+{
+  "status": "SIMULATION_ONLY_NO_MT5_ORDER_ACCESS",
+  "strategy": "TRADEAI_FROZEN_PRECISION_M5_DEMO_HORIZON_POLICY",
+  "evaluation_label": "EXPLORATORY_IN_SAMPLE_OR_HOLDOUT_REUSE",
+  "warning": "Candle-only simulated execution is NOT a live/forward guarantee; actual MT5 fills, spreads, swaps, stop-outs and outages can differ. All replayed candles PRECEDE these model creation timestamps: exploratory only, NOT independent forward evidence.",
+  "data_sha256": "a23a8de7572dbdcf6377cee0f41c3fde6a30d0e883ad7d420885745a67242b78",
+  "model_sha256": {
+    "EURUSD": {
+      "metadata": "feb2c64f46536b7d8c17f2409ea7b9af0f0a8326ef44ddc1049b015121568b89",
+      "model": "b0e278f82850a812acfae84a728d03c85f206fb369f91b56bbd1c47e0f4aaf15"
+    },
+    "GBPUSD": {
+      "metadata": "9e14cc766af106d4e0723e43c4f8c8bbc9661193811a14e09ac2a8b2b1a7ab19",
+      "model": "caaf12aef86c1756cb552ef1ac48075e6eb857eb5b6e371fa5f6f15f499ec106"
+    },
+    "USDJPY": {
+      "metadata": "eac9e0eb7ad0840619c241479b09a607a04d20d6c62f7e3377fc83f4d9b91de6",
+      "model": "da55dc9f2c3d08c0cf42e2d459a737147097b4a643a71336e5d978d229c9216a"
+    },
+    "USDCNH": {
+      "metadata": "ed40309a6b68a8e9a09d88816feea1cba5f820df17bc025f1c451205a8cb4313",
+      "model": "fcab13ae40d4c7f86db658184cdaa601c91699096570a9fb4c4932763734e1a3"
+    }
+  },
+  "model_created_utc": {
+    "EURUSD": "2026-10-07T02:50:28.342579+00:00",
+    "GBPUSD": "2026-10-07T02:51:23.800222+00:00",
+    "USDJPY": "2026-10-07T02:52:14.021012+00:00",
+    "USDCNH": "2026-10-07T02:53:07.606291+00:00"
+  },
+  "model_gate": {
+    "EURUSD": true,
+    "GBPUSD": true,
+    "USDJPY": true,
+    "USDCNH": true
+  },
+  "model_action_confidence": {
+    "EURUSD": 0.55,
+    "GBPUSD": 0.55,
+    "USDJPY": 0.55,
+    "USDCNH": 0.55
+  },
+  "model_lock_time": null,
+  "symbol_decisions": {
+    "EURUSD": {
+      "scored": 2694,
+      "tradeable": 9,
+      "invalid_features": 0
+    },
+    "GBPUSD": {
+      "scored": 2694,
+      "tradeable": 29,
+      "invalid_features": 0
+    },
+    "USDJPY": {
+      "scored": 2694,
+      "tradeable": 23,
+      "invalid_features": 0
+    },
+    "USDCNH": {
+      "scored": 2694,
+      "tradeable": 68,
+      "invalid_features": 0
+    }
+  },
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "start_utc": "2026-09-22T00:00:00+00:00",
+  "end_exclusive_utc": "2026-10-06T00:00:00+00:00",
+  "last_historical_candle_utc": "2026-10-05T08:20:00+00:00",
+  "all_replayed_bars_precede_model_creation": true,
+  "candles_replayed": 10772,
+  "decision_count": 10764,
+  "qualified_signals": 128,
+  "filled_entries": 45,
+  "rejected_entries": 83,
+  "trades_closed": 45,
+  "starting_balance_usd": 150.0,
+  "ending_balance_usd": 150.96708899,
+  "net_profit_usd": 0.96708899,
+  "return_pct": 0.644726,
+  "max_drawdown_pct": 2.603033,
+  "max_drawdown_usd": 3.91868139,
+  "win_rate_pct": 33.3333,
+  "profit_factor": 1.190377,
+  "execution_loop_wall_seconds": 0.051,
+  "total_wall_seconds": 9.845,
+  "commission_usd": 3.15,
+  "zero_spread_possible": false,
+  "equity_rows_sampled_every": 12,
+  "spread_floor_pips": 0.8,
+  "spread_multiplier": 1.0,
+  "slippage_multiplier": 1.0,
+  "leverage_ASSUMED": 100.0,
+  "stopout_level_ASSUMED_pct": 50.0,
+  "max_positions": 3,
+  "execution": "BROKER_MIN_LOT_OPEN_NEXT_M5; NO_SL_TP; CLOSE_AFTER_6TH_M5; NO_REVERSAL"
+}

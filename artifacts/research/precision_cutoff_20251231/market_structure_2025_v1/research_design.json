@@ -1,0 +1,45 @@
+{
+  "study": "TRADEAI_H1_NET_R_STRUCTURE_V1",
+  "params": {
+    "horizon_bars": 24,
+    "stop_atr_mult": 0.85,
+    "reward_to_risk": 1.8,
+    "risk_fraction": 0.015,
+    "max_drawdown": 0.12,
+    "daily_loss_cap": 0.03,
+    "assumed_leverage": 100.0,
+    "validation_thresholds": [
+      0.15,
+      0.25,
+      0.4,
+      0.6
+    ],
+    "feature_names": [
+      "h1_ema_20_50_atr",
+      "h1_close_ema20_atr",
+      "h1_ret_3_atr",
+      "h1_ret_12_atr",
+      "h1_range_pos_24",
+      "h1_atr_rel_50",
+      "h1_body_atr",
+      "h1_wick_ratio",
+      "m5_ret_3_atr",
+      "m5_range_atr",
+      "m5_rsi_14",
+      "m5_relative_vol",
+      "spread_pips",
+      "hour_sin",
+      "hour_cos",
+      "weekday_sin",
+      "weekday_cos"
+    ]
+  },
+  "caveats": [
+    "Historical BID M5 OHLC and bar-based spreads, not tick/true fills",
+    "Stop-first ambiguous intrabar event ordering; gaps approximated",
+    "One symbol per account; multi-symbol portfolio interaction not included",
+    "No intratrade mark-to-market, margin stopout, financing/swap or latency simulation",
+    "2025 test must not be used to adjust model/thresholds without a fresh new test",
+    "Never automatically promotes models; no MT5 imports/orders"
+  ]
+}

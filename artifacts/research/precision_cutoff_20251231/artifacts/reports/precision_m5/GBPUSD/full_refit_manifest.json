@@ -1,0 +1,10 @@
+{
+  "symbol": "GBPUSD",
+  "rows": 440776,
+  "first_decision": "2020-01-24 18:15:00+00:00",
+  "last_decision": "2025-12-31 19:30:00+00:00",
+  "fitted_trees": 167,
+  "baseline_model_sha256": "18e4e1c206ff3b47d9b9233b84cb9f19a8c380d14280be84ab164a4090002318",
+  "refitted_model_sha256": "d469b4a22303f383f81e80c280a557044a1e9d784fea6d7d562224a1de1925ec",
+  "original_gate_passed": true
+}

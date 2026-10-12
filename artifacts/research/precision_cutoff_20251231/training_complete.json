@@ -1,0 +1,56 @@
+{
+  "trained_at_utc": "2026-10-10T03:46:24.018904+00:00",
+  "classification": "RETROSPECTIVE_2026_HOLDOUT_NOT_REALTIME_FORWARD",
+  "train_exclusive_end": "2026-01-01",
+  "symbols": {
+    "EURUSD": {
+      "final_refit_train_rows": 440837,
+      "final_refit_last_decision_time": "2025-12-31 19:30:00+00:00",
+      "model_gate_pre_refit_candidate_only": true,
+      "model_sha256": "2c6cdc90754df580d76a5b4f03b6ee494fc97c124add43ab779b1a2371d76311",
+      "metadata_sha256": "b00b5054405159db996b07da05f29de35d796551266af8da5bc473e2859ebb45",
+      "pre2026_test_end": "2025-12-31 19:30:00+00:00",
+      "production_ready_by_historical_gate": true,
+      "historical_gate_failures": []
+    },
+    "GBPUSD": {
+      "final_refit_train_rows": 440776,
+      "final_refit_last_decision_time": "2025-12-31 19:30:00+00:00",
+      "model_gate_pre_refit_candidate_only": true,
+      "model_sha256": "d469b4a22303f383f81e80c280a557044a1e9d784fea6d7d562224a1de1925ec",
+      "metadata_sha256": "af525edaf101a7d17c5664cdae67abf7961680453a1fc3bf06aabbbe02d4237e",
+      "pre2026_test_end": "2025-12-31 19:30:00+00:00",
+      "production_ready_by_historical_gate": true,
+      "historical_gate_failures": []
+    },
+    "USDJPY": {
+      "final_refit_train_rows": 440805,
+      "final_refit_last_decision_time": "2025-12-31 19:30:00+00:00",
+      "model_gate_pre_refit_candidate_only": true,
+      "model_sha256": "704f9a4e34dbe57043defb8bb1f05e367e0168bc27a3e243bdc7c1b7ea8a6c25",
+      "metadata_sha256": "67126d23bafa259c80087809c4dad0680a4852d7291a84b9e8dc4c3ac628973b",
+      "pre2026_test_end": "2025-12-31 19:30:00+00:00",
+      "production_ready_by_historical_gate": true,
+      "historical_gate_failures": []
+    },
+    "USDCNH": {
+      "final_refit_train_rows": 440384,
+      "final_refit_last_decision_time": "2025-12-31 19:30:00+00:00",
+      "model_gate_pre_refit_candidate_only": true,
+      "model_sha256": "5430899b367c50f92290434ae7568bfe1f32de29d0c396b15939740deb2da3fd",
+      "metadata_sha256": "3741dcc5ca1b674f8c8ac87a9a19710837040e3313107cbc83edd6986eb58d09",
+      "pre2026_test_end": "2025-12-31 19:30:00+00:00",
+      "production_ready_by_historical_gate": true,
+      "historical_gate_failures": []
+    }
+  },
+  "training_script_hashes": {
+    "Trade_Bot_Training/__init__.py": "28ea6f2b3096ffbaa9747c15053cf23721be84ab4523addb268f2148ad1b2151",
+    "Trade_Bot_Training/precision_config.py": "d518ba67117b606b4d1a1f24bd46d3be9d95e3d162c601e8c867c99696f2c825",
+    "Trade_Bot_Training/precision_dataset_builder.py": "956c9014bf032ad0b54511ebc87c84c497bb15c85d181d48b5ac0a0754e1d1d3",
+    "Trade_Bot_Training/precision_feature_engine.py": "6e63d02335a9411cac2a01f7bf2ee3596c865cf1d790d2b373fcf5ef6e4abd03",
+    "Trade_Bot_Training/train_precision_model.py": "243853857d1de5a60bfc6105820b2036a2d66c0943c776aedafd6ed371ebe942",
+    "Trade_Bot_Training/precision_workflow.py": "b4cad9c2624fee5abc5fd370a6364d0de283c9b53e43d24f067ebd3609bd1d92",
+    "Trade_Bot_Training/refit_precision_2025.py": "6ea51277f285d425d2b4718eb6f2883c181be8ab89a673d79728e641c79c1e2b"
+  }
+}

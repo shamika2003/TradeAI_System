@@ -1,0 +1,157 @@
+{
+  "status": "SIMULATION_ONLY_NO_MT5_ORDER_ACCESS",
+  "strategy": "FROZEN_PRECISION_M5_PLUS_2025_COST_RISK_FILTERS",
+  "evaluation_label": "EXPLORATORY_2026_REPLAY_AFTER_BASELINE_EXAMINED_NOT_INDEPENDENT_TEST",
+  "warning": "Candle-only simulated execution is NOT a live/forward guarantee; actual MT5 fills, spreads, swaps, stop-outs and outages can differ. All replayed candles PRECEDE these model creation timestamps: exploratory only, NOT independent forward evidence.",
+  "data_sha256": "45115b693eef6799df22a425eeb6a04204599fd9030b43bf635db4b8e41eb0b1",
+  "model_sha256": {
+    "EURUSD": {
+      "metadata": "b00b5054405159db996b07da05f29de35d796551266af8da5bc473e2859ebb45",
+      "model": "2c6cdc90754df580d76a5b4f03b6ee494fc97c124add43ab779b1a2371d76311"
+    },
+    "GBPUSD": {
+      "metadata": "af525edaf101a7d17c5664cdae67abf7961680453a1fc3bf06aabbbe02d4237e",
+      "model": "d469b4a22303f383f81e80c280a557044a1e9d784fea6d7d562224a1de1925ec"
+    },
+    "USDJPY": {
+      "metadata": "67126d23bafa259c80087809c4dad0680a4852d7291a84b9e8dc4c3ac628973b",
+      "model": "704f9a4e34dbe57043defb8bb1f05e367e0168bc27a3e243bdc7c1b7ea8a6c25"
+    },
+    "USDCNH": {
+      "metadata": "3741dcc5ca1b674f8c8ac87a9a19710837040e3313107cbc83edd6986eb58d09",
+      "model": "5430899b367c50f92290434ae7568bfe1f32de29d0c396b15939740deb2da3fd"
+    }
+  },
+  "model_created_utc": {
+    "EURUSD": "2026-10-10T03:42:18.087456+00:00",
+    "GBPUSD": "2026-10-10T03:42:51.543792+00:00",
+    "USDJPY": "2026-10-10T03:43:37.256072+00:00",
+    "USDCNH": "2026-10-10T03:44:10.738453+00:00"
+  },
+  "model_gate": {
+    "EURUSD": true,
+    "GBPUSD": true,
+    "USDJPY": true,
+    "USDCNH": true
+  },
+  "model_action_confidence": {
+    "EURUSD": 0.55,
+    "GBPUSD": 0.55,
+    "USDJPY": 0.55,
+    "USDCNH": 0.55
+  },
+  "model_lock_time": null,
+  "symbol_decisions": {
+    "EURUSD": {
+      "scored": 55775,
+      "tradeable": 496,
+      "invalid_features": 0
+    },
+    "GBPUSD": {
+      "scored": 55771,
+      "tradeable": 1039,
+      "invalid_features": 0
+    },
+    "USDJPY": {
+      "scored": 55772,
+      "tradeable": 892,
+      "invalid_features": 0
+    },
+    "USDCNH": {
+      "scored": 55773,
+      "tradeable": 1681,
+      "invalid_features": 0
+    }
+  },
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCNH"
+  ],
+  "start_utc": "2026-01-01T00:00:00+00:00",
+  "end_exclusive_utc": "2026-10-01T00:00:00+00:00",
+  "last_historical_candle_utc": "2026-09-30T23:55:00+00:00",
+  "all_replayed_bars_precede_model_creation": true,
+  "candles_replayed": 223095,
+  "decision_count": 222933,
+  "qualified_signals": 4086,
+  "cost_policy_rejected": 4084,
+  "cost_policy_enabled": true,
+  "filled_entries": 2,
+  "rejected_entries": 4084,
+  "trades_closed": 2,
+  "starting_balance_usd": 150.0,
+  "ending_balance_usd": 147.89039809,
+  "net_profit_usd": -2.10960191,
+  "return_pct": -1.406401,
+  "max_drawdown_pct": 1.506947,
+  "max_drawdown_usd": 2.2627286,
+  "win_rate_pct": 0.0,
+  "profit_factor": 0.0,
+  "execution_loop_wall_seconds": 0.927,
+  "total_wall_seconds": 45.749,
+  "commission_usd": 0.14,
+  "zero_spread_possible": false,
+  "equity_rows_sampled_every": 12,
+  "spread_floor_pips": 0.8,
+  "spread_multiplier": 1.0,
+  "slippage_multiplier": 1.0,
+  "leverage_ASSUMED": 100.0,
+  "stopout_level_ASSUMED_pct": 50.0,
+  "max_positions": 3,
+  "execution": "BROKER_MIN_LOT_OPEN_NEXT_M5; NO_SL_TP; CLOSE_AFTER_6TH_M5; NO_REVERSAL",
+  "cost_policy": {
+    "name": "COST_AWARE_2025_SPREAD_SESSION_V1",
+    "evaluation_classification": "2026_REPLAY_EXPLORATORY_HOLDOUT_ALREADY_INSPECTED",
+    "development_start_inclusive": "2025-01-01",
+    "development_end_exclusive": "2026-01-01",
+    "blackout_hours_in_archived_timestamp_clock": [
+      23,
+      0
+    ],
+    "blackout_entry_and_projected_30m_exit": true,
+    "history_source": "isolated pre-2026 raw M5 candles only",
+    "spread_filter_observation": "PREVIOUS_COMPLETED_M5_CANDLE_SPREAD_ONLY",
+    "spread_quantile": 0.95,
+    "absolute_risk_budget_pips": 10.0,
+    "model_hashes": {
+      "EURUSD": "2c6cdc90754df580d76a5b4f03b6ee494fc97c124add43ab779b1a2371d76311",
+      "GBPUSD": "d469b4a22303f383f81e80c280a557044a1e9d784fea6d7d562224a1de1925ec",
+      "USDJPY": "704f9a4e34dbe57043defb8bb1f05e367e0168bc27a3e243bdc7c1b7ea8a6c25",
+      "USDCNH": "5430899b367c50f92290434ae7568bfe1f32de29d0c396b15939740deb2da3fd"
+    },
+    "archive_sha256": "45115b693eef6799df22a425eeb6a04204599fd9030b43bf635db4b8e41eb0b1",
+    "pairs": {
+      "EURUSD": {
+        "nonblackout_2025_samples": 68136,
+        "median_nonblackout_spread_pips": 1.8,
+        "p95_nonblackout_spread_pips": 1.9,
+        "max_last_closed_spread_pips": 1.9,
+        "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+      },
+      "GBPUSD": {
+        "nonblackout_2025_samples": 68136,
+        "median_nonblackout_spread_pips": 2.0,
+        "p95_nonblackout_spread_pips": 2.3,
+        "max_last_closed_spread_pips": 2.3,
+        "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+      },
+      "USDJPY": {
+        "nonblackout_2025_samples": 68136,
+        "median_nonblackout_spread_pips": 2.0,
+        "p95_nonblackout_spread_pips": 2.3,
+        "max_last_closed_spread_pips": 2.3,
+        "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+      },
+      "USDCNH": {
+        "nonblackout_2025_samples": 68136,
+        "median_nonblackout_spread_pips": 37.0,
+        "p95_nonblackout_spread_pips": 43.0,
+        "max_last_closed_spread_pips": 10.0,
+        "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+      }
+    }
+  },
+  "research_caveat": "No 2026 data used in constructing the fixed cost policy. However 2026 baseline results were already examined before proposing this policy, so this rerun is NOT a fresh blind holdout. Previous completed M5 bar spread is used for gating; candle-period bid/ask assumptions remain approximate and actual executable opening spreads are not verified ticks."
+}

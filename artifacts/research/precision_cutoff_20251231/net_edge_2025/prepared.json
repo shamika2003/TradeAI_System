@@ -1,0 +1,113 @@
+{
+  "study": "NET_EDGE_COST_AWARE_M5_2025_V1",
+  "status": "PREPARED_NO_NEW_MODEL_TRAINED",
+  "account_currency": "USD",
+  "models_unchanged": true,
+  "classification": "2025_DEVELOPMENT_DATA_ONLY__2026_ALREADY_INSPECTED",
+  "source_manifest_sha256": "50b185ec4f750834fff4d6fb497716e4d45d9b992b8927b04133e7edc402b6fe",
+  "source_cost_policy_sha256": "f6aae498ad435ebf5c8b3fc5f5c69b4ccf0c3a41dba22085e8b3b7cfae838390",
+  "blackout_hours_historical_clock": [
+    23,
+    0
+  ],
+  "split_boundaries": {
+    "train_end_exclusive": "2025-08-01",
+    "validation_end_exclusive": "2025-10-01",
+    "test_end_exclusive": "2026-01-01"
+  },
+  "minimum_label_net_pips": 1.0,
+  "action_thresholds_frozen_grid": [
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65
+  ],
+  "threshold_selection": "lowest threshold whose validation-only nonoverlapping trades >=30 and mean realized net pips >= +0.5, otherwise abstain",
+  "feature_contract": "Same causal completed-bar precision M5 features plus completed-bar spread; no future prices or spreads as features",
+  "labels": "Fixed 30-minute BUY/SELL actual future fill-equivalent net pips vs 1-pip floor, else HOLD",
+  "pairs": {
+    "EURUSD": {
+      "spread_cap_pips": 1.9,
+      "features": 65,
+      "feature_sha256": "cf00f879617d2273599abd28a636bb4624c5386b8f678501398fb99c07c53ef8",
+      "samples": {
+        "train": 37942,
+        "validation": 9827,
+        "test": 16327
+      },
+      "label_distribution": {
+        "train": {
+          "SELL": 10508,
+          "HOLD": 16551,
+          "BUY": 10883
+        },
+        "validation": {
+          "SELL": 2365,
+          "HOLD": 5271,
+          "BUY": 2191
+        },
+        "test": {
+          "SELL": 3111,
+          "HOLD": 10124,
+          "BUY": 3092
+        }
+      }
+    },
+    "GBPUSD": {
+      "spread_cap_pips": 2.3,
+      "features": 65,
+      "feature_sha256": "cf00f879617d2273599abd28a636bb4624c5386b8f678501398fb99c07c53ef8",
+      "samples": {
+        "train": 37051,
+        "validation": 10154,
+        "test": 15908
+      },
+      "label_distribution": {
+        "train": {
+          "SELL": 10441,
+          "HOLD": 15689,
+          "BUY": 10921
+        },
+        "validation": {
+          "SELL": 2529,
+          "HOLD": 5118,
+          "BUY": 2507
+        },
+        "test": {
+          "SELL": 3917,
+          "HOLD": 8103,
+          "BUY": 3888
+        }
+      }
+    },
+    "USDJPY": {
+      "spread_cap_pips": 2.3,
+      "features": 65,
+      "feature_sha256": "cf00f879617d2273599abd28a636bb4624c5386b8f678501398fb99c07c53ef8",
+      "samples": {
+        "train": 37736,
+        "validation": 10448,
+        "test": 16150
+      },
+      "label_distribution": {
+        "train": {
+          "SELL": 12886,
+          "HOLD": 11656,
+          "BUY": 13194
+        },
+        "validation": {
+          "SELL": 2871,
+          "HOLD": 4549,
+          "BUY": 3028
+        },
+        "test": {
+          "SELL": 4373,
+          "HOLD": 6882,
+          "BUY": 4895
+        }
+      }
+    }
+  }
+}

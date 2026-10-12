@@ -1,0 +1,52 @@
+{
+  "name": "COST_AWARE_2025_SPREAD_SESSION_V1",
+  "evaluation_classification": "2026_REPLAY_EXPLORATORY_HOLDOUT_ALREADY_INSPECTED",
+  "development_start_inclusive": "2025-01-01",
+  "development_end_exclusive": "2026-01-01",
+  "blackout_hours_in_archived_timestamp_clock": [
+    23,
+    0
+  ],
+  "blackout_entry_and_projected_30m_exit": true,
+  "history_source": "isolated pre-2026 raw M5 candles only",
+  "spread_filter_observation": "PREVIOUS_COMPLETED_M5_CANDLE_SPREAD_ONLY",
+  "spread_quantile": 0.95,
+  "absolute_risk_budget_pips": 10.0,
+  "model_hashes": {
+    "EURUSD": "2c6cdc90754df580d76a5b4f03b6ee494fc97c124add43ab779b1a2371d76311",
+    "GBPUSD": "d469b4a22303f383f81e80c280a557044a1e9d784fea6d7d562224a1de1925ec",
+    "USDJPY": "704f9a4e34dbe57043defb8bb1f05e367e0168bc27a3e243bdc7c1b7ea8a6c25",
+    "USDCNH": "5430899b367c50f92290434ae7568bfe1f32de29d0c396b15939740deb2da3fd"
+  },
+  "archive_sha256": "45115b693eef6799df22a425eeb6a04204599fd9030b43bf635db4b8e41eb0b1",
+  "pairs": {
+    "EURUSD": {
+      "nonblackout_2025_samples": 68136,
+      "median_nonblackout_spread_pips": 1.8,
+      "p95_nonblackout_spread_pips": 1.9,
+      "max_last_closed_spread_pips": 1.9,
+      "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+    },
+    "GBPUSD": {
+      "nonblackout_2025_samples": 68136,
+      "median_nonblackout_spread_pips": 2.0,
+      "p95_nonblackout_spread_pips": 2.3,
+      "max_last_closed_spread_pips": 2.3,
+      "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+    },
+    "USDJPY": {
+      "nonblackout_2025_samples": 68136,
+      "median_nonblackout_spread_pips": 2.0,
+      "p95_nonblackout_spread_pips": 2.3,
+      "max_last_closed_spread_pips": 2.3,
+      "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+    },
+    "USDCNH": {
+      "nonblackout_2025_samples": 68136,
+      "median_nonblackout_spread_pips": 37.0,
+      "p95_nonblackout_spread_pips": 43.0,
+      "max_last_closed_spread_pips": 10.0,
+      "note": "Risk ceiling, not a forecast of profit or fillable broker quote"
+    }
+  }
+}

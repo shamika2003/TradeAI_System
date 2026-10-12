@@ -4,6 +4,7 @@ from PySide6.QtCore import QPoint, QSettings, QThread, QTimer, Signal, Qt
 from PySide6.QtGui import QCloseEvent, QGuiApplication, QMouseEvent
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -173,6 +174,9 @@ class TradeAIMainWindow(QMainWindow):
         self.nira_client = NiraBridgeClient()
         self._nira_worker: NiraBridgeWorker | None = None
         self._nira_probe_worker: NiraBridgeProbeWorker | None = None
+        self._nira_popout: QDialog | None = None
+        self._nira_hide_on_redock = False
+        self._nira_sent_from_topbar = False
 
         root = QWidget()
         root.setObjectName("AppRoot")
@@ -203,6 +207,7 @@ class TradeAIMainWindow(QMainWindow):
         canvas_l.addWidget(self.title_bar)
 
         body = QHBoxLayout()
+        self._body_layout = body
         body.setContentsMargins(0, 0, 0, 0)
         body.setSpacing(7)
         self.sidebar = self._build_sidebar()
@@ -220,6 +225,8 @@ class TradeAIMainWindow(QMainWindow):
         self.nira_dock = NiraSidebarDock()
         self.nira_dock.hide()
         self.nira_dock.close_requested.connect(self._hide_nira_panel)
+        self.nira_dock.popout_requested.connect(self._toggle_nira_popout)
+        self.nira_dock.message_submitted.connect(self._ask_nira)
         body.addWidget(self.nira_dock)
 
         canvas_l.addLayout(body, 1)
@@ -417,7 +424,7 @@ class TradeAIMainWindow(QMainWindow):
     def _build_content_header(self) -> QFrame:
         frame = QFrame()
         frame.setObjectName("ContentHeader")
-        frame.setFixedHeight(46)
+        frame.setFixedHeight(54)
         layout = QHBoxLayout(frame)
         layout.setContentsMargins(4, 3, 8, 3)
         layout.setSpacing(6)
@@ -499,7 +506,10 @@ class TradeAIMainWindow(QMainWindow):
             app.processEvents()
 
     def _toggle_nira_panel(self) -> None:
-        if self.nira_dock.isVisible():
+        if self._nira_popout is not None:
+            self._nira_popout.raise_()
+            self._nira_popout.activateWindow()
+        elif self.nira_dock.isVisible():
             self._hide_nira_panel()
         else:
             self._show_nira_panel()
@@ -507,10 +517,73 @@ class TradeAIMainWindow(QMainWindow):
     def _show_nira_panel(self) -> None:
         context = self._nira_context()
         self.nira_dock.set_context(context.page, context.selected_entity)
-        self.nira_dock.show()
+        if self._nira_popout is not None:
+            self._nira_popout.show()
+            self._nira_popout.raise_()
+            return
+        # On narrower displays a dock would crush the trading workspace.
+        # Move the SAME conversation widget to a floating window instead.
+        if self.width() < 1450:
+            self._toggle_nira_popout()
+        else:
+            self.nira_dock.show()
 
     def _hide_nira_panel(self) -> None:
-        self.nira_dock.hide()
+        if self._nira_popout is not None:
+            self._nira_hide_on_redock = True
+            self._nira_popout.close()
+        else:
+            self.nira_dock.hide()
+
+    def _toggle_nira_popout(self) -> None:
+        if self._nira_popout is not None:
+            self._nira_popout.close()
+            return
+        self._body_layout.removeWidget(self.nira_dock)
+        window = QDialog(self)
+        window.setWindowTitle("NIRA  /  TradeAI conversation")
+        window.setObjectName("NiraFloatingWindow")
+        window.setMinimumSize(440, 500)
+        available = self._available_geometry()
+        if available is None:
+            window.resize(620, 740)
+        else:
+            window.resize(
+                min(620, max(440, available.width() - 60)),
+                min(740, max(500, available.height() - 70)),
+            )
+        layout = QVBoxLayout(window)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(0)
+        self.nira_dock.set_floating(True)
+        layout.addWidget(self.nira_dock)
+        self._nira_popout = window
+        window.finished.connect(self._restore_nira_panel)
+        self.nira_dock.show()
+        window.show()
+        window.raise_()
+        window.activateWindow()
+
+    def _restore_nira_panel(self, _result: int) -> None:
+        popup = self._nira_popout
+        if popup is None:
+            return
+        popup.layout().removeWidget(self.nira_dock)
+        self.nira_dock.setParent(None)
+        self.nira_dock.set_floating(False)
+        self._body_layout.addWidget(self.nira_dock)
+        self._nira_popout = None
+        show_dock = (
+            not self._nira_hide_on_redock
+            and not self._close_committed
+            and self.width() >= 1450
+        )
+        self._nira_hide_on_redock = False
+        if show_dock:
+            self.nira_dock.show()
+        else:
+            self.nira_dock.hide()
+        popup.deleteLater()
 
     def _nira_context(self) -> NiraBridgeContext:
         page_names = (
@@ -551,12 +624,15 @@ class TradeAIMainWindow(QMainWindow):
         worker.start()
 
     def _nira_probe_online(self, _health: object) -> None:
-        self.nira_bar.set_bridge_state("CONNECTED")
-        self.nira_dock.set_state("CONNECTED")
+        # Health proves reachability, not successful chat authentication.
+        self.nira_bar.set_bridge_state("AVAILABLE")
+        if not (self._nira_worker and self._nira_worker.isRunning()):
+            self.nira_dock.set_state("AVAILABLE")
 
     def _nira_probe_offline(self, _message: str) -> None:
         self.nira_bar.set_bridge_state("OFFLINE")
-        self.nira_dock.set_state("OFFLINE")
+        if not (self._nira_worker and self._nira_worker.isRunning()):
+            self.nira_dock.set_state("OFFLINE")
 
     def _nira_probe_finished(self) -> None:
         worker = self._nira_probe_worker
@@ -568,11 +644,14 @@ class TradeAIMainWindow(QMainWindow):
         if self._nira_worker is not None and self._nira_worker.isRunning():
             return
 
+        self._nira_sent_from_topbar = self.nira_bar.is_busy
+        self.nira_bar.set_busy(True)
+        self.nira_dock.set_busy(True)
         context = self._nira_context()
         self.nira_dock.set_context(context.page, context.selected_entity)
         self.nira_dock.set_state("THINKING")
         self.nira_dock.add_user_message(message)
-        self.nira_dock.show()
+        self._show_nira_panel()
 
         worker = NiraBridgeWorker(
             self.nira_client,
@@ -587,20 +666,23 @@ class TradeAIMainWindow(QMainWindow):
         worker.start()
 
     def _nira_reply(self, response: NiraBridgeReply) -> None:
-        self.nira_bar.finish_request(state="CONNECTED", clear_input=True)
+        self.nira_bar.finish_request(
+            state="CONNECTED", clear_input=self._nira_sent_from_topbar
+        )
+        self.nira_dock.set_busy(False)
         self.nira_dock.set_state("CONNECTED")
         self.nira_dock.add_nira_message(response.reply)
-        self.nira_dock.show()
 
     def _nira_error(self, message: str) -> None:
         self.nira_bar.finish_request(state="OFFLINE", clear_input=False)
+        self.nira_dock.set_busy(False)
         self.nira_dock.set_state("OFFLINE")
         self.nira_dock.add_error_message(message)
-        self.nira_dock.show()
 
     def _nira_worker_finished(self) -> None:
         worker = self._nira_worker
         self._nira_worker = None
+        self._nira_sent_from_topbar = False
         if worker is not None:
             worker.deleteLater()
 
@@ -610,7 +692,7 @@ class TradeAIMainWindow(QMainWindow):
             button.setChecked(i == index)
         self._refresh_visible_page()
 
-        if self.nira_dock.isVisible():
+        if self.nira_dock.isVisible() or self._nira_popout is not None:
             context = self._nira_context()
             self.nira_dock.set_context(context.page, context.selected_entity)
 

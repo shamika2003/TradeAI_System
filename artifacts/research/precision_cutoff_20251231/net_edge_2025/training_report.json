@@ -1,0 +1,187 @@
+{
+  "study": "NET_EDGE_COST_AWARE_M5_2025_V1",
+  "classification": "PRE2026_CHRONOLOGICAL_RESEARCH_NOT_LIVE_APPROVED",
+  "production_promoted": false,
+  "symbols": {
+    "EURUSD": {
+      "2025_test_window": "2025-10-01 THROUGH 2025-12-31",
+      "test_rows": 16327,
+      "locked_validation_threshold": null,
+      "validation_gate_passed": false,
+      "validation_threshold_trials": [
+        {
+          "threshold": 0.4,
+          "trades": 88,
+          "mean_net_pips": -3.769318181818108,
+          "total_net_pips": -331.6999999999935,
+          "passed": false
+        },
+        {
+          "threshold": 0.45,
+          "trades": 21,
+          "mean_net_pips": -1.771428571428447,
+          "total_net_pips": -37.19999999999739,
+          "passed": false
+        },
+        {
+          "threshold": 0.5,
+          "trades": 2,
+          "mean_net_pips": -2.7999999999996725,
+          "total_net_pips": -5.599999999999345,
+          "passed": false
+        },
+        {
+          "threshold": 0.55,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        },
+        {
+          "threshold": 0.6,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        },
+        {
+          "threshold": 0.65,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        }
+      ],
+      "raw_action_candidates": 0,
+      "non_overlapping_test_trades": 0,
+      "net_winning_trades": 0,
+      "net_win_rate_pct": null,
+      "mean_net_pips_per_trade": null,
+      "total_net_pips": null,
+      "monthly": {},
+      "selected_trees": 129,
+      "model_not_promoted": true,
+      "caveat": "Per-symbol non-overlap approximate research; no account-level margin, gap or multi-pair execution. NOT a real broker replay."
+    },
+    "GBPUSD": {
+      "2025_test_window": "2025-10-01 THROUGH 2025-12-31",
+      "test_rows": 15908,
+      "locked_validation_threshold": null,
+      "validation_gate_passed": false,
+      "validation_threshold_trials": [
+        {
+          "threshold": 0.4,
+          "trades": 113,
+          "mean_net_pips": -2.9999999999999254,
+          "total_net_pips": -338.9999999999916,
+          "passed": false
+        },
+        {
+          "threshold": 0.45,
+          "trades": 35,
+          "mean_net_pips": -2.2428571428570696,
+          "total_net_pips": -78.49999999999744,
+          "passed": false
+        },
+        {
+          "threshold": 0.5,
+          "trades": 8,
+          "mean_net_pips": 3.16249999999998,
+          "total_net_pips": 25.29999999999984,
+          "passed": false
+        },
+        {
+          "threshold": 0.55,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        },
+        {
+          "threshold": 0.6,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        },
+        {
+          "threshold": 0.65,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        }
+      ],
+      "raw_action_candidates": 0,
+      "non_overlapping_test_trades": 0,
+      "net_winning_trades": 0,
+      "net_win_rate_pct": null,
+      "mean_net_pips_per_trade": null,
+      "total_net_pips": null,
+      "monthly": {},
+      "selected_trees": 124,
+      "model_not_promoted": true,
+      "caveat": "Per-symbol non-overlap approximate research; no account-level margin, gap or multi-pair execution. NOT a real broker replay."
+    },
+    "USDJPY": {
+      "2025_test_window": "2025-10-01 THROUGH 2025-12-31",
+      "test_rows": 16150,
+      "locked_validation_threshold": null,
+      "validation_gate_passed": false,
+      "validation_threshold_trials": [
+        {
+          "threshold": 0.4,
+          "trades": 334,
+          "mean_net_pips": -4.600697095808446,
+          "total_net_pips": -1536.632830000021,
+          "passed": false
+        },
+        {
+          "threshold": 0.45,
+          "trades": 41,
+          "mean_net_pips": -14.444654829268488,
+          "total_net_pips": -592.230848000008,
+          "passed": false
+        },
+        {
+          "threshold": 0.5,
+          "trades": 13,
+          "mean_net_pips": -13.079197692308279,
+          "total_net_pips": -170.02957000000762,
+          "passed": false
+        },
+        {
+          "threshold": 0.55,
+          "trades": 5,
+          "mean_net_pips": -16.754343800000505,
+          "total_net_pips": -83.77171900000253,
+          "passed": false
+        },
+        {
+          "threshold": 0.6,
+          "trades": 1,
+          "mean_net_pips": -7.836853999998272,
+          "total_net_pips": -7.836853999998272,
+          "passed": false
+        },
+        {
+          "threshold": 0.65,
+          "trades": 0,
+          "mean_net_pips": null,
+          "total_net_pips": null,
+          "passed": false
+        }
+      ],
+      "raw_action_candidates": 0,
+      "non_overlapping_test_trades": 0,
+      "net_winning_trades": 0,
+      "net_win_rate_pct": null,
+      "mean_net_pips_per_trade": null,
+      "total_net_pips": null,
+      "monthly": {},
+      "selected_trees": 78,
+      "model_not_promoted": true,
+      "caveat": "Per-symbol non-overlap approximate research; no account-level margin, gap or multi-pair execution. NOT a real broker replay."
+    }
+  }
+}

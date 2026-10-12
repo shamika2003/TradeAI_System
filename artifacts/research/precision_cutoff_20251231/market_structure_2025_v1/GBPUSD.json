@@ -1,0 +1,144 @@
+{
+  "fold_details": {
+    "2023": {
+      "train": 12396,
+      "validation": 4222,
+      "score_ranges": {
+        "buy_mean": -0.19720807316896563,
+        "sell_mean": -0.15213808614461824
+      }
+    },
+    "2024": {
+      "train": 16618,
+      "validation": 4238,
+      "score_ranges": {
+        "buy_mean": -0.18865211489461214,
+        "sell_mean": -0.16671801978162828
+      }
+    }
+  },
+  "validation_grid": [
+    {
+      "threshold": 0.15,
+      "passed": false,
+      "folds": {
+        "2023": {
+          "trades": 18,
+          "winners": 9,
+          "win_rate_pct": 50.0,
+          "net_usd": 1.024,
+          "ending_balance": 151.024,
+          "max_drawdown_pct": 3.298,
+          "profit_factor": 1.0727318055068236,
+          "stopped_by_risk": false,
+          "rejections": {
+            "RISK_MIN_LOT_TOO_HIGH": 1
+          }
+        },
+        "2024": {
+          "trades": 17,
+          "winners": 6,
+          "win_rate_pct": 35.29,
+          "net_usd": -6.1695,
+          "ending_balance": 143.8305,
+          "max_drawdown_pct": 4.693,
+          "profit_factor": 0.5212442430285841,
+          "stopped_by_risk": false,
+          "rejections": {}
+        }
+      }
+    },
+    {
+      "threshold": 0.25,
+      "passed": false,
+      "folds": {
+        "2023": {
+          "trades": 3,
+          "winners": 3,
+          "win_rate_pct": 100.0,
+          "net_usd": 5.5469,
+          "ending_balance": 155.5469,
+          "max_drawdown_pct": 0,
+          "profit_factor": null,
+          "stopped_by_risk": false,
+          "rejections": {}
+        },
+        "2024": {
+          "trades": 6,
+          "winners": 4,
+          "win_rate_pct": 66.67,
+          "net_usd": 3.037,
+          "ending_balance": 153.037,
+          "max_drawdown_pct": 0.772,
+          "profit_factor": 3.4296320000000002,
+          "stopped_by_risk": false,
+          "rejections": {}
+        }
+      }
+    },
+    {
+      "threshold": 0.4,
+      "passed": false,
+      "folds": {
+        "2023": {
+          "trades": 0,
+          "winners": 0,
+          "win_rate_pct": null,
+          "net_usd": 0.0,
+          "ending_balance": 150.0,
+          "max_drawdown_pct": 0,
+          "profit_factor": null,
+          "stopped_by_risk": false,
+          "rejections": {}
+        },
+        "2024": {
+          "trades": 1,
+          "winners": 1,
+          "win_rate_pct": 100.0,
+          "net_usd": 0.06,
+          "ending_balance": 150.06,
+          "max_drawdown_pct": 0,
+          "profit_factor": null,
+          "stopped_by_risk": false,
+          "rejections": {}
+        }
+      }
+    },
+    {
+      "threshold": 0.6,
+      "passed": false,
+      "folds": {
+        "2023": {
+          "trades": 0,
+          "winners": 0,
+          "win_rate_pct": null,
+          "net_usd": 0.0,
+          "ending_balance": 150.0,
+          "max_drawdown_pct": 0,
+          "profit_factor": null,
+          "stopped_by_risk": false,
+          "rejections": {}
+        },
+        "2024": {
+          "trades": 0,
+          "winners": 0,
+          "win_rate_pct": null,
+          "net_usd": 0.0,
+          "ending_balance": 150.0,
+          "max_drawdown_pct": 0,
+          "profit_factor": null,
+          "stopped_by_risk": false,
+          "rejections": {}
+        }
+      }
+    }
+  ],
+  "locked_threshold": null,
+  "gate_passed": false,
+  "2025_final_test": {
+    "not_evaluated": true,
+    "reason": "NO_THRESHOLD_PASSED_BOTH_2023_AND_2024"
+  },
+  "n_2025_eligible_rows": 4169,
+  "promotion_to_live": false
+}

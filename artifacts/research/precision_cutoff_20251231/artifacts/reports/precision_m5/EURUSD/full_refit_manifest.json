@@ -1,0 +1,10 @@
+{
+  "symbol": "EURUSD",
+  "rows": 440837,
+  "first_decision": "2020-01-24 21:30:00+00:00",
+  "last_decision": "2025-12-31 19:30:00+00:00",
+  "fitted_trees": 172,
+  "baseline_model_sha256": "d297451a74af00bf8fefe261ba14df68872905ffca740e1b791ae0de18fbd16e",
+  "refitted_model_sha256": "2c6cdc90754df580d76a5b4f03b6ee494fc97c124add43ab779b1a2371d76311",
+  "original_gate_passed": true
+}

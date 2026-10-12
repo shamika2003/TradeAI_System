@@ -1,0 +1,10 @@
+{
+  "symbol": "USDCNH",
+  "rows": 440384,
+  "first_decision": "2020-01-23 22:00:00+00:00",
+  "last_decision": "2025-12-31 19:30:00+00:00",
+  "fitted_trees": 174,
+  "baseline_model_sha256": "ad6c00fb766e88e605e69483c27f757ea4c22ca384188a23a9bd64e9ca8591b5",
+  "refitted_model_sha256": "5430899b367c50f92290434ae7568bfe1f32de29d0c396b15939740deb2da3fd",
+  "original_gate_passed": true
+}

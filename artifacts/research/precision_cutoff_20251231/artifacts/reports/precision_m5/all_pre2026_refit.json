@@ -1,0 +1,42 @@
+{
+  "EURUSD": {
+    "symbol": "EURUSD",
+    "rows": 440837,
+    "first_decision": "2020-01-24 21:30:00+00:00",
+    "last_decision": "2025-12-31 19:30:00+00:00",
+    "fitted_trees": 172,
+    "baseline_model_sha256": "d297451a74af00bf8fefe261ba14df68872905ffca740e1b791ae0de18fbd16e",
+    "refitted_model_sha256": "2c6cdc90754df580d76a5b4f03b6ee494fc97c124add43ab779b1a2371d76311",
+    "original_gate_passed": true
+  },
+  "GBPUSD": {
+    "symbol": "GBPUSD",
+    "rows": 440776,
+    "first_decision": "2020-01-24 18:15:00+00:00",
+    "last_decision": "2025-12-31 19:30:00+00:00",
+    "fitted_trees": 167,
+    "baseline_model_sha256": "18e4e1c206ff3b47d9b9233b84cb9f19a8c380d14280be84ab164a4090002318",
+    "refitted_model_sha256": "d469b4a22303f383f81e80c280a557044a1e9d784fea6d7d562224a1de1925ec",
+    "original_gate_passed": true
+  },
+  "USDJPY": {
+    "symbol": "USDJPY",
+    "rows": 440805,
+    "first_decision": "2020-01-24 19:15:00+00:00",
+    "last_decision": "2025-12-31 19:30:00+00:00",
+    "fitted_trees": 269,
+    "baseline_model_sha256": "e2e92d62a5fde647ad764a8218b274ed6a05c3156ff1509325b3b86838593b6e",
+    "refitted_model_sha256": "704f9a4e34dbe57043defb8bb1f05e367e0168bc27a3e243bdc7c1b7ea8a6c25",
+    "original_gate_passed": true
+  },
+  "USDCNH": {
+    "symbol": "USDCNH",
+    "rows": 440384,
+    "first_decision": "2020-01-23 22:00:00+00:00",
+    "last_decision": "2025-12-31 19:30:00+00:00",
+    "fitted_trees": 174,
+    "baseline_model_sha256": "ad6c00fb766e88e605e69483c27f757ea4c22ca384188a23a9bd64e9ca8591b5",
+    "refitted_model_sha256": "5430899b367c50f92290434ae7568bfe1f32de29d0c396b15939740deb2da3fd",
+    "original_gate_passed": true
+  }
+}

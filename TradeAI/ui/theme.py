@@ -682,52 +682,215 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background:transparent; }}
 
 /* =========================================================
-   GLOBAL NIRA RESERVATION BAR
+   ASK NIRA - COMMAND BAR / CONVERSATION / POPOUT
    ========================================================= */
 QFrame#NiraTopBar {{
     background:{panel_deep_rgba};
     border:1px solid {p['border_soft']};
-    border-radius:10px;
+    border-radius:12px;
 }}
 QLabel#NiraDockTitle {{
-    color:{p['frost']};
-    font-size:9pt;
-    font-weight:700;
-    letter-spacing:1.4px;
+    color:{p['text_strong']};
+    font-size:8pt;
+    font-weight:750;
+    letter-spacing:.65px;
 }}
 QLabel#NiraDockState {{
     color:{p['ai']};
-    font-size:6.2pt;
+    font-size:7pt;
     font-weight:650;
-    letter-spacing:.6px;
 }}
 QLineEdit#NiraTopInput {{
-    min-height:28px; max-height:30px;
+    min-height:33px; max-height:34px;
     background:{panel_soft_rgba};
+    color:{p['text_strong']};
+    border:1px solid {p['border_soft']};
+    border-radius:9px;
+    padding:0 12px;
+    font-size:9pt;
+}}
+QLineEdit#NiraTopInput:focus {{ border-color:{p['ai']}; background:{panel_rgba}; }}
+QPushButton#NiraChatOpen {{
+    background:{p['ai_soft']};
+    color:{p['text_strong']};
+    border:1px solid {p['ai']};
+    border-radius:9px;
+    font-size:8pt; font-weight:700;
+    padding:0 12px;
+}}
+QPushButton#NiraChatOpen:hover {{ background:{p['interactive_hover']}; border-color:{p['accent2']}; }}
+QPushButton#NiraTopSend {{
+    color:{p['frost']};
+    background:{p['ai']};
+    border:1px solid {p['ai']};
+    border-radius:9px;
+    font-size:13pt; font-weight:700;
+    padding:0;
+}}
+QPushButton#NiraTopSend:hover {{ background:{p['accent']}; border-color:{p['accent2']}; }}
+QPushButton#NiraTopSend:disabled {{ color:{p['muted']}; background:{panel_soft_rgba}; border-color:{p['border_soft']}; }}
+
+QDialog#NiraFloatingWindow {{ background:{panel_deep_rgba}; }}
+QFrame#NiraSidebarDock {{
+    background:{panel_deep_rgba};
+    border:1px solid {p['border']};
+    border-radius:15px;
+}}
+QLabel#NiraChatTitle {{
+    color:{p['text_strong']};
+    font-size:17pt;
+    font-weight:750;
+}}
+QLabel#NiraChatSubtitle {{
+    color:{p['muted']};
+    font-size:8pt;
+}}
+QPushButton#NiraChatTool {{
     color:{p['text_soft']};
+    background:{panel_soft_rgba};
+    border:1px solid {p['border_soft']};
+    border-radius:7px;
+    font-size:7pt;
+    font-weight:700;
+    min-height:28px;
+    padding:0 9px;
+}}
+QPushButton#NiraChatTool:hover, QPushButton#NiraChatClose:hover {{
+    color:{p['text_strong']};
+    background:{p['interactive_hover']};
+    border-color:{p['accent2']};
+}}
+QPushButton#NiraChatClose {{
+    color:{p['text_soft']};
+    background:{panel_soft_rgba};
+    border:1px solid {p['border_soft']};
+    border-radius:7px;
+    font-size:14pt;
+    padding:0;
+}}
+QLabel#NiraChatStatus {{
+    color:{p['ai']};
+    font-size:8pt;
+    font-weight:750;
+}}
+QLabel#NiraChatStatus[connection="connected"],
+QLabel#NiraChatStatus[connection="available"] {{ color:{p['success']}; }}
+QLabel#NiraChatStatus[connection="offline"] {{ color:{p['danger']}; }}
+QLabel#NiraChatStatus[connection="thinking"] {{ color:{p['ai']}; }}
+QLabel#NiraContextTag {{
+    color:{p['text_soft']};
+    background:{panel_soft_rgba};
+    border:1px solid {p['border_soft']};
+    border-radius:9px;
+    padding:5px 9px;
+    font-size:8pt;
+}}
+QScrollArea#NiraConversationScroll,
+QWidget#NiraConversationContent,
+QWidget#NiraTurnRow {{ background:transparent; border:none; }}
+QFrame#NiraWelcome {{
+    background:{panel_rgba};
+    border:1px solid {p['border_soft']};
+    border-radius:14px;
+}}
+QLabel#NiraWelcomeEyebrow {{
+    color:{p['ai']};
+    font-size:8pt;
+    font-weight:700;
+    letter-spacing:1px;
+}}
+QLabel#NiraWelcomeHeadline {{
+    color:{p['text_strong']};
+    font-size:15pt;
+    font-weight:750;
+}}
+QLabel#NiraWelcomeDescription {{
+    color:{p['text_soft']};
+    font-size:9pt;
+    line-height:1.3;
+}}
+QPushButton#NiraSuggestion {{
+    min-height:32px;
+    color:{p['text_soft']};
+    background:{panel_soft_rgba};
     border:1px solid {p['border_soft']};
     border-radius:8px;
-    padding:0 9px;
-    font-size:7.5pt;
+    font-weight:600;
+    text-align:left;
+    padding:5px 12px;
 }}
-QLineEdit#NiraTopInput:focus {{
+QPushButton#NiraSuggestion:hover {{
     color:{p['text_strong']};
     border-color:{p['ai']};
-    background:{panel_rgba};
-}}
-QPushButton#NiraTopSend {{
-    min-width:30px; max-width:30px; min-height:30px; max-height:30px;
-    padding:0; border-radius:8px;
-    color:{p['accent2']};
     background:{p['ai_soft']};
-    border:1px solid rgba(138,112,255,90);
-    font-size:13pt; font-weight:700;
 }}
-QPushButton#NiraTopSend:hover {{
-    color:{p['frost']};
-    border-color:{p['accent2']};
+QFrame#NiraMessageCard {{
+    background:{panel_rgba};
+    border:1px solid {p['border_soft']};
+    border-radius:12px;
+}}
+QFrame#NiraMessageCard[role="user"] {{
     background:{p['accent_soft']};
+    border-color:{p['accent']};
 }}
+QFrame#NiraMessageCard[role="error"] {{
+    background:{p['danger_soft']};
+    border-color:{p['danger']};
+}}
+QLabel#NiraMessageAuthor {{
+    color:{p['ai']};
+    font-size:8pt;
+    font-weight:750;
+    letter-spacing:.5px;
+}}
+QLabel#NiraMessageAuthor[role="user"] {{ color:{p['accent2']}; }}
+QLabel#NiraMessageAuthor[role="error"] {{ color:{p['danger']}; }}
+QLabel#NiraMessageTime {{ color:{p['muted']}; font-size:7pt; }}
+QLabel#NiraMessageText {{
+    color:{p['text_strong']};
+    font-size:9pt;
+    padding:2px 0;
+}}
+QPushButton#NiraMessageCopy {{
+    min-height:20px;
+    color:{p['muted']};
+    background:transparent;
+    border:none;
+    font-size:7pt;
+    padding:0 4px;
+}}
+QPushButton#NiraMessageCopy:hover {{ color:{p['accent2']}; }}
+QFrame#NiraComposerShell {{
+    background:{panel_rgba};
+    border:1px solid {p['border']};
+    border-radius:13px;
+}}
+QPlainTextEdit#NiraComposer {{
+    background:transparent;
+    color:{p['text_strong']};
+    border:none;
+    font-size:10pt;
+    selection-background-color:{p['accent']};
+    padding:2px;
+}}
+QLabel#NiraComposerHint {{ color:{p['muted']}; font-size:6.6pt; }}
+QPushButton#NiraComposerSend {{
+    min-height:32px;
+    color:{p['frost']};
+    background:{p['ai']};
+    border:1px solid {p['ai']};
+    border-radius:9px;
+    padding:0 13px;
+    font-size:9pt;
+    font-weight:750;
+}}
+QPushButton#NiraComposerSend:hover {{ background:{p['accent']}; }}
+QPushButton#NiraComposerSend:disabled {{
+    color:{p['muted']};
+    background:{panel_soft_rgba};
+    border-color:{p['border_soft']};
+}}
+QLabel#NiraSecurityNote {{ color:{p['muted']}; font-size:7pt; letter-spacing:.2px; }}
 
 QLabel#EngineRunning {{ color:{p['success']}; font-family:"Bahnschrift","Consolas"; font-size:15pt; font-weight:650; }}
 QLabel#EnginePaused {{ color:{p['warning']}; font-family:"Bahnschrift","Consolas"; font-size:15pt; font-weight:650; }}

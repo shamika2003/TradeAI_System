@@ -7,10 +7,11 @@ and overlays into one component library.  This module gives the desktop product
 those same primitives instead of styling one-off widgets page by page.
 """
 
-from PySide6.QtCore import QEvent, QPointF, QRectF, QSize, QTimer, Signal, Qt
+from PySide6.QtCore import QDateTime, QEvent, QPointF, QRectF, QSize, QTimer, Signal, Qt
 from PySide6.QtGui import QAction, QColor, QPainter, QPen, QRadialGradient
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QDialog,
     QFrame,
     QHBoxLayout,
@@ -18,6 +19,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPlainTextEdit,
+    QScrollArea,
+    QSizePolicy,
     QPushButton,
     QTableWidget,
     QVBoxLayout,
@@ -482,40 +485,65 @@ class NiraMiniOrb(QWidget):
         self.update()
 
     def paintEvent(self, event) -> None:
+        """An understated, animated NIRA presence glyph (not a second body)."""
         import math
 
-        p = QPainter(self)
+        painter = QPainter(self)
         try:
-            p.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.Antialiasing, True)
             palette = theme_palette()
-            cx = self.width() / 2.0
-            cy = self.height() / 2.0
-            glow = QRadialGradient(QPointF(cx, cy), 16.0)
-            c0 = QColor(str(palette["accent2"])); c0.setAlpha(148)
-            c1 = QColor(str(palette["accent"])); c1.setAlpha(62)
-            c2 = QColor(str(palette["accent"])); c2.setAlpha(0)
-            glow.setColorAt(0.0, c0)
-            glow.setColorAt(0.45, c1)
-            glow.setColorAt(1.0, c2)
-            p.setPen(Qt.NoPen)
-            p.setBrush(glow)
-            p.drawEllipse(QPointF(cx, cy), 16.0, 16.0)
+            center = QPointF(self.width() / 2.0, self.height() / 2.0)
+            radius = min(self.width(), self.height()) * 0.49
+            pulse = 0.5 + 0.5 * math.sin(self._phase * 1.7)
 
-            ring = QColor(str(palette["accent2"])); ring.setAlpha(205)
-            p.setBrush(Qt.NoBrush)
-            p.setPen(QPen(ring, 1.2))
-            p.drawArc(QRectF(cx - 11.5, cy - 11.5, 23.0, 23.0), int(self._phase * 34 * 16), 226 * 16)
+            glow = QRadialGradient(center, radius)
+            glow_core = QColor(str(palette["ai"]))
+            glow_core.setAlpha(120 + int(35 * pulse))
+            glow_edge = QColor(str(palette["accent2"]))
+            glow_edge.setAlpha(0)
+            glow.setColorAt(0.0, glow_core)
+            glow.setColorAt(0.5, QColor(72, 107, 202, 35))
+            glow.setColorAt(1.0, glow_edge)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(glow)
+            painter.drawEllipse(center, radius, radius)
 
-            core = QColor(str(palette["frost"])); core.setAlpha(235)
-            p.setPen(Qt.NoPen)
-            p.setBrush(core)
-            p.drawEllipse(QPointF(cx, cy), 2.0, 2.0)
+            base = QColor(str(palette["ai"]))
+            base.setAlpha(55)
+            painter.setBrush(base)
+            painter.drawEllipse(center, radius * .51, radius * .51)
+
+            ring = QColor(str(palette["accent2"]))
+            ring.setAlpha(220)
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(QPen(ring, max(1.2, radius * .095)))
+            painter.drawArc(
+                QRectF(center.x() - radius * .72, center.y() - radius * .72,
+                       radius * 1.44, radius * 1.44),
+                int(math.degrees(self._phase) * 16), 214 * 16,
+            )
+            muted_ring = QColor(str(palette["ai"]))
+            muted_ring.setAlpha(135)
+            painter.setPen(QPen(muted_ring, max(1.0, radius * .065)))
+            painter.drawArc(
+                QRectF(center.x() - radius * .90, center.y() - radius * .90,
+                       radius * 1.80, radius * 1.80),
+                -int(math.degrees(self._phase) * 11), 110 * 16,
+            )
+
+            core = QRadialGradient(center, radius * .36)
+            core.setColorAt(0.0, QColor(str(palette["frost"])))
+            core.setColorAt(0.7, QColor(str(palette["accent2"])))
+            core.setColorAt(1.0, QColor(str(palette["ai"])))
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(core)
+            painter.drawEllipse(center, radius * .30, radius * .30)
         finally:
-            p.end()
+            painter.end()
 
 
 class NiraTopBar(QFrame):
-    """Compact live command surface for the shared NIRA runtime."""
+    """One-line entry point to the ONE NIRA runtime, not an in-app chatbot."""
 
     message_submitted = Signal(str)
     panel_toggled = Signal()
@@ -523,50 +551,55 @@ class NiraTopBar(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("NiraTopBar")
-        self.setFixedHeight(40)
+        self.setFixedHeight(46)
         self._busy = False
-
         root = QHBoxLayout(self)
-        root.setContentsMargins(8, 4, 8, 4)
-        root.setSpacing(7)
+        root.setContentsMargins(12, 5, 9, 5)
+        root.setSpacing(9)
 
         self.orb = NiraMiniOrb(self)
-        self.orb.setFixedSize(28, 28)
+        self.orb.setFixedSize(30, 30)
         root.addWidget(self.orb)
 
-        title = QLabel("NIRA")
+        title_box = QVBoxLayout()
+        title_box.setSpacing(0)
+        title = QLabel("NIRA  /  ASSISTANT")
         title.setObjectName("NiraDockTitle")
-        root.addWidget(title)
-
+        title_box.addWidget(title)
         self.state = QLabel("CONNECTING")
         self.state.setObjectName("NiraDockState")
-        root.addWidget(self.state)
+        title_box.addWidget(self.state)
+        root.addLayout(title_box)
 
         self.input = QLineEdit()
         self.input.setObjectName("NiraTopInput")
-        self.input.setPlaceholderText("Ask NIRA…")
-        self.input.setToolTip(
-            "Ask the shared NIRA runtime about TradeAI. "
-            "TradeAI itself has no direct LLM connection."
-        )
-        self.input.setFixedHeight(30)
+        self.input.setPlaceholderText("Ask NIRA about your trading workspace…")
+        self.input.setToolTip("Ask the existing NIRA runtime via the local ELVARA bridge")
+        self.input.setFixedHeight(34)
+        self.input.setMaxLength(12000)
         root.addWidget(self.input, 1)
 
-        self.panel = QPushButton("CHAT")
-        self.panel.setObjectName("NiraTopSend")
-        self.panel.setFixedSize(48, 30)
-        self.panel.setToolTip("Open or close the TradeAI NIRA conversation")
+        self.panel = QPushButton("OPEN CHAT")
+        self.panel.setObjectName("NiraChatOpen")
+        self.panel.setFixedHeight(34)
+        self.panel.setToolTip("Expand NIRA's TradeAI conversation")
+        self.panel.setCursor(Qt.PointingHandCursor)
         root.addWidget(self.panel)
 
-        self.send = QPushButton("›")
+        self.send = QPushButton("➜")
         self.send.setObjectName("NiraTopSend")
-        self.send.setFixedSize(30, 30)
-        self.send.setToolTip("Send to NIRA")
+        self.send.setFixedSize(34, 34)
+        self.send.setToolTip("Send message to NIRA")
+        self.send.setCursor(Qt.PointingHandCursor)
         root.addWidget(self.send)
 
         self.input.returnPressed.connect(self._submit)
         self.send.clicked.connect(self._submit)
         self.panel.clicked.connect(self.panel_toggled.emit)
+
+    @property
+    def is_busy(self) -> bool:
+        return self._busy
 
     def _submit(self) -> None:
         if self._busy:
@@ -583,96 +616,256 @@ class NiraTopBar(QFrame):
         self._busy = bool(busy)
         self.input.setEnabled(not self._busy)
         self.send.setEnabled(not self._busy)
+        self.send.setText("…" if self._busy else "➜")
 
     def finish_request(self, *, state: str, clear_input: bool = False) -> None:
         self.set_busy(False)
         self.state.setText(state)
         if clear_input:
             self.input.clear()
-        self.input.setFocus()
 
     def set_bridge_state(self, state: str) -> None:
         if not self._busy:
             self.state.setText(str(state or "").strip().upper() or "OFFLINE")
 
 
+class NiraComposer(QPlainTextEdit):
+    """Enter submits. Shift+Enter makes a new line."""
+
+    submitted = Signal()
+
+    def keyPressEvent(self, event) -> None:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter) and not (
+            event.modifiers() & (Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier)
+        ):
+            self.submitted.emit()
+            event.accept()
+            return
+        super().keyPressEvent(event)
+
+
+class NiraMessageCard(QFrame):
+    """A selectable, word-wrapped conversation turn with a copy action."""
+
+    def __init__(self, speaker: str, message: str, parent=None):
+        super().__init__(parent)
+        role = {"YOU": "user", "NIRA": "assistant", "BRIDGE": "error"}.get(speaker, "assistant")
+        self.setObjectName("NiraMessageCard")
+        self.setProperty("role", role)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 10, 12, 12)
+        layout.setSpacing(6)
+        header = QHBoxLayout()
+        header.setSpacing(5)
+        author = QLabel(speaker)
+        author.setObjectName("NiraMessageAuthor")
+        author.setProperty("role", role)
+        header.addWidget(author)
+        header.addStretch()
+        stamp = QLabel(QDateTime.currentDateTime().toString("hh:mm"))
+        stamp.setObjectName("NiraMessageTime")
+        header.addWidget(stamp)
+        copy = QPushButton("COPY")
+        copy.setObjectName("NiraMessageCopy")
+        copy.setToolTip("Copy message text")
+        copy.setCursor(Qt.PointingHandCursor)
+        copy.clicked.connect(lambda: QApplication.clipboard().setText(message))
+        header.addWidget(copy)
+        layout.addLayout(header)
+
+        body = QLabel(message)
+        body.setObjectName("NiraMessageText")
+        body.setTextFormat(Qt.MarkdownText if role == "assistant" else Qt.PlainText)
+        body.setWordWrap(True)
+        body.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        body.setOpenExternalLinks(False)
+        body.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        layout.addWidget(body)
+
+
 class NiraSidebarDock(QFrame):
-    """Collapsible TradeAI conversation surface backed by the shared NIRA runtime."""
+    """TradeAI-scoped UI over the existing authenticated NIRA bridge."""
 
     close_requested = Signal()
+    popout_requested = Signal()
+    message_submitted = Signal(str)
+    MAX_VISIBLE_MESSAGES = 80
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("NiraSidebarDock")
-        self.setMinimumWidth(330)
-        self.setMaximumWidth(410)
+        self.setMinimumWidth(335)
+        self.setMaximumWidth(440)
+        self._busy = False
+        self._floating = False
+        self._messages: list[NiraMessageCard] = []
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(10, 10, 10, 10)
-        root.setSpacing(8)
+        root.setContentsMargins(13, 14, 13, 13)
+        root.setSpacing(12)
 
         head = QHBoxLayout()
-        head.setSpacing(7)
-
+        head.setSpacing(9)
         self.orb = NiraMiniOrb(self)
-        self.orb.setFixedSize(30, 30)
+        self.orb.setFixedSize(36, 36)
         head.addWidget(self.orb)
+        titles = QVBoxLayout()
+        titles.setSpacing(3)
+        heading = QLabel("Ask NIRA")
+        heading.setObjectName("NiraChatTitle")
+        titles.addWidget(heading)
+        subtitle = QLabel("Your intelligence, inside TradeAI")
+        subtitle.setObjectName("NiraChatSubtitle")
+        titles.addWidget(subtitle)
+        head.addLayout(titles, 1)
 
-        title_box = QVBoxLayout()
-        title_box.setSpacing(0)
-
-        title = QLabel("NIRA")
-        title.setObjectName("NiraDockTitle")
-        title_box.addWidget(title)
-
-        self.state = QLabel("TRADEAI THREAD · CONNECTING")
-        self.state.setObjectName("NiraDockState")
-        title_box.addWidget(self.state)
-
-        head.addLayout(title_box, 1)
+        self.popout_button = QPushButton("EXPAND")
+        self.popout_button.setObjectName("NiraChatTool")
+        self.popout_button.setCursor(Qt.PointingHandCursor)
+        self.popout_button.setToolTip("Open this conversation in a larger window")
+        self.popout_button.clicked.connect(self.popout_requested.emit)
+        head.addWidget(self.popout_button)
 
         close = QPushButton("×")
-        close.setObjectName("NiraTopSend")
-        close.setFixedSize(30, 30)
-        close.setToolTip("Close NIRA conversation panel")
+        close.setObjectName("NiraChatClose")
+        close.setFixedSize(28, 28)
+        close.setCursor(Qt.PointingHandCursor)
+        close.setToolTip("Close this conversation")
         close.clicked.connect(self.close_requested.emit)
         head.addWidget(close)
-
         root.addLayout(head)
 
-        self.context = QLabel("Context · Command Center")
-        self.context.setObjectName("BrandSub")
-        self.context.setWordWrap(True)
-        root.addWidget(self.context)
+        status_row = QHBoxLayout()
+        status_row.setSpacing(8)
+        self.state = QLabel("CONNECTING")
+        self.state.setObjectName("NiraChatStatus")
+        self.state.setProperty("connection", "connecting")
+        status_row.addWidget(self.state)
+        status_row.addStretch()
+        self.context = QLabel("Command Center")
+        self.context.setObjectName("NiraContextTag")
+        status_row.addWidget(self.context)
+        root.addLayout(status_row)
 
-        self.transcript = QPlainTextEdit()
-        self.transcript.setObjectName("NiraChatTranscript")
-        self.transcript.setReadOnly(True)
-        self.transcript.setMaximumBlockCount(300)
-        self.transcript.setPlaceholderText(
-            "Ask NIRA about TradeAI status, signals, positions, performance, "
-            "risk, or what you are currently viewing."
-        )
-        root.addWidget(self.transcript, 1)
+        self.scroll = QScrollArea()
+        self.scroll.setObjectName("NiraConversationScroll")
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setFrameShape(QFrame.NoFrame)
+        content = QWidget()
+        content.setObjectName("NiraConversationContent")
+        self.turns = QVBoxLayout(content)
+        self.turns.setContentsMargins(2, 6, 2, 8)
+        self.turns.setSpacing(12)
 
-        self.note = QLabel(
-            "Same NIRA · TradeAI-scoped working thread · TradeAI data is read-only"
+        self.welcome = QFrame()
+        self.welcome.setObjectName("NiraWelcome")
+        intro = QVBoxLayout(self.welcome)
+        intro.setContentsMargins(16, 17, 16, 17)
+        intro.setSpacing(10)
+        eyebrow = QLabel("ELVARA  /  NIRA")
+        eyebrow.setObjectName("NiraWelcomeEyebrow")
+        intro.addWidget(eyebrow)
+        headline = QLabel("Clarity for every trading decision.")
+        headline.setObjectName("NiraWelcomeHeadline")
+        headline.setWordWrap(True)
+        intro.addWidget(headline)
+        description = QLabel(
+            "Ask about live status, signals, positions and performance. "
+            "NIRA reads authoritative TradeAI data through the approved connector."
         )
-        self.note.setObjectName("BrandSub")
-        self.note.setWordWrap(True)
-        root.addWidget(self.note)
+        description.setObjectName("NiraWelcomeDescription")
+        description.setWordWrap(True)
+        intro.addWidget(description)
+        suggestions = (
+            ("System overview", "Give me a concise overview of TradeAI's current system status."),
+            ("Latest signals", "Explain the latest TradeAI signals and their status."),
+            ("Open positions", "Show and explain the currently open TradeAI positions."),
+        )
+        for label, prompt in suggestions:
+            chip = QPushButton("↗  " + label)
+            chip.setObjectName("NiraSuggestion")
+            chip.setCursor(Qt.PointingHandCursor)
+            chip.setToolTip(prompt)
+            chip.clicked.connect(lambda _checked=False, text=prompt: self._dispatch(text))
+            intro.addWidget(chip)
+        self.turns.addWidget(self.welcome)
+        self.turns.addStretch(1)
+        self.scroll.setWidget(content)
+        root.addWidget(self.scroll, 1)
+
+        composer = QFrame()
+        composer.setObjectName("NiraComposerShell")
+        composer_layout = QVBoxLayout(composer)
+        composer_layout.setContentsMargins(10, 9, 10, 9)
+        composer_layout.setSpacing(7)
+        self.input = NiraComposer()
+        self.input.setObjectName("NiraComposer")
+        self.input.setPlaceholderText("Message NIRA about TradeAI…")
+        self.input.setFixedHeight(67)
+        self.input.setTabChangesFocus(True)
+        self.input.setToolTip("Enter to send · Shift+Enter for a new line")
+        composer_layout.addWidget(self.input)
+        actions = QHBoxLayout()
+        hint = QLabel("ENTER  ↵  SEND   ·   SHIFT+ENTER  NEW LINE")
+        hint.setObjectName("NiraComposerHint")
+        actions.addWidget(hint)
+        actions.addStretch()
+        self.send_button = QPushButton("Send  ➜")
+        self.send_button.setObjectName("NiraComposerSend")
+        self.send_button.setCursor(Qt.PointingHandCursor)
+        self.send_button.clicked.connect(self._submit)
+        actions.addWidget(self.send_button)
+        composer_layout.addLayout(actions)
+        root.addWidget(composer)
+        self.input.submitted.connect(self._submit)
+
+        note = QLabel("ONE NIRA RUNTIME    ·    TRADEAI SCOPE    ·    READ ONLY")
+        note.setObjectName("NiraSecurityNote")
+        note.setAlignment(Qt.AlignCenter)
+        root.addWidget(note)
+
+    def set_floating(self, floating: bool) -> None:
+        self._floating = bool(floating)
+        self.setMaximumWidth(16777215 if floating else 440)
+        self.popout_button.setText("DOCK" if floating else "EXPAND")
+        self.popout_button.setToolTip(
+            "Return NIRA to the dashboard" if floating else "Open NIRA in a larger window"
+        )
+
+    def set_busy(self, busy: bool) -> None:
+        self._busy = bool(busy)
+        self.input.setEnabled(not self._busy)
+        self.send_button.setEnabled(not self._busy)
+        self.send_button.setText("Thinking…" if self._busy else "Send  ➜")
 
     def set_state(self, state: str) -> None:
         clean = str(state or "").strip().upper() or "OFFLINE"
-        self.state.setText(f"TRADEAI THREAD · {clean}")
+        self.state.setText("● " + clean)
+        self.state.setProperty("connection", clean.lower())
+        self.state.style().unpolish(self.state)
+        self.state.style().polish(self.state)
 
     def set_context(self, page: str, selected_entity: str = "") -> None:
         page_text = str(page or "overview").strip().replace("_", " ").title()
         entity = str(selected_entity or "").strip()
-        if entity:
-            self.context.setText(f"Context · {page_text} · {entity}")
-        else:
-            self.context.setText(f"Context · {page_text}")
+        self.context.setText(f"{page_text}  /  {entity}" if entity else page_text)
+        self.context.setToolTip("Page and selection are context, not authoritative trading data")
+
+    def _submit(self) -> None:
+        self._dispatch(self.input.toPlainText())
+
+    def _dispatch(self, message: str) -> None:
+        clean = str(message or "").strip()
+        if self._busy or not clean:
+            return
+        if len(clean) > 12000:
+            self._append_message("BRIDGE", "Message exceeds NIRA's 12,000-character limit.")
+            return
+        self.input.clear()
+        self.message_submitted.emit(clean)
 
     def add_user_message(self, message: str) -> None:
         self._append_message("YOU", message)
@@ -687,11 +880,28 @@ class NiraSidebarDock(QFrame):
         clean = str(message or "").strip()
         if not clean:
             return
+        self.welcome.hide()
+        if len(self._messages) >= self.MAX_VISIBLE_MESSAGES:
+            old = self._messages.pop(0)
+            self.turns.removeWidget(old.parentWidget())
+            old.parentWidget().deleteLater()
 
-        if self.transcript.toPlainText().strip():
-            self.transcript.appendPlainText("")
+        row = QWidget()
+        row.setObjectName("NiraTurnRow")
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        row_layout.setSpacing(0)
+        card = NiraMessageCard(speaker, clean, row)
+        if speaker == "YOU":
+            row_layout.addStretch(1)
+            row_layout.addWidget(card, 5)
+        else:
+            row_layout.addWidget(card, 5)
+            row_layout.addStretch(1)
+        self.turns.insertWidget(self.turns.count() - 1, row)
+        self._messages.append(card)
+        QTimer.singleShot(0, self._scroll_bottom)
 
-        self.transcript.appendPlainText(f"{speaker}")
-        self.transcript.appendPlainText(clean)
-        bar = self.transcript.verticalScrollBar()
-        bar.setValue(bar.maximum())
+    def _scroll_bottom(self) -> None:
+        scroll = self.scroll.verticalScrollBar()
+        scroll.setValue(scroll.maximum())
