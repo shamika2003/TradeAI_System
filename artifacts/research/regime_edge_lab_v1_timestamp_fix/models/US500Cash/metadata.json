@@ -1,0 +1,28 @@
+{
+  "approved_for_live": false,
+  "strict_gate_passed": false,
+  "features": [
+    "ema_separation_atr",
+    "close_ema20_atr",
+    "atr_relative_50",
+    "close_location",
+    "body_atr",
+    "range_atr",
+    "upper_wick_atr",
+    "lower_wick_atr",
+    "rsi_fraction",
+    "delta3_atr",
+    "zscore_atr",
+    "breakout20_distance_atr",
+    "breakdown20_distance_atr",
+    "log_tick_volume",
+    "entry_spread_to_atr",
+    "hour_sin",
+    "hour_cos",
+    "weekday_sin",
+    "weekday_cos",
+    "past_1h_return_atr"
+  ],
+  "selected_threshold_R": null,
+  "warning": "RESEARCH ONLY: historical 2023/2024 previously inspected, 2025 not evaluated"
+}

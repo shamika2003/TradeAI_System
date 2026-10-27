@@ -1,0 +1,217 @@
+{
+  "experiment": "TradeAI_US_INDEX_NET_R_ML_RESEARCH_V1",
+  "archive_sha256": "5fb073a1e7831d2ca15bc0645110eee991ab8e1e49db4b420c10e12b9259edd6",
+  "status": "RESEARCH_SIMULATION_ONLY_NO_MT5_ORDERS_NO_AUTOMATIC_PROMOTION",
+  "selection_honesty": "2023/2024 were previously inspected by other experiments; results exploratory",
+  "model": "separate BUY / SELL XGBoost net-R regressors",
+  "unknown_costs": "CFD commission/swap schedules are not supplied; extra hypothetical fees included, no tick fills",
+  "rules": "predefined two-hour hold, next H1 open M5 entry, same-candle stop first, no 2025 read",
+  "symbols": {
+    "US500Cash": {
+      "symbol": "US500Cash",
+      "years": {
+        "fit": [
+          2020,
+          2021,
+          2022
+        ],
+        "threshold_selection": 2023,
+        "locked_evaluation": 2024,
+        "sealed_unopened": 2025
+      },
+      "train_rows": 4543,
+      "tune_rows": 1757,
+      "locked_eval_rows": 1677,
+      "feature_count": 20,
+      "features": [
+        "ema_separation_atr",
+        "close_ema20_atr",
+        "atr_relative_50",
+        "close_location",
+        "body_atr",
+        "range_atr",
+        "upper_wick_atr",
+        "lower_wick_atr",
+        "rsi_fraction",
+        "delta3_atr",
+        "zscore_atr",
+        "breakout20_distance_atr",
+        "breakdown20_distance_atr",
+        "log_tick_volume",
+        "entry_spread_to_atr",
+        "hour_sin",
+        "hour_cos",
+        "weekday_sin",
+        "weekday_cos",
+        "past_1h_return_atr"
+      ],
+      "threshold_trials_2023": [
+        {
+          "threshold_R": 0.05,
+          "validation_2023": {
+            "trades": 7,
+            "net_usd": -6.0988,
+            "profit_factor": 0.2964,
+            "max_dd_pct": 4.066,
+            "risk_stopped": false,
+            "win_rate_pct": 14.29,
+            "entry_signals": 7,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "threshold_R": 0.1,
+          "validation_2023": {
+            "trades": 2,
+            "net_usd": -3.3959,
+            "profit_factor": 0.0,
+            "max_dd_pct": 2.264,
+            "risk_stopped": false,
+            "win_rate_pct": 0.0,
+            "entry_signals": 2,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "threshold_R": 0.2,
+          "validation_2023": {
+            "trades": 0,
+            "net_usd": 0.0,
+            "profit_factor": null,
+            "max_dd_pct": 0.0,
+            "risk_stopped": false,
+            "win_rate_pct": null,
+            "entry_signals": 0,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        }
+      ],
+      "chosen_threshold_R": null,
+      "2024_locked_validation": null,
+      "2024_cost_stress": null,
+      "strict_gate_passed": false,
+      "not_live_approved": true,
+      "rules": {
+        "hold_minutes": 120,
+        "min_lot": 0.1,
+        "risk_fraction": 0.015,
+        "daily_loss_cap": 0.04,
+        "max_drawdown": 0.12,
+        "spread_slippage": "bar-based estimates, not tick quotes",
+        "commission_base_extra_usd_roundtrip": 0.2,
+        "commission_stress_extra_usd_roundtrip": 0.4,
+        "capital": 150.0
+      }
+    },
+    "US100Cash": {
+      "symbol": "US100Cash",
+      "years": {
+        "fit": [
+          2020,
+          2021,
+          2022
+        ],
+        "threshold_selection": 2023,
+        "locked_evaluation": 2024,
+        "sealed_unopened": 2025
+      },
+      "train_rows": 4707,
+      "tune_rows": 1778,
+      "locked_eval_rows": 1790,
+      "feature_count": 20,
+      "features": [
+        "ema_separation_atr",
+        "close_ema20_atr",
+        "atr_relative_50",
+        "close_location",
+        "body_atr",
+        "range_atr",
+        "upper_wick_atr",
+        "lower_wick_atr",
+        "rsi_fraction",
+        "delta3_atr",
+        "zscore_atr",
+        "breakout20_distance_atr",
+        "breakdown20_distance_atr",
+        "log_tick_volume",
+        "entry_spread_to_atr",
+        "hour_sin",
+        "hour_cos",
+        "weekday_sin",
+        "weekday_cos",
+        "past_1h_return_atr"
+      ],
+      "threshold_trials_2023": [
+        {
+          "threshold_R": 0.05,
+          "validation_2023": {
+            "trades": 7,
+            "net_usd": 5.777,
+            "profit_factor": 2.0021,
+            "max_dd_pct": 3.636,
+            "risk_stopped": false,
+            "win_rate_pct": 57.14,
+            "entry_signals": 172,
+            "skip_risk_cost_missing": 165,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "threshold_R": 0.1,
+          "validation_2023": {
+            "trades": 5,
+            "net_usd": -0.003,
+            "profit_factor": 0.9995,
+            "max_dd_pct": 3.701,
+            "risk_stopped": false,
+            "win_rate_pct": 40.0,
+            "entry_signals": 101,
+            "skip_risk_cost_missing": 96,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "threshold_R": 0.2,
+          "validation_2023": {
+            "trades": 0,
+            "net_usd": 0.0,
+            "profit_factor": null,
+            "max_dd_pct": 0.0,
+            "risk_stopped": false,
+            "win_rate_pct": null,
+            "entry_signals": 20,
+            "skip_risk_cost_missing": 20,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        }
+      ],
+      "chosen_threshold_R": null,
+      "2024_locked_validation": null,
+      "2024_cost_stress": null,
+      "strict_gate_passed": false,
+      "not_live_approved": true,
+      "rules": {
+        "hold_minutes": 120,
+        "min_lot": 0.1,
+        "risk_fraction": 0.015,
+        "daily_loss_cap": 0.04,
+        "max_drawdown": 0.12,
+        "spread_slippage": "bar-based estimates, not tick quotes",
+        "commission_base_extra_usd_roundtrip": 0.2,
+        "commission_stress_extra_usd_roundtrip": 0.4,
+        "capital": 150.0
+      }
+    }
+  },
+  "strict_gate_passed_all": false,
+  "ready_for_live": false
+}

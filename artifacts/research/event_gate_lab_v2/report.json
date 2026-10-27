@@ -1,0 +1,217 @@
+{
+  "experiment": "TradeAI_EVENT_CONDITIONED_ML_ENTRY_RESEARCH_V2",
+  "no_order_path": true,
+  "production_models_unchanged": true,
+  "validation_note": "2023/2024 were viewed in earlier research, NOT independent forward tests",
+  "2025_holdout_status": "NOT EVALUATED; raw archive reader loads full source but no 2025 outcomes used to fit or select",
+  "risk_rules": {
+    "starting_usd": 150.0,
+    "max_position_risk_fraction": 0.015,
+    "max_daily_loss_fraction": 0.04,
+    "max_closed_trade_drawdown_fraction": 0.12
+  },
+  "strategy": {
+    "entry": "four causal H1 setups, no conflicting votes; one trade at a time",
+    "model": "XGBRegressor net R + XGBClassifier profit probability on affordable rule-triggered events; require both EV estimates positive",
+    "hold_bars_m5": 24,
+    "commission_round_trip_proxy_usd": 0.2,
+    "historical_broker_spreads": "M5 bar approximation, not tick fills",
+    "unknown_costs": "CFD swap/true commission/tick execution not provided"
+  },
+  "symbols": {
+    "US500Cash": {
+      "symbol": "US500Cash",
+      "history_range": "2020-2024 outcomes only; no 2025 test",
+      "train_event_rows": 968,
+      "affordable_events_by_year": {
+        "2020": 295,
+        "2021": 289,
+        "2022": 384,
+        "2023": 375,
+        "2024": 361
+      },
+      "setup_diagnostics_all_years": {
+        "no_setup": 6094,
+        "conflicts": 890,
+        "nominated": 1909
+      },
+      "no_ml_entry_baseline_2023": {
+        "year": 2023,
+        "trades": 35,
+        "net_usd": -18.0093,
+        "ending_usd": 131.9907,
+        "profit_factor": 0.2353,
+        "win_rate_pct": 25.71,
+        "max_dd_pct": 12.006,
+        "risk_stopped": true,
+        "active_days": 26,
+        "stops": 21,
+        "entry_signals": 375,
+        "skip_risk_cost_missing": 0,
+        "skip_daily_cap": 0
+      },
+      "no_ml_entry_baseline_2024": {
+        "year": 2024,
+        "trades": 58,
+        "net_usd": -17.5754,
+        "ending_usd": 132.4246,
+        "profit_factor": 0.3675,
+        "win_rate_pct": 29.31,
+        "max_dd_pct": 12.274,
+        "risk_stopped": true,
+        "active_days": 31,
+        "stops": 32,
+        "entry_signals": 361,
+        "skip_risk_cost_missing": 0,
+        "skip_daily_cap": 0
+      },
+      "model_score_distribution": {
+        "2023": {
+          "regression_pred_R_max": -0.122,
+          "classifier_breakeven_probability": 0.5167,
+          "classifier_max_predicted_profit_probability": 0.4523,
+          "classifier_positive_net_R_predictions": 0,
+          "predicted_net_R_min": -0.6431,
+          "predicted_net_R_median": -0.4273,
+          "predicted_net_R_max": -0.1428,
+          "positive_predictions": 0
+        },
+        "2024": {
+          "regression_pred_R_max": -0.0991,
+          "classifier_breakeven_probability": 0.5167,
+          "classifier_max_predicted_profit_probability": 0.4643,
+          "classifier_positive_net_R_predictions": 0,
+          "predicted_net_R_min": -0.5797,
+          "predicted_net_R_median": -0.4205,
+          "predicted_net_R_max": -0.1534,
+          "positive_predictions": 0
+        }
+      },
+      "posthoc_outcome_diagnostics_not_for_selection": {
+        "2023": {
+          "affordable_events": 375,
+          "posthoc_mean_net_R_all_events": -0.3563
+        },
+        "2024": {
+          "affordable_events": 361,
+          "posthoc_mean_net_R_all_events": -0.3077
+        }
+      },
+      "classifier_assumed_payoffs_learned_from_2020_2022": {
+        "training_mean_win_R": 0.8051224628598398,
+        "training_mean_loss_R": 0.8607930707742033,
+        "training_break_even_win_probability": 0.5167087126539132
+      },
+      "tuning_2023": [
+        {
+          "min_predicted_net_R": 0.0,
+          "validation_2023": {
+            "year": 2023,
+            "trades": 0,
+            "net_usd": 0.0,
+            "ending_usd": 150.0,
+            "profit_factor": null,
+            "win_rate_pct": null,
+            "max_dd_pct": 0.0,
+            "risk_stopped": false,
+            "active_days": 0,
+            "stops": 0,
+            "entry_signals": 0,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "min_predicted_net_R": 0.05,
+          "validation_2023": {
+            "year": 2023,
+            "trades": 0,
+            "net_usd": 0.0,
+            "ending_usd": 150.0,
+            "profit_factor": null,
+            "win_rate_pct": null,
+            "max_dd_pct": 0.0,
+            "risk_stopped": false,
+            "active_days": 0,
+            "stops": 0,
+            "entry_signals": 0,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "min_predicted_net_R": 0.1,
+          "validation_2023": {
+            "year": 2023,
+            "trades": 0,
+            "net_usd": 0.0,
+            "ending_usd": 150.0,
+            "profit_factor": null,
+            "win_rate_pct": null,
+            "max_dd_pct": 0.0,
+            "risk_stopped": false,
+            "active_days": 0,
+            "stops": 0,
+            "entry_signals": 0,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        },
+        {
+          "min_predicted_net_R": 0.2,
+          "validation_2023": {
+            "year": 2023,
+            "trades": 0,
+            "net_usd": 0.0,
+            "ending_usd": 150.0,
+            "profit_factor": null,
+            "win_rate_pct": null,
+            "max_dd_pct": 0.0,
+            "risk_stopped": false,
+            "active_days": 0,
+            "stops": 0,
+            "entry_signals": 0,
+            "skip_risk_cost_missing": 0,
+            "skip_daily_cap": 0
+          },
+          "passed": false
+        }
+      ],
+      "threshold_R": null,
+      "check_2024": null,
+      "stress_2024": null,
+      "passes_all_gates": false,
+      "research_only": true
+    },
+    "US100Cash": {
+      "symbol": "US100Cash",
+      "history_range": "2020-2024 outcomes only; no 2025 test",
+      "train_event_rows": 31,
+      "affordable_events_by_year": {
+        "2020": 9,
+        "2021": 19,
+        "2022": 3,
+        "2023": 25,
+        "2024": 19
+      },
+      "setup_diagnostics_all_years": {
+        "no_setup": 6008,
+        "conflicts": 914,
+        "nominated": 1924
+      },
+      "tuning_2023": [],
+      "threshold_R": null,
+      "check_2024": null,
+      "stress_2024": null,
+      "passes_all_gates": false,
+      "research_only": true,
+      "skip_reason": "INSUFFICIENT_AFFORDABLE_TRAINING_EVENTS",
+      "minimum_training_events": 250
+    }
+  },
+  "live_approved": false,
+  "any_passed_all_gates": false
+}

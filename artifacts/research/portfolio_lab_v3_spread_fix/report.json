@@ -1,0 +1,307 @@
+{
+  "experiment": "TRADEAI_V3_INTEGRATED_PORTFOLIO_RESEARCH",
+  "not_live_approved": true,
+  "research_only": true,
+  "forward_independence_warning": "2023 and 2024 have been examined in earlier experiments, so results are exploratory; 2025 not evaluated in this run, but earlier strategy families have inspected 2025. Future data necessary.",
+  "years": {
+    "fit": [
+      2020,
+      2021
+    ],
+    "calibration": 2022,
+    "threshold_selection": 2023,
+    "later_evaluation": 2024,
+    "no_evaluation": 2025
+  },
+  "configuration": {
+    "symbols": [
+      "US500Cash",
+      "US100Cash"
+    ],
+    "horizons_m5": [
+      24,
+      48
+    ],
+    "features": 43,
+    "model": "Two XGBoost net-R regressors and an independently calibrated XGBoost win-probability classifier",
+    "candidate_entry": "Both BUY and SELL every eligible completed H1; H1 setups are features, not hindsight constraints",
+    "ranking": "minimum of ensemble predicted after-cost net R and calibrated payoff-based EV; one position across both assets",
+    "account_usd": 150.0,
+    "risk_fraction": 0.015,
+    "daily_loss_fraction": 0.03,
+    "monthly_loss_fraction": 0.08,
+    "closed_trade_drawdown_fraction": 0.12,
+    "stop_atr_multiplier": 0.7,
+    "target_stop_multiple": 1.8,
+    "precommitted_thresholds_R": [
+      0.05,
+      0.15,
+      0.3
+    ],
+    "cost_assumptions": "M5 BID OHLC broker bar spread + adverse hypothetical slippage + nominal 0.20 USD fee; stress doubles slippage, widens spread 1.5x, fee total 0.40 USD; no ticks/swap/actual fee schedule",
+    "estimated_leverage_for_margin_reserve": 100,
+    "known_limitations": "Closed-trade drawdown only; no intratrade equity, historical funding charges or exact tick fills. 2023/24 previously seen."
+  },
+  "fit": {
+    "train_rows": 11128,
+    "calibration_rows": 7100,
+    "train_avg_win_R": 0.867012646000586,
+    "train_avg_loss_R": 0.871453970362292,
+    "train_positive_fraction": 0.335999281092739
+  },
+  "prediction_score_audit": {
+    "2023": {
+      "candidates": 7496,
+      "mean_predicted_net_R": -0.34266,
+      "max_predicted_net_R": -0.11457,
+      "p95_predicted_net_R": -0.24994,
+      "individual_regressor_1_positive": 68,
+      "individual_regressor_2_positive": 73,
+      "calibrated_probability_EV_positive": 0,
+      "all_models_positive": 0,
+      "realized_mean_net_R_all_candidates_POSTHOC_ONLY": -0.30849
+    },
+    "2024": {
+      "candidates": 6814,
+      "mean_predicted_net_R": -0.3207,
+      "max_predicted_net_R": -0.11457,
+      "p95_predicted_net_R": -0.24994,
+      "individual_regressor_1_positive": 120,
+      "individual_regressor_2_positive": 116,
+      "calibrated_probability_EV_positive": 0,
+      "all_models_positive": 0,
+      "realized_mean_net_R_all_candidates_POSTHOC_ONLY": -0.30663
+    }
+  },
+  "trained_regressor_feature_importance_top10": [
+    {
+      "feature": "min_lot_risk_fraction",
+      "importance": 0.04017
+    },
+    {
+      "feature": "zscore_atr",
+      "importance": 0.03865
+    },
+    {
+      "feature": "side",
+      "importance": 0.03762
+    },
+    {
+      "feature": "atr_relative_50",
+      "importance": 0.03404
+    },
+    {
+      "feature": "margin_to_capital",
+      "importance": 0.03301
+    },
+    {
+      "feature": "log_tick_volume",
+      "importance": 0.03235
+    },
+    {
+      "feature": "weekday_cos",
+      "importance": 0.03213
+    },
+    {
+      "feature": "weekday_sin",
+      "importance": 0.03143
+    },
+    {
+      "feature": "rsi_fraction",
+      "importance": 0.03116
+    },
+    {
+      "feature": "delta3_atr",
+      "importance": 0.03035
+    }
+  ],
+  "qualified_candidate_rows_by_symbol_year": {
+    "('US100Cash', 2020)": 148,
+    "('US100Cash', 2021)": 320,
+    "('US100Cash', 2022)": 24,
+    "('US100Cash', 2023)": 512,
+    "('US100Cash', 2024)": 198,
+    "('US500Cash', 2020)": 5328,
+    "('US500Cash', 2021)": 5332,
+    "('US500Cash', 2022)": 7076,
+    "('US500Cash', 2023)": 6984,
+    "('US500Cash', 2024)": 6616
+  },
+  "entry_rule_only_benchmark": {
+    "2023": {
+      "year": 2023,
+      "trades": 49,
+      "net_usd": -18.5528,
+      "final_balance_usd": 131.4472,
+      "profit_factor": 0.3868,
+      "win_rate_pct": 30.61,
+      "max_closed_dd_pct": 12.369,
+      "risk_stopped": true,
+      "signal_candidates": 1585,
+      "rejections": {
+        "EXISTING_POSITION": 102
+      },
+      "monthly_net_usd": {
+        "2023-01": -8.7579,
+        "2023-02": -9.795
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "trades": 65,
+      "net_usd": -16.916,
+      "final_balance_usd": 133.084,
+      "profit_factor": 0.4145,
+      "win_rate_pct": 32.31,
+      "max_closed_dd_pct": 12.027,
+      "risk_stopped": true,
+      "signal_candidates": 1438,
+      "rejections": {
+        "EXISTING_POSITION": 148,
+        "MONTHLY_LOSS_CAP": 54,
+        "MIN_LOT_RISK": 6
+      },
+      "monthly_net_usd": {
+        "2024-01": -12.505,
+        "2024-02": -4.411
+      }
+    }
+  },
+  "threshold_trials": [
+    {
+      "min_predicted_net_R": 0.05,
+      "selection_2023": {
+        "year": 2023,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "diagnostic_2024": {
+        "year": 2024,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "cost_stress_2024": {
+        "year": 2024,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "passes_selection": false,
+      "passes_2024_and_stress": false
+    },
+    {
+      "min_predicted_net_R": 0.15,
+      "selection_2023": {
+        "year": 2023,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "diagnostic_2024": {
+        "year": 2024,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "cost_stress_2024": {
+        "year": 2024,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "passes_selection": false,
+      "passes_2024_and_stress": false
+    },
+    {
+      "min_predicted_net_R": 0.3,
+      "selection_2023": {
+        "year": 2023,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "diagnostic_2024": {
+        "year": 2024,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "cost_stress_2024": {
+        "year": 2024,
+        "trades": 0,
+        "net_usd": 0.0,
+        "final_balance_usd": 150.0,
+        "profit_factor": null,
+        "win_rate_pct": null,
+        "max_closed_dd_pct": 0.0,
+        "risk_stopped": false,
+        "signal_candidates": 0,
+        "rejections": {},
+        "monthly_net_usd": {}
+      },
+      "passes_selection": false,
+      "passes_2024_and_stress": false
+    }
+  ],
+  "selected_threshold_R": null,
+  "passes_all_research_gates": false,
+  "production_approved": false
+}
